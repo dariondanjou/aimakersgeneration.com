@@ -50,19 +50,19 @@ function LandingPage() {
       <div className="glass-panel flex flex-col w-full max-w-sm gap-4 relative z-10">
         <h3 className="text-sm uppercase tracking-wider text-white/50 mb-2">Connect to the Network</h3>
 
-        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'twitter' })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-[#1D9BF0]/10 hover:bg-[#1D9BF0]/20">
+        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'twitter', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-[#1D9BF0]/10 hover:bg-[#1D9BF0]/20">
           <Twitter size={18} /> Continue with X
         </button>
-        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'discord' })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-[#5865F2]/10 hover:bg-[#5865F2]/20">
+        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'discord', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-[#5865F2]/10 hover:bg-[#5865F2]/20">
           <MessageSquare size={18} /> Continue with Discord
         </button>
-        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'github' })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-white/5 hover:bg-white/10">
+        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-white/5 hover:bg-white/10">
           <Github size={18} /> Continue with GitHub
         </button>
-        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'facebook' })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-[#1877F2]/10 hover:bg-[#1877F2]/20">
+        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'facebook', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-[#1877F2]/10 hover:bg-[#1877F2]/20">
           <Facebook size={18} /> Continue with Facebook
         </button>
-        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'google' })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-white/5 hover:bg-white/10 mt-2">
+        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-white/5 hover:bg-white/10 mt-2">
           <LogIn size={18} /> Google Login
         </button>
       </div>
