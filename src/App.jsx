@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Bot, LogIn, Github, Twitter, Facebook, MessageSquare, Terminal } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
+import Dashboard from './Dashboard';
 
 function ChatWindow() {
   return (
@@ -100,7 +101,7 @@ function App() {
       <div className="app-container">
         <main className="main-content">
           <Routes>
-            <Route path="/" element={session ? <div>Welcome into the Dashboard!</div> : <LandingPage />} />
+            <Route path="/" element={session ? <Dashboard session={session} /> : <LandingPage />} />
           </Routes>
         </main>
 
