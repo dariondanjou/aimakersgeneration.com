@@ -61,11 +61,11 @@ export default function Dashboard({ session }) {
     };
 
     return (
-        <div className="flex flex-col h-full bg-black/20 p-6 rounded-lg border border-white/10 relative overflow-hidden">
+        <div className="flex flex-col h-full p-6 relative overflow-hidden text-lg">
 
             {/* Top Navigation & Search */}
             <header className="flex justify-between items-center mb-8 border-b border-white/10 pb-6 relative z-10">
-                <div className="flex gap-4 p-1 bg-white/5 rounded-full border border-white/10">
+                <div className="flex gap-4 p-1">
                     <button onClick={() => setActiveTab('home')} className={`px - 4 py - 2 rounded - full text - sm font - semibold transition - colors ${activeTab === 'home' ? 'bg-[#64FFDA] text-[#0A192F]' : 'hover:bg-white/10 text-white'} `}>
                         <Globe size={16} className="inline mr-2" /> Home
                     </button>
@@ -91,7 +91,7 @@ export default function Dashboard({ session }) {
                             placeholder="Fuzzy search anything..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-black/40 border border-white/20 rounded-full py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#64FFDA] transition-colors w-64"
+                            className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#64FFDA] transition-colors w-64"
                         />
                     </div>
 
@@ -106,7 +106,7 @@ export default function Dashboard({ session }) {
                 {activeTab === 'home' && (
                     <div className="grid grid-cols-12 gap-6">
                         <div className="col-span-8 flex flex-col gap-6">
-                            <div className="glass-panel border-[#64FFDA]/30 p-6 relative overflow-hidden min-h-[200px]">
+                            <div className="glass-panel relative overflow-hidden min-h-[200px]">
                                 <div className="absolute top-0 right-0 p-4 opacity-10"><Newspaper size={64} /></div>
                                 <div className="flex justify-between items-center mb-4">
                                     <h2 className="text-2xl font-bold text-[#F0E68C]">Latest Announcements</h2>
@@ -135,7 +135,7 @@ export default function Dashboard({ session }) {
                                     resources.length === 0 ? <p className="text-white/50 italic">No resources added to the wiki yet.</p> :
                                         <ul className="space-y-3">
                                             {resources.map(res => (
-                                                <li key={res.id} className="flex flex-col bg-white/5 p-3 rounded border border-white/10">
+                                                <li key={res.id} className="flex flex-col p-3 border-b border-white/10 last:border-0">
                                                     <a href={res.url} target="_blank" rel="noreferrer" className="font-semibold text-white hover:text-[#64FFDA] transition-colors">{res.title}</a>
                                                     <span className="text-xs text-white/40 mt-1">Edited by {res.profiles?.username || 'Anonymous'}</span>
                                                 </li>
@@ -146,7 +146,7 @@ export default function Dashboard({ session }) {
                         </div>
 
                         <div className="col-span-4 flex flex-col gap-6">
-                            <div className="glass-panel p-6 bg-white/5 border border-white/10">
+                            <div className="glass-panel p-6">
                                 <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
                                     <h2 className="text-lg font-bold">Upcoming Events</h2>
                                     <button onClick={() => setActiveTab('calendar')} className="text-xs text-white/50 hover:text-white">Full Calendar</button>
@@ -164,7 +164,7 @@ export default function Dashboard({ session }) {
                                 }
                             </div>
 
-                            <div className="glass-panel p-6 bg-[#64FFDA]/5 border border-[#64FFDA]/20">
+                            <div className="glass-panel p-6">
                                 <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
                                     <h2 className="text-lg font-bold text-[#64FFDA]">Newest Architects</h2>
                                     <button onClick={() => setActiveTab('people')} className="text-xs text-white/50 hover:text-white">All People</button>
