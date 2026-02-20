@@ -196,7 +196,7 @@ export default function Dashboard({ session }) {
                             placeholder="Fuzzy search anything..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#64FFDA] transition-colors w-64"
+                            className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-64"
                         />
                     </div>
 
@@ -214,8 +214,8 @@ export default function Dashboard({ session }) {
                             <div className="glass-panel relative overflow-hidden min-h-[200px]">
                                 <div className="absolute top-0 right-0 p-4 opacity-10"><Newspaper size={64} /></div>
                                 <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-2xl font-bold text-[#F0E68C]">Latest Announcements</h2>
-                                    <button onClick={() => setActiveTab('news')} className="text-sm text-white hover:text-[#64FFDA] transition-colors">view more</button>
+                                    <h2 className="text-2xl font-bold text-white">Latest Announcements</h2>
+                                    <button onClick={() => setActiveTab('news')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors">view more</button>
                                 </div>
 
                                 {loading ? <p className="text-white/50">Loading announcements...</p> :
@@ -234,14 +234,14 @@ export default function Dashboard({ session }) {
                             <div className="glass-panel p-6">
                                 <div className="flex justify-between items-center mb-4">
                                     <h2 className="text-xl font-bold">Top Active Resources</h2>
-                                    <button onClick={() => setActiveTab('resources')} className="text-sm text-white hover:text-[#64FFDA] transition-colors">view wiki</button>
+                                    <button onClick={() => setActiveTab('resources')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors">view wiki</button>
                                 </div>
                                 {loading ? <p className="text-white/50">Loading resources...</p> :
                                     resources.length === 0 ? <p className="text-white/50 italic">No resources added to the wiki yet.</p> :
                                         <ul className="space-y-3">
                                             {resources.map(res => (
                                                 <li key={res.id} className="flex flex-col p-3 border-b border-white/10 last:border-0">
-                                                    <a href={res.url} target="_blank" rel="noreferrer" className="font-semibold text-white hover:text-[#64FFDA] transition-colors">{res.title}</a>
+                                                    <a href={res.url} target="_blank" rel="noreferrer" className="font-semibold text-white hover:text-[#B0E0E6] transition-colors">{res.title}</a>
                                                     <span className="text-xs text-white/40 mt-1">Edited by {res.profiles?.username || 'Anonymous'}</span>
                                                 </li>
                                             ))}
@@ -254,14 +254,14 @@ export default function Dashboard({ session }) {
                             <div className="glass-panel p-6">
                                 <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
                                     <h2 className="text-lg font-bold">Upcoming Events</h2>
-                                    <button onClick={() => setActiveTab('calendar')} className="text-sm text-white hover:text-[#64FFDA] transition-colors">full calendar</button>
+                                    <button onClick={() => setActiveTab('calendar')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors">full calendar</button>
                                 </div>
                                 {loading ? <p className="text-white/50 text-sm">Loading events...</p> :
                                     events.length === 0 ? <p className="text-white/50 italic text-sm">No upcoming events scheduled.</p> :
                                         <ul className="space-y-4">
                                             {events.map(ev => (
                                                 <li key={ev.id}>
-                                                    <div className="font-bold text-sm text-[#F0E68C]">{new Date(ev.event_date).toLocaleDateString()}</div>
+                                                    <div className="font-bold text-sm text-[#FFFFFF]">{new Date(ev.event_date).toLocaleDateString()}</div>
                                                     <div className="text-sm">{ev.title}</div>
                                                 </li>
                                             ))}
@@ -271,14 +271,14 @@ export default function Dashboard({ session }) {
 
                             <div className="glass-panel p-6">
                                 <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
-                                    <h2 className="text-lg font-bold text-[#64FFDA]">Newest Creatives</h2>
-                                    <button onClick={() => setActiveTab('people')} className="text-sm text-white hover:text-[#64FFDA] transition-colors">all creatives</button>
+                                    <h2 className="text-lg font-bold text-white">Newest Creatives</h2>
+                                    <button onClick={() => setActiveTab('people')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors">all creatives</button>
                                 </div>
                                 {loading ? <p className="text-white/50 text-sm">Loading network...</p> :
                                     <div className="mt-4 flex flex-wrap gap-2">
                                         {users.map(u => (
                                             <div key={u.id} className="group relative">
-                                                <div className="w-10 h-10 rounded-full bg-black/40 border border-[#64FFDA]/40 flex items-center justify-center text-sm font-bold shadow-lg overflow-hidden">
+                                                <div className="w-10 h-10 rounded-full bg-black/40 border border-[#B0E0E6]/40 flex items-center justify-center text-sm font-bold shadow-lg overflow-hidden">
                                                     {u.avatar_url ? <img src={u.avatar_url} alt={u.username} className="w-full h-full object-cover" /> : (u.username?.[0]?.toUpperCase() || '?')}
                                                 </div>
                                                 <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity bg-black px-2 py-1 rounded whitespace-nowrap z-20">
@@ -296,7 +296,7 @@ export default function Dashboard({ session }) {
                 {activeTab === 'news' && (
                     <div className="space-y-6">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold text-[#F0E68C]">The Daily Blueprint (News)</h2>
+                            <h2 className="text-3xl font-bold text-white">The Daily Blueprint (News)</h2>
                             <button className="btn btn-primary text-sm">Submit News</button>
                         </div>
                         <div className="grid grid-cols-12 gap-6">
@@ -306,7 +306,7 @@ export default function Dashboard({ session }) {
                                     <div className="glass-panel text-white/50 italic text-center py-12">No news items have been published yet.</div>
                                 )}
                                 {announcements.map(post => (
-                                    <div key={post.id} className="glass-panel p-6 border-l-4 border-[#64FFDA]">
+                                    <div key={post.id} className="glass-panel p-6 border-l-4 border-[#B0E0E6]">
                                         <h3 className="text-xl font-bold mb-2">{post.title}</h3>
                                         <p className="text-white/80 mb-4">{post.excerpt}</p>
                                         <div className="flex justify-between text-xs text-white/40 border-t border-white/10 pt-3">
@@ -327,7 +327,7 @@ export default function Dashboard({ session }) {
                 {activeTab === 'resources' && (
                     <div className="space-y-6">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold text-[#F0E68C]">Open-Source Wiki</h2>
+                            <h2 className="text-3xl font-bold text-white">Open-Source Wiki</h2>
                             <button className="btn btn-primary text-sm">+ Add Resource</button>
                         </div>
 
@@ -347,7 +347,7 @@ export default function Dashboard({ session }) {
                                                 resources.map(res => (
                                                     <tr key={res.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                                                         <td className="py-3 px-4 font-semibold">{res.title}</td>
-                                                        <td className="py-3 px-4"><a href={res.url} className="text-[#64FFDA] hover:underline truncate inline-block max-w-[200px]" target="_blank" rel="noreferrer">{res.url}</a></td>
+                                                        <td className="py-3 px-4"><a href={res.url} className="text-[#B0E0E6] hover:underline truncate inline-block max-w-[200px]" target="_blank" rel="noreferrer">{res.url}</a></td>
                                                         <td className="py-3 px-4 text-white/60 text-sm">{res.profiles?.username || 'Anonymous'}</td>
                                                     </tr>
                                                 ))}
@@ -361,7 +361,7 @@ export default function Dashboard({ session }) {
                 {activeTab === 'calendar' && (
                     <div className="space-y-6">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold text-[#F0E68C]">Project Deadlines & Events</h2>
+                            <h2 className="text-3xl font-bold text-white">Project Deadlines & Events</h2>
                             {!isAddingEvent && (
                                 <button onClick={() => setIsAddingEvent(true)} className="btn btn-primary text-sm">
                                     <Plus size={16} className="inline mr-2" /> Add Event
@@ -370,7 +370,7 @@ export default function Dashboard({ session }) {
                         </div>
 
                         {isAddingEvent && (
-                            <div className="glass-panel p-6 border border-[#64FFDA]/50 mb-6">
+                            <div className="glass-panel p-6 border border-[#B0E0E6]/50 mb-6">
                                 <div className="flex justify-between items-center mb-4">
                                     <h3 className="text-xl font-bold">Create New Event</h3>
                                     <button onClick={() => setIsAddingEvent(false)} className="text-white/50 hover:text-white"><X size={20} /></button>
@@ -378,11 +378,11 @@ export default function Dashboard({ session }) {
                                 <form onSubmit={handleAddEventSave} className="flex flex-col gap-4 max-w-md">
                                     <div>
                                         <label className="block text-sm text-white/70 mb-1">Event Title</label>
-                                        <input type="text" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors" placeholder="e.g. Hackathon Kickoff" required />
+                                        <input type="text" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Hackathon Kickoff" required />
                                     </div>
                                     <div>
                                         <label className="block text-sm text-white/70 mb-1">Description (Optional)</label>
-                                        <textarea value={eventDescription} onChange={(e) => setEventDescription(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors h-24" placeholder="Event details..." />
+                                        <textarea value={eventDescription} onChange={(e) => setEventDescription(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors h-24" placeholder="Event details..." />
                                     </div>
                                     <div>
                                         <label className="block text-sm text-white/70 mb-1">Date</label>
@@ -390,7 +390,7 @@ export default function Dashboard({ session }) {
                                             <DatePicker
                                                 selected={eventDate}
                                                 onChange={(date) => setEventDate(date)}
-                                                className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors"
+                                                className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors"
                                                 dateFormat="MMMM d, yyyy"
                                                 required
                                             />
@@ -407,9 +407,9 @@ export default function Dashboard({ session }) {
                             {loading ? <p>Loading calendar...</p> :
                                 events.length === 0 ? <div className="col-span-full glass-panel py-12 text-center text-white/50 italic">No events mapped.</div> :
                                     events.map(ev => (
-                                        <div key={ev.id} className="glass-panel border-[#F0E68C]/30 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden group hover:border-[#F0E68C] transition-colors">
+                                        <div key={ev.id} className="glass-panel border-[#FFFFFF]/30 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden group hover:border-[#FFFFFF] transition-colors">
                                             <Calendar size={48} className="text-white/10 absolute -right-4 -bottom-4 group-hover:text-white/20 transition-colors" />
-                                            <div className="text-[#F0E68C] text-2xl font-bold mb-2">{new Date(ev.event_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
+                                            <div className="text-[#FFFFFF] text-2xl font-bold mb-2">{new Date(ev.event_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
                                             <h3 className="text-lg font-bold z-10">{ev.title}</h3>
                                             {ev.description && <p className="text-sm text-white/60 mt-2 z-10">{ev.description}</p>}
                                         </div>
@@ -422,7 +422,7 @@ export default function Dashboard({ session }) {
                 {activeTab === 'people' && (
                     <div className="space-y-6">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold text-[#F0E68C]">AI Creatives</h2>
+                            <h2 className="text-3xl font-bold text-white">AI Creatives</h2>
                             {!isEditingProfile && (
                                 <button onClick={() => {
                                     const myProfile = users.find(u => u.id === session.user.id);
@@ -440,7 +440,7 @@ export default function Dashboard({ session }) {
                         </div>
 
                         {isEditingProfile && (
-                            <div className="glass-panel p-6 border border-[#64FFDA]/50 mb-6">
+                            <div className="glass-panel p-6 border border-[#B0E0E6]/50 mb-6">
                                 <div className="flex justify-between items-center mb-4">
                                     <h3 className="text-xl font-bold">Edit Your Profile</h3>
                                     <button onClick={() => setIsEditingProfile(false)} className="text-white/50 hover:text-white"><X size={20} /></button>
@@ -448,34 +448,34 @@ export default function Dashboard({ session }) {
                                 <form onSubmit={handleEditProfileSave} className="flex flex-col gap-4 max-w-md">
                                     <div>
                                         <label className="block text-sm text-white/70 mb-1">Username</label>
-                                        <input type="text" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors" placeholder="e.g. AI Architect" required />
+                                        <input type="text" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. AI Architect" required />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm text-white/70 mb-1">First Name (Optional)</label>
-                                            <input type="text" value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors" placeholder="e.g. Satoshi" />
+                                            <input type="text" value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Satoshi" />
                                         </div>
                                         <div>
                                             <label className="block text-sm text-white/70 mb-1">Last Name (Optional)</label>
-                                            <input type="text" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors" placeholder="e.g. Nakamoto" />
+                                            <input type="text" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Nakamoto" />
                                         </div>
                                     </div>
                                     <div>
                                         <label className="block text-sm text-white/70 mb-1">Avatar Image</label>
                                         <div
-                                            className={`w-full border-2 border-dashed ${isUploadingAvatar ? 'border-[#64FFDA] scale-95' : 'border-white/30 hover:border-white/60'} rounded-lg p-6 text-center transition-all cursor-pointer relative overflow-hidden`}
+                                            className={`w-full border-2 border-dashed ${isUploadingAvatar ? 'border-[#B0E0E6] scale-95' : 'border-white/30 hover:border-white/60'} rounded-lg p-6 text-center transition-all cursor-pointer relative overflow-hidden`}
                                             onDragOver={(e) => e.preventDefault()}
                                             onDrop={handleAvatarUpload}
                                         >
                                             {isUploadingAvatar ? (
                                                 <div className="flex flex-col items-center justify-center">
-                                                    <div className="w-8 h-8 border-4 border-t-[#64FFDA] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mb-2" />
+                                                    <div className="w-8 h-8 border-4 border-t-[#B0E0E6] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mb-2" />
                                                     <span className="text-sm text-white/70">Uploading...</span>
                                                 </div>
                                             ) : editAvatarUrl ? (
                                                 <div className="flex flex-col items-center gap-2">
                                                     <img src={editAvatarUrl} alt="Avatar Preview" className="w-16 h-16 rounded-full object-cover border border-white/20 shadow-lg" />
-                                                    <span className="text-xs text-[#64FFDA]">Click or Drop to Re-Upload</span>
+                                                    <span className="text-xs text-[#B0E0E6]">Click or Drop to Re-Upload</span>
                                                 </div>
                                             ) : (
                                                 <div className="flex flex-col items-center gap-1">
@@ -511,7 +511,7 @@ export default function Dashboard({ session }) {
                                 users.length === 0 ? <p className="col-span-full">No creatives registered entirely.</p> :
                                     users.map(u => (
                                         <div key={u.id} className="glass-panel flex flex-col items-center p-6 hover:bg-white/10 transition-colors cursor-pointer text-center">
-                                            <div className="w-20 h-20 rounded-full bg-black/40 border-2 border-[#64FFDA]/40 flex items-center justify-center text-xl font-bold shadow-lg overflow-hidden mb-4">
+                                            <div className="w-20 h-20 rounded-full bg-black/40 border-2 border-[#B0E0E6]/40 flex items-center justify-center text-xl font-bold shadow-lg overflow-hidden mb-4">
                                                 {u.avatar_url ? <img src={u.avatar_url} alt={u.username} className="w-full h-full object-cover" /> : (u.username?.[0]?.toUpperCase() || '?')}
                                             </div>
                                             <h3 className="font-bold text-lg truncate w-full">
@@ -520,7 +520,7 @@ export default function Dashboard({ session }) {
                                             {(u.first_name || u.last_name) && u.username && (
                                                 <p className="text-[10px] text-white/40 uppercase tracking-wider -mt-1 mb-1">@{u.username}</p>
                                             )}
-                                            <p className="text-xs text-[#64FFDA] mt-1">AI Creative</p>
+                                            <p className="text-xs text-[#B0E0E6] mt-1">AI Creative</p>
                                         </div>
                                     ))
                             }

@@ -8,7 +8,7 @@ function ChatWindow() {
   return (
     <div className="chat-sidebar p-6">
       <div className="flex items-center gap-3 mb-8 chalk-border-bottom pb-4 border-b border-white/20">
-        <Bot size={28} className="text-[#64FFDA]" />
+        <Bot size={28} className="text-[#B0E0E6]" />
         <h2 className="text-xl">AI Assistant</h2>
       </div>
 
@@ -38,9 +38,9 @@ function ChatWindow() {
 function LandingPage() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 max-w-3xl mx-auto text-center">
-      <Terminal size={48} className="mb-4 text-[#64FFDA] opacity-80" />
+      <Terminal size={48} className="mb-4 text-[#B0E0E6] opacity-80" />
       <h1 className="text-4xl md:text-5xl lg:text-6xl mb-4 relative inline-block leading-tight">
-        <span className="text-[#F0E68C]">AI MAKERS</span><br />
+        <span className="text-[#FFFFFF]">AI MAKERS</span><br />
         GENERATION
       </h1>
 
