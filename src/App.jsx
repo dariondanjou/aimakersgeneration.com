@@ -36,20 +36,23 @@ function ChatWindow() {
 
 function LandingPage() {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-8 max-w-3xl mx-auto text-center">
-      <Terminal size={64} className="mb-6 text-[#64FFDA] opacity-80" />
-      <h1 className="text-5xl md:text-7xl mb-6 relative inline-block">
+    <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 max-w-3xl mx-auto text-center">
+      <Terminal size={48} className="mb-4 text-[#64FFDA] opacity-80" />
+      <h1 className="text-4xl md:text-5xl lg:text-6xl mb-4 relative inline-block leading-tight">
         <span className="text-[#F0E68C]">AI MAKERS</span><br />
         GENERATION
       </h1>
 
-      <p className="text-lg md:text-xl text-white/80 mb-12 max-w-2xl leading-relaxed">
+      <p className="text-base md:text-lg text-white/80 mb-6 max-w-2xl leading-relaxed">
         A community of architects, builders, and creators getting their hands dirty with Artificial Intelligence. Share resources, catch up on news, and collaborate on the future.
       </p>
 
-      <div className="glass-panel flex flex-col w-full max-w-sm gap-4 relative z-10">
-        <h3 className="text-sm uppercase tracking-wider text-white/50 mb-2">Connect to the Network</h3>
+      <div className="glass-panel flex flex-col w-full max-w-sm gap-2 relative z-10 p-4">
+        <h3 className="text-sm uppercase tracking-wider text-white/50 mb-1">Connect to the Network</h3>
 
+        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-white/5 hover:bg-white/10">
+          <LogIn size={18} /> Google Login
+        </button>
         <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'twitter', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-[#1D9BF0]/10 hover:bg-[#1D9BF0]/20">
           <Twitter size={18} /> Continue with X
         </button>
@@ -61,9 +64,6 @@ function LandingPage() {
         </button>
         <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'facebook', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-[#1877F2]/10 hover:bg-[#1877F2]/20">
           <Facebook size={18} /> Continue with Facebook
-        </button>
-        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-white/5 hover:bg-white/10 mt-2">
-          <LogIn size={18} /> Google Login
         </button>
       </div>
 
