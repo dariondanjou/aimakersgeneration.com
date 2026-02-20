@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Makers Generation</title>
+    <!-- Importing a "cool" modern font from Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Reset for consistent cross-browser rendering */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            background-color: #3E2723; /* Deep rich brown */
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden; /* Prevent scrolling for a strict one-page feel */
+        }
+
+        /* Container styled to center content both vertically and horizontally */
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Typography styling */
+        h1 {
+            color: #F0E68C; /* Soft Khaki */
+            font-size: clamp(2.5rem, 8vw, 6rem); /* Responsive sizing: min 2.5rem, scales with vw, max 6rem */
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            line-height: 1.2;
+            text-transform: uppercase;
+            
+            /* Optional: subtle text shadow for depth */
+            text-shadow: 2px 4px 10px rgba(0, 0, 0, 0.3);
+            
+            /* Smooth fade-in animation */
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Makers Generation</h1>
+    </div>
+</body>
+</html>
