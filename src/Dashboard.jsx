@@ -1,6 +1,8 @@
 import { Globe, Calendar, Users, Newspaper, Search, LogOut, Edit, Plus, X, Check } from 'lucide-react';
 import { supabase } from './supabaseClient';
 import { useState, useEffect } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 export default function Dashboard({ session }) {
     const [activeTab, setActiveTab] = useState('home');
@@ -19,7 +21,7 @@ export default function Dashboard({ session }) {
     const [isAddingEvent, setIsAddingEvent] = useState(false);
     const [eventTitle, setEventTitle] = useState('');
     const [eventDescription, setEventDescription] = useState('');
-    const [eventDate, setEventDate] = useState('');
+    const [eventDate, setEventDate] = useState(new Date());
     const [isSavingEvent, setIsSavingEvent] = useState(false);    // Data States
     const [users, setUsers] = useState([]);
     const [resources, setResources] = useState([]);
@@ -146,16 +148,17 @@ export default function Dashboard({ session }) {
     const handleAddEventSave = async (e) => {
         e.preventDefault();
         setIsSavingEvent(true);
+        const isoDate = eventDate.toISOString().split('T')[0]; // Format for Supabase DATE column
         const { error } = await supabase
             .from('events')
-            .insert([{ title: eventTitle, description: eventDescription, event_date: eventDate }]);
+            .insert([{ title: eventTitle, description: eventDescription, event_date: isoDate }]);
 
         if (!error) {
             // Re-fetch events
             const { data } = await supabase.from('events').select('*').order('event_date', { ascending: true }).limit(50);
             if (data) setEvents(data);
             setIsAddingEvent(false);
-            setEventTitle(''); setEventDescription(''); setEventDate('');
+            setEventTitle(''); setEventDescription(''); setEventDate(new Date());
         } else {
             alert('Error adding event: ' + error.message);
         }
@@ -167,20 +170,20 @@ export default function Dashboard({ session }) {
 
             {/* Top Navigation & Search */}
             <header className="flex justify-between items-center mb-8 border-b border-white/10 pb-6 relative z-10">
-                <div className="flex gap-4 p-1">
-                    <button onClick={() => setActiveTab('home')} className={`px - 4 py - 2 rounded - full text - sm font - semibold transition - colors ${activeTab === 'home' ? 'bg-[#64FFDA] text-[#0A192F]' : 'hover:bg-white/10 text-white'} `}>
+                <div className="flex gap-6 px-2">
+                    <button onClick={() => setActiveTab('home')} className={`pb-2 px-1 text-sm font-semibold transition-all border-b-2 ${activeTab === 'home' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Globe size={16} className="inline mr-2" /> Home
                     </button>
-                    <button onClick={() => setActiveTab('news')} className={`px - 4 py - 2 rounded - full text - sm font - semibold transition - colors ${activeTab === 'news' ? 'bg-[#64FFDA] text-[#0A192F]' : 'hover:bg-white/10 text-white'} `}>
+                    <button onClick={() => setActiveTab('news')} className={`pb-2 px-1 text-sm font-semibold transition-all border-b-2 ${activeTab === 'news' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Newspaper size={16} className="inline mr-2" /> News
                     </button>
-                    <button onClick={() => setActiveTab('resources')} className={`px - 4 py - 2 rounded - full text - sm font - semibold transition - colors ${activeTab === 'resources' ? 'bg-[#64FFDA] text-[#0A192F]' : 'hover:bg-white/10 text-white'} `}>
+                    <button onClick={() => setActiveTab('resources')} className={`pb-2 px-1 text-sm font-semibold transition-all border-b-2 ${activeTab === 'resources' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Globe size={16} className="inline mr-2" /> Resources
                     </button>
-                    <button onClick={() => setActiveTab('calendar')} className={`px - 4 py - 2 rounded - full text - sm font - semibold transition - colors ${activeTab === 'calendar' ? 'bg-[#64FFDA] text-[#0A192F]' : 'hover:bg-white/10 text-white'} `}>
+                    <button onClick={() => setActiveTab('calendar')} className={`pb-2 px-1 text-sm font-semibold transition-all border-b-2 ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Calendar size={16} className="inline mr-2" /> Calendar
                     </button>
-                    <button onClick={() => setActiveTab('people')} className={`px - 4 py - 2 rounded - full text - sm font - semibold transition - colors ${activeTab === 'people' ? 'bg-[#64FFDA] text-[#0A192F]' : 'hover:bg-white/10 text-white'} `}>
+                    <button onClick={() => setActiveTab('people')} className={`pb-2 px-1 text-sm font-semibold transition-all border-b-2 ${activeTab === 'people' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Users size={16} className="inline mr-2" /> People
                     </button>
                 </div>
@@ -383,7 +386,15 @@ export default function Dashboard({ session }) {
                                     </div>
                                     <div>
                                         <label className="block text-sm text-white/70 mb-1">Date</label>
-                                        <input type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors" required />
+                                        <div className="custom-datepicker-wrapper">
+                                            <DatePicker
+                                                selected={eventDate}
+                                                onChange={(date) => setEventDate(date)}
+                                                className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors"
+                                                dateFormat="MMMM d, yyyy"
+                                                required
+                                            />
+                                        </div>
                                     </div>
                                     <button type="submit" disabled={isSavingEvent} className="btn btn-primary w-fit mt-2">
                                         {isSavingEvent ? 'Saving...' : <><Check size={16} className="inline mr-2" /> Save Event</>}
