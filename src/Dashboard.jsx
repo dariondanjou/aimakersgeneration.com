@@ -9,8 +9,11 @@ export default function Dashboard({ session }) {
     // Profile Edit State
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [editUsername, setEditUsername] = useState('');
+    const [editFirstName, setEditFirstName] = useState('');
+    const [editLastName, setEditLastName] = useState('');
     const [editAvatarUrl, setEditAvatarUrl] = useState('');
     const [isSavingProfile, setIsSavingProfile] = useState(false);
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
     // Event Create State
     const [isAddingEvent, setIsAddingEvent] = useState(false);
@@ -56,7 +59,7 @@ export default function Dashboard({ session }) {
             // Fetch newest users (up to 50 for the People tab)
             const { data: usersData } = await supabase
                 .from('profiles')
-                .select('id, username, avatar_url')
+                .select('id, username, first_name, last_name, avatar_url')
                 .order('updated_at', { ascending: false })
                 .limit(50);
             if (usersData) setUsers(usersData);
@@ -76,17 +79,68 @@ export default function Dashboard({ session }) {
         setIsSavingProfile(true);
         const { error } = await supabase
             .from('profiles')
-            .upsert({ id: session.user.id, username: editUsername, avatar_url: editAvatarUrl, updated_at: new Date() });
+            .upsert({
+                id: session.user.id,
+                username: editUsername,
+                first_name: editFirstName,
+                last_name: editLastName,
+                avatar_url: editAvatarUrl,
+                updated_at: new Date()
+            });
 
         if (!error) {
             // Re-fetch users
-            const { data } = await supabase.from('profiles').select('id, username, avatar_url').order('updated_at', { ascending: false }).limit(50);
+            const { data } = await supabase.from('profiles').select('id, username, first_name, last_name, avatar_url').order('updated_at', { ascending: false }).limit(50);
             if (data) setUsers(data);
             setIsEditingProfile(false);
         } else {
             alert('Error saving profile: ' + error.message);
         }
         setIsSavingProfile(false);
+    };
+
+    const handleAvatarUpload = async (e) => {
+        let file;
+
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            e.preventDefault();
+            file = e.dataTransfer.files[0];
+        } else if (e.target && e.target.files && e.target.files.length > 0) {
+            file = e.target.files[0];
+        }
+
+        if (!file) return;
+
+        // Prevent huge files explicitly for now
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File is too large. Max size is 5MB.');
+            return;
+        }
+
+        setIsUploadingAvatar(true);
+
+        // Use user ID to ensure unique file paths and overwrite old avatars to save space
+        const fileExt = file.name.split('.').pop();
+        const filePath = `${session.user.id}/avatar.${fileExt}`;
+
+        try {
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+
+            if (data && data.publicUrl) {
+                // Instantly update the preview field with the new remote URL
+                setEditAvatarUrl(data.publicUrl);
+            }
+        } catch (error) {
+            alert('Error uploading avatar: ' + error.message);
+        } finally {
+            setIsUploadingAvatar(false);
+        }
     };
 
     const handleAddEventSave = async (e) => {
@@ -363,6 +417,8 @@ export default function Dashboard({ session }) {
                                     const myProfile = users.find(u => u.id === session.user.id);
                                     if (myProfile) {
                                         setEditUsername(myProfile.username || '');
+                                        setEditFirstName(myProfile.first_name || '');
+                                        setEditLastName(myProfile.last_name || '');
                                         setEditAvatarUrl(myProfile.avatar_url || '');
                                     }
                                     setIsEditingProfile(true);
@@ -383,9 +439,54 @@ export default function Dashboard({ session }) {
                                         <label className="block text-sm text-white/70 mb-1">Username</label>
                                         <input type="text" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors" placeholder="e.g. AI Architect" required />
                                     </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm text-white/70 mb-1">First Name (Optional)</label>
+                                            <input type="text" value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors" placeholder="e.g. Satoshi" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm text-white/70 mb-1">Last Name (Optional)</label>
+                                            <input type="text" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors" placeholder="e.g. Nakamoto" />
+                                        </div>
+                                    </div>
                                     <div>
-                                        <label className="block text-sm text-white/70 mb-1">Avatar Image URL</label>
-                                        <input type="url" value={editAvatarUrl} onChange={(e) => setEditAvatarUrl(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors" placeholder="https://..." />
+                                        <label className="block text-sm text-white/70 mb-1">Avatar Image</label>
+                                        <div
+                                            className={`w-full border-2 border-dashed ${isUploadingAvatar ? 'border-[#64FFDA] scale-95' : 'border-white/30 hover:border-white/60'} rounded-lg p-6 text-center transition-all cursor-pointer relative overflow-hidden`}
+                                            onDragOver={(e) => e.preventDefault()}
+                                            onDrop={handleAvatarUpload}
+                                        >
+                                            {isUploadingAvatar ? (
+                                                <div className="flex flex-col items-center justify-center">
+                                                    <div className="w-8 h-8 border-4 border-t-[#64FFDA] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mb-2" />
+                                                    <span className="text-sm text-white/70">Uploading...</span>
+                                                </div>
+                                            ) : editAvatarUrl ? (
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <img src={editAvatarUrl} alt="Avatar Preview" className="w-16 h-16 rounded-full object-cover border border-white/20 shadow-lg" />
+                                                    <span className="text-xs text-[#64FFDA]">Click or Drop to Re-Upload</span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <span className="text-white/70 text-sm font-bold">Drag & Drop Image Here</span>
+                                                    <span className="text-white/40 text-xs">or click to browse local files (Max 5MB)</span>
+                                                </div>
+                                            )}
+
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                onChange={handleAvatarUpload}
+                                                disabled={isUploadingAvatar}
+                                            />
+                                        </div>
+                                        {editAvatarUrl && (
+                                            <div className="mt-2 text-xs flex justify-between items-center text-white/40">
+                                                <span className="truncate max-w-[250px]">{editAvatarUrl}</span>
+                                                <button type="button" onClick={() => setEditAvatarUrl('')} className="hover:text-red-400">Remove</button>
+                                            </div>
+                                        )}
                                     </div>
                                     <button type="submit" disabled={isSavingProfile} className="btn btn-primary w-fit mt-2">
                                         {isSavingProfile ? 'Saving...' : <><Check size={16} className="inline mr-2" /> Save Profile</>}
@@ -402,7 +503,12 @@ export default function Dashboard({ session }) {
                                             <div className="w-20 h-20 rounded-full bg-black/40 border-2 border-[#64FFDA]/40 flex items-center justify-center text-xl font-bold shadow-lg overflow-hidden mb-4">
                                                 {u.avatar_url ? <img src={u.avatar_url} alt={u.username} className="w-full h-full object-cover" /> : (u.username?.[0]?.toUpperCase() || '?')}
                                             </div>
-                                            <h3 className="font-bold text-lg truncate w-full">{u.username || 'Anonymous'}</h3>
+                                            <h3 className="font-bold text-lg truncate w-full">
+                                                {(u.first_name || u.last_name) ? `${u.first_name || ''} ${u.last_name || ''}`.trim() : (u.username || 'Anonymous')}
+                                            </h3>
+                                            {(u.first_name || u.last_name) && u.username && (
+                                                <p className="text-[10px] text-white/40 uppercase tracking-wider -mt-1 mb-1">@{u.username}</p>
+                                            )}
                                             <p className="text-xs text-[#64FFDA] mt-1">AI Creative</p>
                                         </div>
                                     ))
