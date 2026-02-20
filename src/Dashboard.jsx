@@ -1,4 +1,4 @@
-import { Globe, Calendar, Users, Newspaper, Search, LogOut } from 'lucide-react';
+import { Globe, Calendar, Users, Newspaper, Search, LogOut, Edit, Plus, X, Check } from 'lucide-react';
 import { supabase } from './supabaseClient';
 import { useState, useEffect } from 'react';
 
@@ -6,7 +6,18 @@ export default function Dashboard({ session }) {
     const [activeTab, setActiveTab] = useState('home');
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Data States
+    // Profile Edit State
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [editUsername, setEditUsername] = useState('');
+    const [editAvatarUrl, setEditAvatarUrl] = useState('');
+    const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+    // Event Create State
+    const [isAddingEvent, setIsAddingEvent] = useState(false);
+    const [eventTitle, setEventTitle] = useState('');
+    const [eventDescription, setEventDescription] = useState('');
+    const [eventDate, setEventDate] = useState('');
+    const [isSavingEvent, setIsSavingEvent] = useState(false);    // Data States
     const [users, setUsers] = useState([]);
     const [resources, setResources] = useState([]);
     const [announcements, setAnnouncements] = useState([]);
@@ -34,20 +45,20 @@ export default function Dashboard({ session }) {
                 .limit(5);
             if (resourcesData) setResources(resourcesData);
 
-            // Fetch nearest 3 events
+            // Fetch nearest 50 events
             const { data: eventsData } = await supabase
                 .from('events')
                 .select('*')
                 .order('event_date', { ascending: true })
-                .limit(3);
+                .limit(50);
             if (eventsData) setEvents(eventsData);
 
-            // Fetch 3 newest users
+            // Fetch newest users (up to 50 for the People tab)
             const { data: usersData } = await supabase
                 .from('profiles')
                 .select('id, username, avatar_url')
                 .order('updated_at', { ascending: false })
-                .limit(3);
+                .limit(50);
             if (usersData) setUsers(usersData);
 
             setLoading(false);
@@ -58,6 +69,43 @@ export default function Dashboard({ session }) {
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
+    };
+
+    const handleEditProfileSave = async (e) => {
+        e.preventDefault();
+        setIsSavingProfile(true);
+        const { error } = await supabase
+            .from('profiles')
+            .upsert({ id: session.user.id, username: editUsername, avatar_url: editAvatarUrl, updated_at: new Date() });
+
+        if (!error) {
+            // Re-fetch users
+            const { data } = await supabase.from('profiles').select('id, username, avatar_url').order('updated_at', { ascending: false }).limit(50);
+            if (data) setUsers(data);
+            setIsEditingProfile(false);
+        } else {
+            alert('Error saving profile: ' + error.message);
+        }
+        setIsSavingProfile(false);
+    };
+
+    const handleAddEventSave = async (e) => {
+        e.preventDefault();
+        setIsSavingEvent(true);
+        const { error } = await supabase
+            .from('events')
+            .insert([{ title: eventTitle, description: eventDescription, event_date: eventDate }]);
+
+        if (!error) {
+            // Re-fetch events
+            const { data } = await supabase.from('events').select('*').order('event_date', { ascending: true }).limit(50);
+            if (data) setEvents(data);
+            setIsAddingEvent(false);
+            setEventTitle(''); setEventDescription(''); setEventDate('');
+        } else {
+            alert('Error adding event: ' + error.message);
+        }
+        setIsSavingEvent(false);
     };
 
     return (
@@ -265,9 +313,38 @@ export default function Dashboard({ session }) {
                     <div className="space-y-6">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-3xl font-bold text-[#F0E68C]">Project Deadlines & Events</h2>
-                            {/* In a real app, only Admins would see this button based on logic mapping to session */}
-                            <button className="btn btn-primary text-sm opacity-50 cursor-not-allowed">Admin: Add Event</button>
+                            {!isAddingEvent && (
+                                <button onClick={() => setIsAddingEvent(true)} className="btn btn-primary text-sm">
+                                    <Plus size={16} className="inline mr-2" /> Add Event
+                                </button>
+                            )}
                         </div>
+
+                        {isAddingEvent && (
+                            <div className="glass-panel p-6 border border-[#64FFDA]/50 mb-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-xl font-bold">Create New Event</h3>
+                                    <button onClick={() => setIsAddingEvent(false)} className="text-white/50 hover:text-white"><X size={20} /></button>
+                                </div>
+                                <form onSubmit={handleAddEventSave} className="flex flex-col gap-4 max-w-md">
+                                    <div>
+                                        <label className="block text-sm text-white/70 mb-1">Event Title</label>
+                                        <input type="text" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors" placeholder="e.g. Hackathon Kickoff" required />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-white/70 mb-1">Description (Optional)</label>
+                                        <textarea value={eventDescription} onChange={(e) => setEventDescription(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors h-24" placeholder="Event details..." />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-white/70 mb-1">Date</label>
+                                        <input type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors" required />
+                                    </div>
+                                    <button type="submit" disabled={isSavingEvent} className="btn btn-primary w-fit mt-2">
+                                        {isSavingEvent ? 'Saving...' : <><Check size={16} className="inline mr-2" /> Save Event</>}
+                                    </button>
+                                </form>
+                            </div>
+                        )}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {loading ? <p>Loading calendar...</p> :
@@ -289,7 +366,41 @@ export default function Dashboard({ session }) {
                     <div className="space-y-6">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-3xl font-bold text-[#F0E68C]">Network Architects</h2>
+                            {!isEditingProfile && (
+                                <button onClick={() => {
+                                    const myProfile = users.find(u => u.id === session.user.id);
+                                    if (myProfile) {
+                                        setEditUsername(myProfile.username || '');
+                                        setEditAvatarUrl(myProfile.avatar_url || '');
+                                    }
+                                    setIsEditingProfile(true);
+                                }} className="btn btn-primary text-sm">
+                                    <Edit size={16} className="inline mr-2" /> Edit My Profile
+                                </button>
+                            )}
                         </div>
+
+                        {isEditingProfile && (
+                            <div className="glass-panel p-6 border border-[#64FFDA]/50 mb-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-xl font-bold">Edit Your Profile</h3>
+                                    <button onClick={() => setIsEditingProfile(false)} className="text-white/50 hover:text-white"><X size={20} /></button>
+                                </div>
+                                <form onSubmit={handleEditProfileSave} className="flex flex-col gap-4 max-w-md">
+                                    <div>
+                                        <label className="block text-sm text-white/70 mb-1">Username</label>
+                                        <input type="text" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors" placeholder="e.g. AI Architect" required />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-white/70 mb-1">Avatar Image URL</label>
+                                        <input type="url" value={editAvatarUrl} onChange={(e) => setEditAvatarUrl(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#64FFDA] transition-colors" placeholder="https://..." />
+                                    </div>
+                                    <button type="submit" disabled={isSavingProfile} className="btn btn-primary w-fit mt-2">
+                                        {isSavingProfile ? 'Saving...' : <><Check size={16} className="inline mr-2" /> Save Profile</>}
+                                    </button>
+                                </form>
+                            </div>
+                        )}
 
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                             {loading ? <p>Loading network...</p> :
