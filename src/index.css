@@ -114,8 +114,8 @@ a:hover {
   width: 400px;
   border-left: 1px solid var(--chalk-dim);
   border-image: linear-gradient(to bottom, transparent, var(--chalk-dim) 10%, var(--chalk-dim) 90%, transparent) 1;
-  background-color: var(--panel-bg);
-  backdrop-filter: blur(10px);
+  background-color: transparent;
+  backdrop-filter: none;
   display: flex;
   flex-direction: column;
 }

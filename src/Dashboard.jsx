@@ -108,9 +108,8 @@ export default function Dashboard({ session }) {
                         <div className="col-span-8 flex flex-col gap-6">
                             <div className="glass-panel relative overflow-hidden min-h-[200px]">
                                 <div className="absolute top-0 right-0 p-4 opacity-10"><Newspaper size={64} /></div>
-                                <div className="flex justify-between items-center mb-4">
+                                <div className="mb-4">
                                     <h2 className="text-2xl font-bold text-[#F0E68C]">Latest Announcements</h2>
-                                    <button onClick={() => setActiveTab('news')} className="text-xs text-[#64FFDA] hover:underline">View More...</button>
                                 </div>
 
                                 {loading ? <p className="text-white/50">Loading announcements...</p> :
@@ -125,11 +124,13 @@ export default function Dashboard({ session }) {
                                             ))}
                                         </div>
                                 }
+                                <div className="mt-4 text-right relative z-10 w-full">
+                                    <button onClick={() => setActiveTab('news')} className="text-sm text-white hover:text-[#64FFDA] hover:underline">View More...</button>
+                                </div>
                             </div>
                             <div className="glass-panel p-6">
-                                <div className="flex justify-between items-center mb-4">
+                                <div className="mb-4">
                                     <h2 className="text-xl font-bold">Top Active Resources</h2>
-                                    <button onClick={() => setActiveTab('resources')} className="text-xs text-[#64FFDA] hover:underline">View Wiki...</button>
                                 </div>
                                 {loading ? <p className="text-white/50">Loading resources...</p> :
                                     resources.length === 0 ? <p className="text-white/50 italic">No resources added to the wiki yet.</p> :
@@ -142,14 +143,16 @@ export default function Dashboard({ session }) {
                                             ))}
                                         </ul>
                                 }
+                                <div className="mt-4 text-right relative z-10 w-full">
+                                    <button onClick={() => setActiveTab('resources')} className="text-sm text-white hover:text-[#64FFDA] hover:underline">View Wiki...</button>
+                                </div>
                             </div>
                         </div>
 
                         <div className="col-span-4 flex flex-col gap-6">
                             <div className="glass-panel p-6">
-                                <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
+                                <div className="mb-4 border-b border-white/10 pb-2">
                                     <h2 className="text-lg font-bold">Upcoming Events</h2>
-                                    <button onClick={() => setActiveTab('calendar')} className="text-xs text-white/50 hover:text-white">Full Calendar</button>
                                 </div>
                                 {loading ? <p className="text-white/50 text-sm">Loading events...</p> :
                                     events.length === 0 ? <p className="text-white/50 italic text-sm">No upcoming events scheduled.</p> :
@@ -162,12 +165,14 @@ export default function Dashboard({ session }) {
                                             ))}
                                         </ul>
                                 }
+                                <div className="mt-4 text-right relative z-10 w-full">
+                                    <button onClick={() => setActiveTab('calendar')} className="text-sm text-white hover:text-[#64FFDA] hover:underline">Full Calendar...</button>
+                                </div>
                             </div>
 
                             <div className="glass-panel p-6">
-                                <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
+                                <div className="mb-4 border-b border-white/10 pb-2">
                                     <h2 className="text-lg font-bold text-[#64FFDA]">Newest Architects</h2>
-                                    <button onClick={() => setActiveTab('people')} className="text-xs text-white/50 hover:text-white">All People</button>
                                 </div>
                                 {loading ? <p className="text-white/50 text-sm">Loading network...</p> :
                                     <div className="mt-4 flex flex-wrap gap-2">
@@ -183,6 +188,9 @@ export default function Dashboard({ session }) {
                                         ))}
                                     </div>
                                 }
+                                <div className="mt-6 text-right relative z-10 w-full pt-4 border-t border-white/10">
+                                    <button onClick={() => setActiveTab('people')} className="text-sm text-white hover:text-[#64FFDA] hover:underline">All People...</button>
+                                </div>
                             </div>
                         </div>
                     </div>
