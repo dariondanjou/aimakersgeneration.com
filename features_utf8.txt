@@ -1,0 +1,23 @@
+aimakersgeneration.com features
+
+single page landing page
+chat window on the right half of screen, answers general questions about ai makers generation
+ai makers generation logo
+blurb description of ai makers generation
+login options: google, facebook, x, discord, githhub
+
+design style of site:
+blue graph paper very rough with white architectural lines that seem drawn with chalk or pencil, rough lines that fade and thin to points at the ends
+a few logos of the top ai tools of the moment scattered on the graph paper
+grainy noisy paper treatment. like an architect who makes things and gets hands dirty
+let me know list of image items needed for me to provide in order achieve this design style across the site. but as much as possible try to get it done without my manual intervention. go online and grab imagery and save it to the project folder if needed to get it done. so let’s get the first version done without me adding any imagery but list out what images could be useful from me for an update in follow up iteration
+
+
+inside the login
+share the ai makers generation update news
+primary focus resource sharing
+database of ai professionals. similar profile options to linked in: image, bio, links
+ai news.at the top is always the latest ai makers generation top 3 announcements is there a good place to pull this from automagically. maybe this can pull from future tools website https://www.futuretools.io/news only the highlighted articles from that linked page on future tools. choose a number of youtube sites to be displayed the latest of each of their videos: matt wolf, tim, curious refuge, ai filmmaking advantage feature these videos in vertical column next to the news articles links
+use wikipedia style resource
+links for the inside login part of the website: news, resources, calendar, people 
+landing page on interior contains a combination of top excerpts from all the other pages with the option to click more… to go to the full page. for example landing page show latest 3 ai makers generation announcements or coming events. top 3 news items links and 1 youtube video whichever is the latest. then more… on any of those goes to the news page where the full list of each of those news/announcements categories is available: ai makers generation news, general ai news, youtube videos thumbnail links vertically in a column. excerpt of calendar most nearly coming events or festival deadlines shown likely 3, resources list the top 5 most active then more… links to the full wikipedia resources page, everyone can edit the wiki style resources page and they get credit for their edits. landing page features 3 latest active users with link to whatever activity item made their profile active, like them adding a link to their work, or posting an article on their profile page. allow commenting on any and all media or content posted on the page standard commenting features of being able to edit, delete posts, share posts externally although none of the interaction is available to only logged in users. include a search engine that can find anything on the site fuzzy search so even if the search term is misspelled should be able to find
