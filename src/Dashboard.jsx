@@ -296,7 +296,7 @@ export default function Dashboard({ session }) {
                 {activeTab === 'news' && (
                     <div className="space-y-6">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold text-white">The Daily Blueprint (News)</h2>
+                            <h2 className="text-3xl font-bold text-white">AI News</h2>
                             <button className="btn btn-primary text-sm">Submit News</button>
                         </div>
                         <div className="grid grid-cols-12 gap-6">
@@ -327,7 +327,7 @@ export default function Dashboard({ session }) {
                 {activeTab === 'resources' && (
                     <div className="space-y-6">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold text-white">Open-Source Wiki</h2>
+                            <h2 className="text-3xl font-bold text-white">Resources Wiki</h2>
                             <button className="btn btn-primary text-sm">+ Add Resource</button>
                         </div>
 
