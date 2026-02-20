@@ -156,8 +156,9 @@ export default function Dashboard({ session }) {
                         <div className="col-span-8 flex flex-col gap-6">
                             <div className="glass-panel relative overflow-hidden min-h-[200px]">
                                 <div className="absolute top-0 right-0 p-4 opacity-10"><Newspaper size={64} /></div>
-                                <div className="mb-4">
+                                <div className="flex justify-between items-center mb-4">
                                     <h2 className="text-2xl font-bold text-[#F0E68C]">Latest Announcements</h2>
+                                    <button onClick={() => setActiveTab('news')} className="text-sm text-white hover:text-[#64FFDA] transition-colors">view more</button>
                                 </div>
 
                                 {loading ? <p className="text-white/50">Loading announcements...</p> :
@@ -172,13 +173,11 @@ export default function Dashboard({ session }) {
                                             ))}
                                         </div>
                                 }
-                                <div className="mt-4 text-right relative z-10 w-full">
-                                    <button onClick={() => setActiveTab('news')} className="text-sm text-white hover:text-[#64FFDA] hover:underline">View More...</button>
-                                </div>
                             </div>
                             <div className="glass-panel p-6">
-                                <div className="mb-4">
+                                <div className="flex justify-between items-center mb-4">
                                     <h2 className="text-xl font-bold">Top Active Resources</h2>
+                                    <button onClick={() => setActiveTab('resources')} className="text-sm text-white hover:text-[#64FFDA] transition-colors">view wiki</button>
                                 </div>
                                 {loading ? <p className="text-white/50">Loading resources...</p> :
                                     resources.length === 0 ? <p className="text-white/50 italic">No resources added to the wiki yet.</p> :
@@ -191,16 +190,14 @@ export default function Dashboard({ session }) {
                                             ))}
                                         </ul>
                                 }
-                                <div className="mt-4 text-right relative z-10 w-full">
-                                    <button onClick={() => setActiveTab('resources')} className="text-sm text-white hover:text-[#64FFDA] hover:underline">View Wiki...</button>
-                                </div>
                             </div>
                         </div>
 
                         <div className="col-span-4 flex flex-col gap-6">
                             <div className="glass-panel p-6">
-                                <div className="mb-4 border-b border-white/10 pb-2">
+                                <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
                                     <h2 className="text-lg font-bold">Upcoming Events</h2>
+                                    <button onClick={() => setActiveTab('calendar')} className="text-sm text-white hover:text-[#64FFDA] transition-colors">full calendar</button>
                                 </div>
                                 {loading ? <p className="text-white/50 text-sm">Loading events...</p> :
                                     events.length === 0 ? <p className="text-white/50 italic text-sm">No upcoming events scheduled.</p> :
@@ -213,14 +210,12 @@ export default function Dashboard({ session }) {
                                             ))}
                                         </ul>
                                 }
-                                <div className="mt-4 text-right relative z-10 w-full">
-                                    <button onClick={() => setActiveTab('calendar')} className="text-sm text-white hover:text-[#64FFDA] hover:underline">Full Calendar...</button>
-                                </div>
                             </div>
 
                             <div className="glass-panel p-6">
-                                <div className="mb-4 border-b border-white/10 pb-2">
-                                    <h2 className="text-lg font-bold text-[#64FFDA]">Newest Architects</h2>
+                                <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
+                                    <h2 className="text-lg font-bold text-[#64FFDA]">Newest Creatives</h2>
+                                    <button onClick={() => setActiveTab('people')} className="text-sm text-white hover:text-[#64FFDA] transition-colors">all creatives</button>
                                 </div>
                                 {loading ? <p className="text-white/50 text-sm">Loading network...</p> :
                                     <div className="mt-4 flex flex-wrap gap-2">
@@ -236,9 +231,6 @@ export default function Dashboard({ session }) {
                                         ))}
                                     </div>
                                 }
-                                <div className="mt-6 text-right relative z-10 w-full pt-4 border-t border-white/10">
-                                    <button onClick={() => setActiveTab('people')} className="text-sm text-white hover:text-[#64FFDA] hover:underline">All People...</button>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -365,7 +357,7 @@ export default function Dashboard({ session }) {
                 {activeTab === 'people' && (
                     <div className="space-y-6">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold text-[#F0E68C]">Network Architects</h2>
+                            <h2 className="text-3xl font-bold text-[#F0E68C]">AI Creatives</h2>
                             {!isEditingProfile && (
                                 <button onClick={() => {
                                     const myProfile = users.find(u => u.id === session.user.id);
@@ -404,14 +396,14 @@ export default function Dashboard({ session }) {
 
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                             {loading ? <p>Loading network...</p> :
-                                users.length === 0 ? <p className="col-span-full">No architects registered entirely.</p> :
+                                users.length === 0 ? <p className="col-span-full">No creatives registered entirely.</p> :
                                     users.map(u => (
                                         <div key={u.id} className="glass-panel flex flex-col items-center p-6 hover:bg-white/10 transition-colors cursor-pointer text-center">
                                             <div className="w-20 h-20 rounded-full bg-black/40 border-2 border-[#64FFDA]/40 flex items-center justify-center text-xl font-bold shadow-lg overflow-hidden mb-4">
                                                 {u.avatar_url ? <img src={u.avatar_url} alt={u.username} className="w-full h-full object-cover" /> : (u.username?.[0]?.toUpperCase() || '?')}
                                             </div>
                                             <h3 className="font-bold text-lg truncate w-full">{u.username || 'Anonymous'}</h3>
-                                            <p className="text-xs text-[#64FFDA] mt-1">Founding Member</p>
+                                            <p className="text-xs text-[#64FFDA] mt-1">AI Creative</p>
                                         </div>
                                     ))
                             }

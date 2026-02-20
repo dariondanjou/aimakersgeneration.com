@@ -45,7 +45,7 @@ function LandingPage() {
       </h1>
 
       <p className="text-base md:text-lg text-white/80 mb-6 max-w-2xl leading-relaxed">
-        A community of architects, builders, and creators getting their hands dirty with Artificial Intelligence. Share resources, catch up on news, and collaborate on the future.
+        A community of AI creatives, builders, and makers getting their hands dirty. Share resources, catch up on news, and collaborate on the future.
       </p>
 
       <div className="glass-panel flex flex-col w-full max-w-sm gap-2 relative z-10 p-4">
