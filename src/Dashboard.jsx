@@ -226,10 +226,10 @@ export default function Dashboard({ session }) {
                 {/* Nav Links (Desktop Only, Inline) */}
                 <div className={`${isMobileMenuOpen ? 'flex flex-col absolute top-16 left-0 right-0 bg-[#0f1419] p-4 border border-white/10 z-50 rounded-lg shadow-xl' : 'hidden'} lg:flex lg:flex-row items-center gap-2 xl:gap-6 shrink overflow-hidden lg:h-10`}>
                     <button onClick={() => { setActiveTab('news'); setIsMobileMenuOpen(false); }} title="AI News" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'news' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
-                        <Newspaper size={18} /> <span className="block lg:hidden xl:block">AI News</span>
+                        <Newspaper size={18} /> <span className="block lg:hidden 2xl:block">AI News</span>
                     </button>
                     <button onClick={() => { setActiveTab('resources'); setIsMobileMenuOpen(false); }} title="AI Resources" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'resources' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
-                        <Globe size={18} /> <span className="block lg:hidden xl:block">AI Resources</span>
+                        <Globe size={18} /> <span className="block lg:hidden 2xl:block">AI Resources</span>
                     </button>
                     <button onClick={() => { setActiveTab('calendar'); setIsMobileMenuOpen(false); }} title="Calendar" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
                         <Calendar size={18} /> <span className="block lg:hidden">Calendar</span>
