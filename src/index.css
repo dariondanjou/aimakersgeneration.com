@@ -249,35 +249,40 @@ a:hover {
   color: white !important;
 }
 
-/* Sketched Custom Scrollbar */
+/* Pill-shaped Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 14px;
   background: transparent;
 }
 
 ::-webkit-scrollbar-track {
-  background: linear-gradient(to right, transparent 6px, rgba(255, 255, 255, 0.3) 6px, rgba(255, 255, 255, 0.3) 8px, transparent 8px);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: transparent;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Ccircle cx='7' cy='7' r='4' fill='%23B0E0E6' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
+  background-color: var(--accent-blue);
+  border-radius: 9999px;
+  /* Use border to create padding around the pill so it doesn't touch the edges */
+  border: 3px solid var(--bg-blue);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(176, 224, 230, 0.8);
 }
 
 ::-webkit-scrollbar-button:single-button:vertical:decrement {
-  height: 20px;
+  height: 14px;
   width: 14px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='20'%3E%3Cpath d='M3 12 L7 6 L11 11' stroke='rgba(255,255,255,0.8)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Cpath d='M7 3 L12 9 L2 9 Z' fill='%23B0E0E6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: center;
 }
 
 ::-webkit-scrollbar-button:single-button:vertical:increment {
-  height: 20px;
+  height: 14px;
   width: 14px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='20'%3E%3Cpath d='M3 8 L7 14 L11 9' stroke='rgba(255,255,255,0.8)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Cpath d='M2 5 L12 5 L7 11 Z' fill='%23B0E0E6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: center;
 }
