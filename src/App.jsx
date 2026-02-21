@@ -6,7 +6,7 @@ import Dashboard from './Dashboard';
 
 function ChatWindow({ session, onDataChange }) {
   const loggedOutWelcome = "Hello! I'm the AI Maker Bot.\nI can answer general questions about the AI MAKERS GENERATION community.";
-  const loggedInWelcome = "Hello! I'm the AI Maker Bot.\nI can answer general questions about the AI MAKERS GENERATION community, help you find resources, or guide you on how to contribute to the AI Resources Wiki. I can also add AI resources, events, and content to the site directly from this chat window.\nTry saying \"add event\", \"add resource\", \"add article\", or \"update profile\" to get started!";
+  const loggedInWelcome = "Hello! I'm the AI Maker Bot.\n\nI can answer general questions about the AI MAKERS GENERATION community, help you find resources, or guide you on how to contribute to the AI Resources Wiki.\n\nI can also add AI resources, events, and content to the site directly from this chat window.\nTry saying \"add event\", \"add resource\", \"add article\", or \"update profile\" to get started!";
 
   const [messages, setMessages] = useState([{ role: 'bot', text: loggedOutWelcome }]);
   const [hasSetWelcome, setHasSetWelcome] = useState(false);
