@@ -45,6 +45,8 @@ export default function Dashboard({ session, refreshKey }) {
     const [resources, setResources] = useState([]);
     const [announcements, setAnnouncements] = useState([]);
     const [events, setEvents] = useState([]);
+    const [newsArticles, setNewsArticles] = useState([]);
+    const [youtubeVideos, setYoutubeVideos] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -84,52 +86,27 @@ export default function Dashboard({ session, refreshKey }) {
                 .limit(50);
             if (usersData) setUsers(usersData);
 
+            // Fetch AI news articles from database
+            const { data: newsData } = await supabase
+                .from('news_articles')
+                .select('id, title, url, source, published_at')
+                .order('published_at', { ascending: false })
+                .limit(20);
+            if (newsData) setNewsArticles(newsData);
+
+            // Fetch YouTube videos from database
+            const { data: videosData } = await supabase
+                .from('youtube_videos')
+                .select('video_id, title, channel_name, thumbnail_url, published_at')
+                .order('published_at', { ascending: false })
+                .limit(20);
+            if (videosData) setYoutubeVideos(videosData);
+
             setLoading(false);
         }
 
         fetchDashboardData();
     }, [refreshKey]);
-
-    // Static data from FutureTools for the Feed column
-    const futureToolsFeed = [
-        {
-            id: 1,
-            title: "OpenAI Boosts GPT-5.3-Codex-Spark Speed 30% to 1,200+ Tokens per Second",
-            url: "https://x.com/thsottiaux/status/2024947946849186064",
-            date: "Today"
-        },
-        {
-            id: 2,
-            title: "Claude Adds Desktop App Previews, Code Review, and Background CI/PR Handling",
-            url: "https://x.com/claudeai/status/2024937960572104707",
-            date: "Today"
-        },
-        {
-            id: 3,
-            title: "Pika Launches AI Selves With Persistent Memory for User-Created Digital Extensions",
-            url: "https://x.com/pika_labs/status/2024919175878377587",
-            date: "Yesterday"
-        },
-        {
-            id: 4,
-            title: "Anthropic launches Claude Code Security preview to scan codebases and suggest patches",
-            url: "https://www.anthropic.com/news/claude-code-security",
-            date: "Yesterday"
-        }
-    ];
-
-    const youtubeVideos = [
-        { id: 'v-6Tegc7L3k', title: 'Google Drops Gemini 3.1, AI Music & PhotoShoots', channel: 'Theoretically Media', date: 'Feb 20' },
-        { id: '5cMZqjrgq6Y', title: 'AI News: 5 New Models Dropped This Week!', channel: 'Matt Wolfe', date: 'Feb 20' },
-        { id: 'gDP4bkeWbUs', title: 'Is Seedance 2.0 Overhyped? An Honest AI Video Review', channel: 'Curious Refuge', date: 'Feb 20' },
-        { id: 'yLQClFqzHOU', title: 'How Seedance 2.0 is SO GOOD (And Why Hollywood is Shook)', channel: 'Theoretically Media', date: 'Feb 17' },
-        { id: 'SlRzTFx8Qtg', title: 'My Complete AI Workflow for Maximum Productivity', channel: 'Matt Wolfe', date: 'Feb 18' },
-        { id: 'hUtVN-C37gA', title: 'BREAKING: Kling 3.0 Just DESTROYED Every AI Video Model', channel: 'AI Filmmaking Advantage', date: 'Feb 7' },
-        { id: 'JSetfLwM5sI', title: 'What Claude Did To Make The Pentagon This Mad', channel: 'Matt Wolfe', date: 'Feb 18' },
-        { id: 'YWz6JxLeu_I', title: 'THIS Will Continue To Be A Problem With AI In 2026', channel: 'AI Filmmaking Advantage', date: 'Feb 7' },
-        { id: 'gEHe1-1futI', title: 'The AI Image Workflow That Broke AI Detectors', channel: 'Curious Refuge', date: 'Feb 13' },
-        { id: 'sHoaCAt7kvk', title: 'Seedance 2.0: Is The Hype Real?', channel: 'Theoretically Media', date: 'Feb 12' },
-    ];
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
@@ -229,8 +206,8 @@ export default function Dashboard({ session, refreshKey }) {
     // ── Fuzzy Search ──
     const searchIndex = useMemo(() => {
         const items = [];
-        futureToolsFeed.forEach(f => items.push({ type: 'news', id: f.id, title: f.title, description: '', tab: 'news' }));
-        youtubeVideos.forEach(v => items.push({ type: 'video', id: v.id, title: v.title, description: v.channel, tab: 'news' }));
+        newsArticles.forEach(f => items.push({ type: 'news', id: f.id, title: f.title, description: f.source || '', tab: 'news' }));
+        youtubeVideos.forEach(v => items.push({ type: 'video', id: v.video_id, title: v.title, description: v.channel_name, tab: 'news' }));
         resources.forEach(r => items.push({ type: 'resource', id: r.id, title: r.title, description: r.description || '', tab: 'resources' }));
         events.forEach(e => items.push({ type: 'event', id: e.id, title: e.title, description: e.description || '', tab: 'calendar' }));
         users.forEach(u => items.push({ type: 'person', id: u.id, title: u.username || `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Anonymous', description: u.bio || '', tab: 'people' }));
@@ -438,11 +415,11 @@ export default function Dashboard({ session, refreshKey }) {
                                 </div>
 
                                 <div className="space-y-4 relative z-10">
-                                    {futureToolsFeed.slice(0, 3).map(item => (
+                                    {newsArticles.slice(0, 3).map(item => (
                                         <div key={item.id} className="border-b border-white/10 pb-3 last:border-0">
                                             <a href={item.url} target="_blank" rel="noreferrer" className="font-bold text-lg text-white hover:text-[#B0E0E6] transition-colors">{item.title}</a>
                                             <div className="flex items-center justify-between mt-2">
-                                                <div className="text-xs text-white/40">{item.date} • FutureTools</div>
+                                                <div className="text-xs text-white/40">{new Date(item.published_at).toLocaleDateString()} • {item.source}</div>
                                                 <div className="flex items-center gap-1">
                                                     <ShareButton title={item.title} url={item.url} />
                                                 </div>
@@ -450,9 +427,9 @@ export default function Dashboard({ session, refreshKey }) {
                                         </div>
                                     ))}
                                     {youtubeVideos.length > 0 && (
-                                        <a href={`https://www.youtube.com/watch?v=${youtubeVideos[0].id}`} target="_blank" rel="noreferrer" className="block group border-b border-white/10 pb-3">
+                                        <a href={`https://www.youtube.com/watch?v=${youtubeVideos[0].video_id}`} target="_blank" rel="noreferrer" className="block group border-b border-white/10 pb-3">
                                             <div className="relative rounded-lg overflow-hidden border border-white/10 group-hover:border-[#B0E0E6]/50 transition-colors">
-                                                <img src={`https://img.youtube.com/vi/${youtubeVideos[0].id}/mqdefault.jpg`} alt={youtubeVideos[0].title} className="w-full aspect-video object-cover" />
+                                                <img src={`https://img.youtube.com/vi/${youtubeVideos[0].video_id}/mqdefault.jpg`} alt={youtubeVideos[0].title} className="w-full aspect-video object-cover" />
                                                 <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                                                     <div className="w-10 h-10 rounded-full bg-red-600/90 flex items-center justify-center">
                                                         <div className="w-0 h-0 border-l-[14px] border-l-white border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent ml-1" />
@@ -460,7 +437,7 @@ export default function Dashboard({ session, refreshKey }) {
                                                 </div>
                                             </div>
                                             <h4 className="font-bold text-lg text-white group-hover:text-[#B0E0E6] transition-colors mt-2">{youtubeVideos[0].title}</h4>
-                                            <div className="text-xs text-white/40 mt-1">{youtubeVideos[0].channel} • {youtubeVideos[0].date}</div>
+                                            <div className="text-xs text-white/40 mt-1">{youtubeVideos[0].channel_name} • {new Date(youtubeVideos[0].published_at).toLocaleDateString()}</div>
                                         </a>
                                     )}
                                 </div>
@@ -538,16 +515,17 @@ export default function Dashboard({ session, refreshKey }) {
                             </div>
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                                 <div className="col-span-1 lg:col-span-8 flex flex-col gap-4">
-                                    {futureToolsFeed.map(feedItem => (
-                                        <div key={feedItem.id} className="glass-panel p-6 border-l-4 border-[#B0E0E6]">
-                                            <a href={feedItem.url} target="_blank" rel="noreferrer" className="block text-xl font-bold mb-2 text-white hover:text-[#B0E0E6] transition-colors">
-                                                {feedItem.title}
+                                    {newsArticles.length === 0 && !loading && <p className="text-white/50 italic glass-panel p-6">No news articles yet. Content updates automatically.</p>}
+                                    {newsArticles.map(article => (
+                                        <div key={article.id} className="glass-panel p-6 border-l-4 border-[#B0E0E6]">
+                                            <a href={article.url} target="_blank" rel="noreferrer" className="block text-xl font-bold mb-2 text-white hover:text-[#B0E0E6] transition-colors">
+                                                {article.title}
                                             </a>
                                             <div className="flex justify-between items-center text-xs text-white/40 border-t border-white/10 pt-3">
-                                                <span>FutureTools • {feedItem.date}</span>
+                                                <span>{article.source} • {new Date(article.published_at).toLocaleDateString()}</span>
                                                 <div className="flex items-center gap-1">
-                                                    <CommentButton targetType="post" targetId={`news-${feedItem.id}`} />
-                                                    <ShareButton title={feedItem.title} url={feedItem.url} />
+                                                    <CommentButton targetType="post" targetId={`news-${article.id}`} />
+                                                    <ShareButton title={article.title} url={article.url} />
                                                 </div>
                                             </div>
                                         </div>
@@ -555,11 +533,12 @@ export default function Dashboard({ session, refreshKey }) {
                                 </div>
                                 <div className="col-span-1 lg:col-span-4 flex flex-col gap-4">
                                     <h3 className="text-xl font-bold border-b border-white/10 pb-2">Latest Videos</h3>
+                                    {youtubeVideos.length === 0 && !loading && <p className="text-white/50 italic text-sm">No videos yet. Content updates automatically.</p>}
                                     {youtubeVideos.map(video => (
-                                        <a key={video.id} href={`https://www.youtube.com/watch?v=${video.id}`} target="_blank" rel="noreferrer" className="block group">
+                                        <a key={video.video_id} href={`https://www.youtube.com/watch?v=${video.video_id}`} target="_blank" rel="noreferrer" className="block group">
                                             <div className="relative rounded-lg overflow-hidden border border-white/10 group-hover:border-[#B0E0E6]/50 transition-colors">
                                                 <img
-                                                    src={`https://img.youtube.com/vi/${video.id}/mqdefault.jpg`}
+                                                    src={video.thumbnail_url || `https://img.youtube.com/vi/${video.video_id}/mqdefault.jpg`}
                                                     alt={video.title}
                                                     className="w-full aspect-video object-cover"
                                                 />
@@ -570,7 +549,7 @@ export default function Dashboard({ session, refreshKey }) {
                                                 </div>
                                             </div>
                                             <h4 className="text-sm font-semibold text-white group-hover:text-[#B0E0E6] transition-colors mt-2 line-clamp-2">{video.title}</h4>
-                                            <span className="text-[10px] text-white/40 uppercase tracking-wider">{video.channel} • {video.date}</span>
+                                            <span className="text-[10px] text-white/40 uppercase tracking-wider">{video.channel_name} • {new Date(video.published_at).toLocaleDateString()}</span>
                                         </a>
                                     ))}
                                 </div>
