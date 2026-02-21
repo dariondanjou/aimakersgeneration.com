@@ -966,7 +966,7 @@ function LandingPage() {
           <div className="flex flex-col items-center gap-1 shrink-0">
             <span className="text-xs uppercase tracking-wider text-white/50">Join us on</span>
             <a href="https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" title="Join our WhatsApp Group">
-              <img src="/logo-whatsapp.png" alt="Join our WhatsApp Group" className="w-24 h-24" />
+              <img src="/logo-whatsapp.png" alt="Join our WhatsApp Group" className="w-24 h-24 opacity-30" />
             </a>
           </div>
           <a href="https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity shrink-0" title="Join our WhatsApp Group">
