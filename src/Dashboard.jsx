@@ -235,7 +235,7 @@ export default function Dashboard({ session }) {
                             placeholder="Search this site..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-40 sm:w-48 lg:w-64"
+                            className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-32 sm:w-40 lg:w-48"
                         />
                     </div>
                     <button onClick={handleSignOut} className="p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors flex justify-center items-center shrink-0" title="Sign Out">
