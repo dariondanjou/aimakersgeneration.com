@@ -417,7 +417,7 @@ export default function Dashboard({ session, refreshKey }) {
                                 <div className="space-y-4 relative z-10">
                                     {newsArticles.slice(0, 3).map(item => (
                                         <div key={item.id} className="border-b border-white/10 pb-3 last:border-0">
-                                            <a href={item.url} target="_blank" rel="noreferrer" className="font-bold text-lg text-white hover:text-[#B0E0E6] transition-colors">{item.title}</a>
+                                            <a href={item.url} target="_blank" rel="noreferrer" className="font-bold text-lg text-[#B0E0E6] hover:text-white transition-colors">{item.title}</a>
                                             <div className="flex items-center justify-between mt-2">
                                                 <div className="text-xs text-white/40">{new Date(item.published_at).toLocaleDateString()} • {item.source}</div>
                                                 <div className="flex items-center gap-1">
@@ -518,7 +518,7 @@ export default function Dashboard({ session, refreshKey }) {
                                     {newsArticles.length === 0 && !loading && <p className="text-white/50 italic glass-panel p-6">No news articles yet. Content updates automatically.</p>}
                                     {newsArticles.map(article => (
                                         <div key={article.id} className="glass-panel p-6 border-l-4 border-[#B0E0E6]">
-                                            <a href={article.url} target="_blank" rel="noreferrer" className="block text-xl font-bold mb-2 text-white hover:text-[#B0E0E6] transition-colors">
+                                            <a href={article.url} target="_blank" rel="noreferrer" className="block text-xl font-bold mb-2 text-[#B0E0E6] hover:text-white transition-colors">
                                                 {article.title}
                                             </a>
                                             <div className="flex justify-between items-center text-xs text-white/40 border-t border-white/10 pt-3">
