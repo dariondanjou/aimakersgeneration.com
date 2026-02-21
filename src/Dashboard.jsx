@@ -201,17 +201,18 @@ export default function Dashboard({ session }) {
         <div className="flex flex-col h-full p-6 relative overflow-hidden text-lg">
 
             {/* Top Navigation & Search */}
-            <header className="flex flex-row justify-between items-center mb-8 border-b border-white/10 pb-4 relative z-10 w-full flex-nowrap lg:pr-12 lg:gap-6">
+            <header className="flex flex-row items-center mb-8 border-b border-white/10 pb-4 relative z-10 w-full flex-nowrap lg:pr-12 lg:gap-4 xl:gap-6">
 
-                {/* Site Title & Mobile Burger/SignOut */}
+                {/* Top Row: Title, Burger (Mobile), Sign Out (Mobile) */}
                 <div className="flex justify-between items-center shrink-0 w-full lg:w-auto h-10">
-                    <div className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity h-10 mr-4" onClick={() => { setActiveTab('home'); setIsMobileMenuOpen(false); }}>
-                        <Terminal size={24} className="text-[#B0E0E6]" />
-                        <span className="text-lg md:text-xl font-bold text-white whitespace-nowrap">AI MAKERS GENERATION</span>
+                    {/* Site Title */}
+                    <div className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity h-10 mr-2 lg:mr-4 shrink-0" onClick={() => { setActiveTab('home'); setIsMobileMenuOpen(false); }}>
+                        <Terminal size={24} className="text-[#B0E0E6] shrink-0" />
+                        <span className="text-lg md:text-xl font-bold text-white whitespace-nowrap shrink-0">AI MAKERS GENERATION</span>
                     </div>
 
-                    <div className="flex items-center gap-2 lg:hidden shrink-0">
-                        {/* Mobile Sign Out */}
+                    <div className="flex items-center gap-1 sm:gap-2 lg:hidden ml-auto shrink-0">
+                        {/* Mobile Sign Out (Right aligned) */}
                         <button onClick={handleSignOut} className="p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors flex justify-center items-center" title="Sign Out">
                             <LogOut size={18} />
                         </button>
@@ -223,37 +224,34 @@ export default function Dashboard({ session }) {
                 </div>
 
                 {/* Nav Links (Desktop Only, Inline) */}
-                <div className={`${isMobileMenuOpen ? 'flex flex-col absolute top-16 left-0 right-0 bg-[#0f1419] p-4 border border-white/10 z-50 rounded-lg shadow-xl' : 'hidden'} lg:flex lg:flex-row items-center gap-4 xl:gap-6 shrink-0 h-auto lg:h-10`}>
-                    <button onClick={() => { setActiveTab('news'); setIsMobileMenuOpen(false); }} className={`h-10 flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'news' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
-                        <Newspaper size={16} className="inline mr-2" /> AI News
+                <div className={`${isMobileMenuOpen ? 'flex flex-col absolute top-16 left-0 right-0 bg-[#0f1419] p-4 border border-white/10 z-50 rounded-lg shadow-xl' : 'hidden'} lg:flex lg:flex-row items-center gap-2 xl:gap-6 shrink overflow-hidden lg:h-10`}>
+                    <button onClick={() => { setActiveTab('news'); setIsMobileMenuOpen(false); }} className={`h-10 flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'news' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
+                        <Newspaper size={16} className="inline mr-1 lg:mr-2" /> AI News
                     </button>
-                    <button onClick={() => { setActiveTab('resources'); setIsMobileMenuOpen(false); }} className={`h-10 flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'resources' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
-                        <Globe size={16} className="inline mr-2" /> AI Resources
+                    <button onClick={() => { setActiveTab('resources'); setIsMobileMenuOpen(false); }} className={`h-10 flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'resources' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
+                        <Globe size={16} className="inline mr-1 lg:mr-2" /> AI Resources
                     </button>
-                    <button onClick={() => { setActiveTab('calendar'); setIsMobileMenuOpen(false); }} title="Calendar" className={`h-10 flex items-center px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
-                        <Calendar size={18} className="inline lg:hidden mr-2" /> <span className="lg:hidden">Calendar</span> <Calendar size={18} className="hidden lg:block" />
+                    <button onClick={() => { setActiveTab('calendar'); setIsMobileMenuOpen(false); }} title="Calendar" className={`h-10 flex items-center px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
+                        <Calendar size={18} className="inline lg:hidden mr-1 lg:mr-2" /> <span className="lg:hidden">Calendar</span> <Calendar size={18} className="hidden lg:block" />
                     </button>
-                    <button onClick={() => { setActiveTab('people'); setIsMobileMenuOpen(false); }} title="People" className={`h-10 flex items-center px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'people' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
-                        <Users size={18} className="inline lg:hidden mr-2" /> <span className="lg:hidden">People</span> <Users size={18} className="hidden lg:block" />
+                    <button onClick={() => { setActiveTab('people'); setIsMobileMenuOpen(false); }} title="People" className={`h-10 flex items-center px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'people' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
+                        <Users size={18} className="inline lg:hidden mr-1 lg:mr-2" /> <span className="lg:hidden">People</span> <Users size={18} className="hidden lg:block" />
                     </button>
                 </div>
 
-                {/* Desktop Stretch Spacer */}
-                <div className="hidden lg:block flex-1 min-w-[10px]"></div>
-
                 {/* Desktop Search & Sign Out */}
-                <div className="hidden lg:flex items-center shrink-0 h-10 w-full lg:w-auto">
-                    <div className="relative mr-4 w-full lg:w-auto">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" size={16} />
+                <div className="hidden lg:flex items-center shrink-0 h-10 ml-auto">
+                    <div className="relative mr-2 lg:mr-4 shrink w-[120px] lg:w-40 xl:w-56">
+                        <Search className="absolute left-2 lg:left-3 top-1/2 -translate-y-1/2 text-white/50" size={16} />
                         <input
                             type="text"
                             placeholder="Search this site..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-full lg:w-40 xl:w-56"
+                            className="bg-transparent border-b border-white/20 py-2 pl-8 lg:pl-10 pr-2 lg:pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-full"
                         />
                     </div>
-                    <button onClick={handleSignOut} className="p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors flex justify-center items-center shrink-0 absolute right-0 top-0 lg:static" title="Sign Out">
+                    <button onClick={handleSignOut} className="p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors flex justify-center items-center shrink-0" title="Sign Out">
                         <LogOut size={18} />
                     </button>
                 </div>
@@ -271,6 +269,7 @@ export default function Dashboard({ session }) {
                         />
                     </div>
                 </div>
+
             </header>
 
             {/* Main Content Area Based on Tab */}
@@ -360,279 +359,289 @@ export default function Dashboard({ session }) {
                     </div>
                 )}
 
-                {activeTab === 'news' && (
-                    <div className="space-y-6">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold text-white">AI News</h2>
-                            <button className="btn btn-primary text-sm">Submit News</button>
-                        </div>
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                            <div className="col-span-1 lg:col-span-8 flex flex-col gap-4">
-                                {loading && <p>Loading news...</p>}
-                                {!loading && announcements.length === 0 && (
-                                    <div className="glass-panel text-white/50 italic text-center py-12">No news items have been published yet.</div>
-                                )}
-                                {announcements.map(post => (
-                                    <div key={post.id} className="glass-panel p-6 border-l-4 border-[#B0E0E6]">
-                                        <h3 className="text-xl font-bold mb-2">{post.title}</h3>
-                                        <p className="text-white/80 mb-4">{post.excerpt}</p>
-                                        <div className="flex justify-between text-xs text-white/40 border-t border-white/10 pt-3">
-                                            <span>Posted by {post.profiles?.username || 'Admin'}</span>
-                                            <span>{new Date(post.created_at).toLocaleDateString()}</span>
-                                        </div>
-                                    </div>
-                                ))}
+                {
+                    activeTab === 'news' && (
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-3xl font-bold text-white">AI News</h2>
+                                <button className="btn btn-primary text-sm">Submit News</button>
                             </div>
-                            <div className="col-span-1 lg:col-span-4 rounded-lg bg-white/5 border border-white/10 p-6">
-                                <h3 className="text-xl font-bold mb-4 border-b border-white/10 pb-2">Feed</h3>
-                                <div className="space-y-4">
-                                    {futureToolsFeed.map(feedItem => (
-                                        <div key={feedItem.id} className="border-b border-white/10 pb-3 last:border-0">
-                                            <a href={feedItem.url} target="_blank" rel="noreferrer" className="block text-sm font-semibold text-white hover:text-[#B0E0E6] transition-colors mb-1 line-clamp-3">
-                                                {feedItem.title}
-                                            </a>
-                                            <span className="text-[10px] text-white/40 uppercase tracking-wider">{feedItem.date} • FutureTools</span>
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                                <div className="col-span-1 lg:col-span-8 flex flex-col gap-4">
+                                    {loading && <p>Loading news...</p>}
+                                    {!loading && announcements.length === 0 && (
+                                        <div className="glass-panel text-white/50 italic text-center py-12">No news items have been published yet.</div>
+                                    )}
+                                    {announcements.map(post => (
+                                        <div key={post.id} className="glass-panel p-6 border-l-4 border-[#B0E0E6]">
+                                            <h3 className="text-xl font-bold mb-2">{post.title}</h3>
+                                            <p className="text-white/80 mb-4">{post.excerpt}</p>
+                                            <div className="flex justify-between text-xs text-white/40 border-t border-white/10 pt-3">
+                                                <span>Posted by {post.profiles?.username || 'Admin'}</span>
+                                                <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'resources' && (
-                    <div className="space-y-6">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold text-white">Resources Wiki</h2>
-                            <button className="btn btn-primary text-sm">+ Add Resource</button>
-                        </div>
-
-                        <div className="glass-panel p-6">
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr className="border-b border-white/20 text-white/50 text-sm">
-                                            <th className="pb-3 pt-2 px-4 font-normal">Resource Title</th>
-                                            <th className="pb-3 pt-2 px-4 font-normal">Link</th>
-                                            <th className="pb-3 pt-2 px-4 font-normal">Last Edited By</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {loading ? <tr><td colSpan="3" className="text-center py-4">Loading...</td></tr> :
-                                            resources.length === 0 ? <tr><td colSpan="3" className="text-center py-8 italic text-white/50">Wiki contains no entries yet.</td></tr> :
-                                                resources.map(res => (
-                                                    <tr key={res.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                                        <td className="py-3 px-4 font-semibold">{res.title}</td>
-                                                        <td className="py-3 px-4"><a href={res.url} className="text-[#B0E0E6] hover:underline truncate inline-block max-w-[200px]" target="_blank" rel="noreferrer">{res.url}</a></td>
-                                                        <td className="py-3 px-4 text-white/60 text-sm">{res.profiles?.username || 'Anonymous'}</td>
-                                                    </tr>
-                                                ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'calendar' && (
-                    <div className="space-y-6">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold text-white">Project Deadlines & Events</h2>
-                            {!isAddingEvent && (
-                                <button onClick={() => setIsAddingEvent(true)} className="btn btn-primary text-sm">
-                                    <Plus size={16} className="inline mr-2" /> Add Event
-                                </button>
-                            )}
-                        </div>
-
-                        {isAddingEvent && (
-                            <div className="glass-panel p-6 border border-[#B0E0E6]/50 mb-6">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="text-xl font-bold">Create New Event</h3>
-                                    <button onClick={() => setIsAddingEvent(false)} className="text-white/50 hover:text-white"><X size={20} /></button>
+                                <div className="col-span-1 lg:col-span-4 rounded-lg bg-white/5 border border-white/10 p-6">
+                                    <h3 className="text-xl font-bold mb-4 border-b border-white/10 pb-2">Feed</h3>
+                                    <div className="space-y-4">
+                                        {futureToolsFeed.map(feedItem => (
+                                            <div key={feedItem.id} className="border-b border-white/10 pb-3 last:border-0">
+                                                <a href={feedItem.url} target="_blank" rel="noreferrer" className="block text-sm font-semibold text-white hover:text-[#B0E0E6] transition-colors mb-1 line-clamp-3">
+                                                    {feedItem.title}
+                                                </a>
+                                                <span className="text-[10px] text-white/40 uppercase tracking-wider">{feedItem.date} • FutureTools</span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                                <form onSubmit={handleAddEventSave} className="flex flex-col gap-4 max-w-md">
-                                    <div>
-                                        <label className="block text-sm text-white/70 mb-1">Event Title</label>
-                                        <input type="text" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Hackathon Kickoff" required />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm text-white/70 mb-1">Description (Optional)</label>
-                                        <textarea value={eventDescription} onChange={(e) => setEventDescription(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors h-24" placeholder="Event details..." />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm text-white/70 mb-1">Date</label>
-                                        <div className="custom-datepicker-wrapper">
-                                            <DatePicker
-                                                selected={eventDate}
-                                                onChange={(date) => setEventDate(date)}
-                                                className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors"
-                                                dateFormat="MMMM d, yyyy"
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                    <button type="submit" disabled={isSavingEvent} className="btn btn-primary w-fit mt-2">
-                                        {isSavingEvent ? 'Saving...' : <><Check size={16} className="inline mr-2" /> Save Event</>}
+                            </div>
+                        </div>
+                    )
+                }
+
+                {
+                    activeTab === 'resources' && (
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-3xl font-bold text-white">Resources Wiki</h2>
+                                <button className="btn btn-primary text-sm">+ Add Resource</button>
+                            </div>
+
+                            <div className="glass-panel p-6">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr className="border-b border-white/20 text-white/50 text-sm">
+                                                <th className="pb-3 pt-2 px-4 font-normal">Resource Title</th>
+                                                <th className="pb-3 pt-2 px-4 font-normal">Link</th>
+                                                <th className="pb-3 pt-2 px-4 font-normal">Last Edited By</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {loading ? <tr><td colSpan="3" className="text-center py-4">Loading...</td></tr> :
+                                                resources.length === 0 ? <tr><td colSpan="3" className="text-center py-8 italic text-white/50">Wiki contains no entries yet.</td></tr> :
+                                                    resources.map(res => (
+                                                        <tr key={res.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                                                            <td className="py-3 px-4 font-semibold">{res.title}</td>
+                                                            <td className="py-3 px-4"><a href={res.url} className="text-[#B0E0E6] hover:underline truncate inline-block max-w-[200px]" target="_blank" rel="noreferrer">{res.url}</a></td>
+                                                            <td className="py-3 px-4 text-white/60 text-sm">{res.profiles?.username || 'Anonymous'}</td>
+                                                        </tr>
+                                                    ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                }
+
+                {
+                    activeTab === 'calendar' && (
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-3xl font-bold text-white">Project Deadlines & Events</h2>
+                                {!isAddingEvent && (
+                                    <button onClick={() => setIsAddingEvent(true)} className="btn btn-primary text-sm">
+                                        <Plus size={16} className="inline mr-2" /> Add Event
                                     </button>
-                                </form>
+                                )}
                             </div>
-                        )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {loading ? <p>Loading calendar...</p> :
-                                events.length === 0 ? <div className="col-span-full glass-panel py-12 text-center text-white/50 italic">No events mapped.</div> :
-                                    events.map(ev => (
-                                        <div key={ev.id} onClick={() => setSelectedEvent(ev)} className="cursor-pointer glass-panel border-[#FFFFFF]/30 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden group hover:border-[#FFFFFF] transition-colors">
-                                            <Calendar size={48} className="text-white/10 absolute -right-4 -bottom-4 group-hover:text-white/20 transition-colors" />
-                                            <div className="text-[#FFFFFF] text-2xl font-bold mb-2">{new Date(ev.event_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
-                                            <h3 className="text-lg font-bold z-10">{ev.title}</h3>
-                                            {ev.description && <p className="text-sm text-white/60 mt-2 z-10 line-clamp-2">{ev.description}</p>}
-                                        </div>
-                                    ))
-                            }
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'people' && (
-                    <div className="space-y-6">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold text-white">AI Creatives</h2>
-                            {!isEditingProfile && (
-                                <button onClick={() => {
-                                    const myProfile = users.find(u => u.id === session.user.id);
-                                    if (myProfile) {
-                                        setEditUsername(myProfile.username || '');
-                                        setEditFirstName(myProfile.first_name || '');
-                                        setEditLastName(myProfile.last_name || '');
-                                        setEditAvatarUrl(myProfile.avatar_url || '');
-                                    }
-                                    setIsEditingProfile(true);
-                                }} className="btn btn-primary text-sm">
-                                    <Edit size={16} className="inline mr-2" /> Edit My Profile
-                                </button>
-                            )}
-                        </div>
-
-                        {isEditingProfile && (
-                            <div className="glass-panel p-6 border border-[#B0E0E6]/50 mb-6">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="text-xl font-bold">Edit Your Profile</h3>
-                                    <button onClick={() => setIsEditingProfile(false)} className="text-white/50 hover:text-white"><X size={20} /></button>
-                                </div>
-                                <form onSubmit={handleEditProfileSave} className="flex flex-col gap-4 max-w-md">
-                                    <div>
-                                        <label className="block text-sm text-white/70 mb-1">Username</label>
-                                        <input type="text" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. AI Architect" required />
+                            {isAddingEvent && (
+                                <div className="glass-panel p-6 border border-[#B0E0E6]/50 mb-6">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="text-xl font-bold">Create New Event</h3>
+                                        <button onClick={() => setIsAddingEvent(false)} className="text-white/50 hover:text-white"><X size={20} /></button>
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <form onSubmit={handleAddEventSave} className="flex flex-col gap-4 max-w-md">
                                         <div>
-                                            <label className="block text-sm text-white/70 mb-1">First Name (Optional)</label>
-                                            <input type="text" value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Satoshi" />
+                                            <label className="block text-sm text-white/70 mb-1">Event Title</label>
+                                            <input type="text" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Hackathon Kickoff" required />
                                         </div>
                                         <div>
-                                            <label className="block text-sm text-white/70 mb-1">Last Name (Optional)</label>
-                                            <input type="text" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Nakamoto" />
+                                            <label className="block text-sm text-white/70 mb-1">Description (Optional)</label>
+                                            <textarea value={eventDescription} onChange={(e) => setEventDescription(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors h-24" placeholder="Event details..." />
                                         </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm text-white/70 mb-1">Avatar Image</label>
-                                        <div
-                                            className={`w-full border-2 border-dashed ${isUploadingAvatar ? 'border-[#B0E0E6] scale-95' : 'border-white/30 hover:border-white/60'} rounded-lg p-6 text-center transition-all cursor-pointer relative overflow-hidden`}
-                                            onDragOver={(e) => e.preventDefault()}
-                                            onDrop={handleAvatarUpload}
-                                        >
-                                            {isUploadingAvatar ? (
-                                                <div className="flex flex-col items-center justify-center">
-                                                    <div className="w-8 h-8 border-4 border-t-[#B0E0E6] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mb-2" />
-                                                    <span className="text-sm text-white/70">Uploading...</span>
-                                                </div>
-                                            ) : editAvatarUrl ? (
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <img src={editAvatarUrl} alt="Avatar Preview" className="w-16 h-16 rounded-full object-cover border border-white/20 shadow-lg" />
-                                                    <span className="text-xs text-[#B0E0E6]">Click or Drop to Re-Upload</span>
-                                                </div>
-                                            ) : (
-                                                <div className="flex flex-col items-center gap-1">
-                                                    <span className="text-white/70 text-sm font-bold">Drag & Drop Image Here</span>
-                                                    <span className="text-white/40 text-xs">or click to browse local files (Max 5MB)</span>
-                                                </div>
-                                            )}
-
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                                onChange={handleAvatarUpload}
-                                                disabled={isUploadingAvatar}
-                                            />
-                                        </div>
-                                        {editAvatarUrl && (
-                                            <div className="mt-2 text-xs flex justify-between items-center text-white/40">
-                                                <span className="truncate max-w-[250px]">{editAvatarUrl}</span>
-                                                <button type="button" onClick={() => setEditAvatarUrl('')} className="hover:text-red-400">Remove</button>
+                                        <div>
+                                            <label className="block text-sm text-white/70 mb-1">Date</label>
+                                            <div className="custom-datepicker-wrapper">
+                                                <DatePicker
+                                                    selected={eventDate}
+                                                    onChange={(date) => setEventDate(date)}
+                                                    className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors"
+                                                    dateFormat="MMMM d, yyyy"
+                                                    required
+                                                />
                                             </div>
-                                        )}
-                                    </div>
-                                    <button type="submit" disabled={isSavingProfile} className="btn btn-primary w-fit mt-2">
-                                        {isSavingProfile ? 'Saving...' : <><Check size={16} className="inline mr-2" /> Save Profile</>}
-                                    </button>
-                                </form>
+                                        </div>
+                                        <button type="submit" disabled={isSavingEvent} className="btn btn-primary w-fit mt-2">
+                                            {isSavingEvent ? 'Saving...' : <><Check size={16} className="inline mr-2" /> Save Event</>}
+                                        </button>
+                                    </form>
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {loading ? <p>Loading calendar...</p> :
+                                    events.length === 0 ? <div className="col-span-full glass-panel py-12 text-center text-white/50 italic">No events mapped.</div> :
+                                        events.map(ev => (
+                                            <div key={ev.id} onClick={() => setSelectedEvent(ev)} className="cursor-pointer glass-panel border-[#FFFFFF]/30 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden group hover:border-[#FFFFFF] transition-colors">
+                                                <Calendar size={48} className="text-white/10 absolute -right-4 -bottom-4 group-hover:text-white/20 transition-colors" />
+                                                <div className="text-[#FFFFFF] text-2xl font-bold mb-2">{new Date(ev.event_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
+                                                <h3 className="text-lg font-bold z-10">{ev.title}</h3>
+                                                {ev.description && <p className="text-sm text-white/60 mt-2 z-10 line-clamp-2">{ev.description}</p>}
+                                            </div>
+                                        ))
+                                }
                             </div>
-                        )}
-
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                            {loading ? <p>Loading network...</p> :
-                                users.length === 0 ? <p className="col-span-full">No creatives registered entirely.</p> :
-                                    users.map(u => (
-                                        <div key={u.id} className="glass-panel flex flex-col items-center p-6 hover:bg-white/10 transition-colors cursor-pointer text-center">
-                                            <div className="w-20 h-20 rounded-full bg-black/40 border-2 border-[#B0E0E6]/40 flex items-center justify-center text-xl font-bold shadow-lg overflow-hidden mb-4">
-                                                {u.avatar_url ? <img src={u.avatar_url} alt={u.username} className="w-full h-full object-cover" /> : (u.username?.[0]?.toUpperCase() || '?')}
-                                            </div>
-                                            <h3 className="font-bold text-lg truncate w-full">
-                                                {(u.first_name || u.last_name) ? `${u.first_name || ''} ${u.last_name || ''}`.trim() : (u.username || 'Anonymous')}
-                                            </h3>
-                                            {(u.first_name || u.last_name) && u.username && (
-                                                <p className="text-[10px] text-white/40 uppercase tracking-wider -mt-1 mb-1">@{u.username}</p>
-                                            )}
-                                            <p className="text-xs text-[#B0E0E6] mt-1">AI Creative</p>
-                                        </div>
-                                    ))
-                            }
                         </div>
-                    </div>
-                )}
+                    )
+                }
+
+                {
+                    activeTab === 'people' && (
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-3xl font-bold text-white">AI Creatives</h2>
+                                {!isEditingProfile && (
+                                    <button onClick={() => {
+                                        const myProfile = users.find(u => u.id === session.user.id);
+                                        if (myProfile) {
+                                            setEditUsername(myProfile.username || '');
+                                            setEditFirstName(myProfile.first_name || '');
+                                            setEditLastName(myProfile.last_name || '');
+                                            setEditAvatarUrl(myProfile.avatar_url || '');
+                                        }
+                                        setIsEditingProfile(true);
+                                    }} className="btn btn-primary text-sm">
+                                        <Edit size={16} className="inline mr-2" /> Edit My Profile
+                                    </button>
+                                )}
+                            </div>
+
+                            {isEditingProfile && (
+                                <div className="glass-panel p-6 border border-[#B0E0E6]/50 mb-6">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="text-xl font-bold">Edit Your Profile</h3>
+                                        <button onClick={() => setIsEditingProfile(false)} className="text-white/50 hover:text-white"><X size={20} /></button>
+                                    </div>
+                                    <form onSubmit={handleEditProfileSave} className="flex flex-col gap-4 max-w-md">
+                                        <div>
+                                            <label className="block text-sm text-white/70 mb-1">Username</label>
+                                            <input type="text" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. AI Architect" required />
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm text-white/70 mb-1">First Name (Optional)</label>
+                                                <input type="text" value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Satoshi" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm text-white/70 mb-1">Last Name (Optional)</label>
+                                                <input type="text" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Nakamoto" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm text-white/70 mb-1">Avatar Image</label>
+                                            <div
+                                                className={`w-full border-2 border-dashed ${isUploadingAvatar ? 'border-[#B0E0E6] scale-95' : 'border-white/30 hover:border-white/60'} rounded-lg p-6 text-center transition-all cursor-pointer relative overflow-hidden`}
+                                                onDragOver={(e) => e.preventDefault()}
+                                                onDrop={handleAvatarUpload}
+                                            >
+                                                {isUploadingAvatar ? (
+                                                    <div className="flex flex-col items-center justify-center">
+                                                        <div className="w-8 h-8 border-4 border-t-[#B0E0E6] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mb-2" />
+                                                        <span className="text-sm text-white/70">Uploading...</span>
+                                                    </div>
+                                                ) : editAvatarUrl ? (
+                                                    <div className="flex flex-col items-center gap-2">
+                                                        <img src={editAvatarUrl} alt="Avatar Preview" className="w-16 h-16 rounded-full object-cover border border-white/20 shadow-lg" />
+                                                        <span className="text-xs text-[#B0E0E6]">Click or Drop to Re-Upload</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        <span className="text-white/70 text-sm font-bold">Drag & Drop Image Here</span>
+                                                        <span className="text-white/40 text-xs">or click to browse local files (Max 5MB)</span>
+                                                    </div>
+                                                )}
+
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                    onChange={handleAvatarUpload}
+                                                    disabled={isUploadingAvatar}
+                                                />
+                                            </div>
+                                            {editAvatarUrl && (
+                                                <div className="mt-2 text-xs flex justify-between items-center text-white/40">
+                                                    <span className="truncate max-w-[250px]">{editAvatarUrl}</span>
+                                                    <button type="button" onClick={() => setEditAvatarUrl('')} className="hover:text-red-400">Remove</button>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <button type="submit" disabled={isSavingProfile} className="btn btn-primary w-fit mt-2">
+                                            {isSavingProfile ? 'Saving...' : <><Check size={16} className="inline mr-2" /> Save Profile</>}
+                                        </button>
+                                    </form>
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                {loading ? <p>Loading network...</p> :
+                                    users.length === 0 ? <p className="col-span-full">No creatives registered entirely.</p> :
+                                        users.map(u => (
+                                            <div key={u.id} className="glass-panel flex flex-col items-center p-6 hover:bg-white/10 transition-colors cursor-pointer text-center">
+                                                <div className="w-20 h-20 rounded-full bg-black/40 border-2 border-[#B0E0E6]/40 flex items-center justify-center text-xl font-bold shadow-lg overflow-hidden mb-4">
+                                                    {u.avatar_url ? <img src={u.avatar_url} alt={u.username} className="w-full h-full object-cover" /> : (u.username?.[0]?.toUpperCase() || '?')}
+                                                </div>
+                                                <h3 className="font-bold text-lg truncate w-full">
+                                                    {(u.first_name || u.last_name) ? `${u.first_name || ''} ${u.last_name || ''}`.trim() : (u.username || 'Anonymous')}
+                                                </h3>
+                                                {(u.first_name || u.last_name) && u.username && (
+                                                    <p className="text-[10px] text-white/40 uppercase tracking-wider -mt-1 mb-1">@{u.username}</p>
+                                                )}
+                                                <p className="text-xs text-[#B0E0E6] mt-1">AI Creative</p>
+                                            </div>
+                                        ))
+                                }
+                            </div>
+                        </div>
+                    )
+                }
                 {/* Event Detail Modal Overlay */}
-                {selectedEvent && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedEvent(null)}>
-                        <div className="glass-panel max-w-lg w-full relative" onClick={e => e.stopPropagation()}>
-                            <button onClick={() => setSelectedEvent(null)} className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors">
-                                <X size={24} />
-                            </button>
-                            <div className="mb-6 flex flex-col items-center">
-                                <Calendar size={48} className="text-[#B0E0E6] opacity-50 mb-4" />
-                                <h2 className="text-3xl font-bold text-center mb-2">{selectedEvent.title}</h2>
-                                <div className="text-lg font-semibold text-[#B0E0E6]">
-                                    {new Date(selectedEvent.event_date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                {
+                    selectedEvent && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedEvent(null)}>
+                            <div className="glass-panel max-w-lg w-full relative" onClick={e => e.stopPropagation()}>
+                                <button onClick={() => setSelectedEvent(null)} className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors">
+                                    <X size={24} />
+                                </button>
+                                <div className="mb-6 flex flex-col items-center">
+                                    <Calendar size={48} className="text-[#B0E0E6] opacity-50 mb-4" />
+                                    <h2 className="text-3xl font-bold text-center mb-2">{selectedEvent.title}</h2>
+                                    <div className="text-lg font-semibold text-[#B0E0E6]">
+                                        {new Date(selectedEvent.event_date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                    </div>
                                 </div>
-                            </div>
-                            {selectedEvent.description ? (
-                                <div className="bg-black/30 p-4 rounded text-white/80 leading-relaxed max-h-[40vh] overflow-y-auto custom-scrollbar">
-                                    {selectedEvent.description}
+                                {selectedEvent.description ? (
+                                    <div className="bg-black/30 p-4 rounded text-white/80 leading-relaxed max-h-[40vh] overflow-y-auto custom-scrollbar">
+                                        {selectedEvent.description}
+                                    </div>
+                                ) : (
+                                    <div className="text-center text-white/50 italic py-4">
+                                        No additional description provided.
+                                    </div>
+                                )}
+                                <div className="mt-8 flex justify-center">
+                                    <button onClick={() => setSelectedEvent(null)} className="btn border-white/20 hover:bg-white/10">Close Details</button>
                                 </div>
-                            ) : (
-                                <div className="text-center text-white/50 italic py-4">
-                                    No additional description provided.
-                                </div>
-                            )}
-                            <div className="mt-8 flex justify-center">
-                                <button onClick={() => setSelectedEvent(null)} className="btn border-white/20 hover:bg-white/10">Close Details</button>
                             </div>
                         </div>
-                    </div>
-                )}
-            </div>
-        </div>
+                    )
+                }
+            </div >
+        </div >
     );
 }
