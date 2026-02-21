@@ -942,21 +942,21 @@ function LandingPage() {
         <span className="text-[#FFFFFF]">AI MAKERS GENERATION</span>
       </h1>
 
-      {/* Top row: Description left, WhatsApp links right */}
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 w-full max-w-2xl relative z-10 mb-6">
-        {/* Left: Description */}
-        <div className="flex-1 text-left">
+      {/* Top row: Description left half, WhatsApp logo + QR code right half */}
+      <div className="flex flex-col md:flex-row items-center gap-6 w-full max-w-2xl relative z-10 mb-6">
+        {/* Left half: Description */}
+        <div className="w-full md:w-1/2 text-left">
           <p className="text-base md:text-lg text-white/80 leading-relaxed">
             A community of AI creatives, builders, and makers getting their hands dirty. Share resources, catch up on news, and collaborate on the future.
           </p>
         </div>
 
-        {/* Right: WhatsApp logo + QR code */}
-        <div className="flex flex-col items-center gap-3 shrink-0">
-          <a href="https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" title="Join our WhatsApp Group">
+        {/* Right half: WhatsApp logo + QR code side by side */}
+        <div className="w-full md:w-1/2 flex items-center justify-center gap-4">
+          <a href="https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity shrink-0" title="Join our WhatsApp Group">
             <img src="/logo-whatsapp.png" alt="Join our WhatsApp Group" className="w-24 h-24" />
           </a>
-          <a href="https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" title="Join our WhatsApp Group">
+          <a href="https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity shrink-0" title="Join our WhatsApp Group">
             <img src="/qrcode-whatsapp.jpeg" alt="Join our WhatsApp Group" className="w-36 h-36 rounded-lg border border-white/10" />
           </a>
         </div>
