@@ -15,7 +15,7 @@ function ChatWindow() {
       <div className="flex-1 overflow-y-auto mb-4 space-y-4">
         <div className="glass-panel text-sm">
           <p>Hello! I'm the AI Maker Bot.</p>
-          <p className="mt-2 text-white/70">I can answer general questions about the community, help you find resources, or guide you on how to contribute to the Wiki.</p>
+          <p className="mt-2 text-white/70">I can answer general questions about the community, help you find resources, or guide you on how to contribute to the AI Resources Wiki.</p>
         </div>
       </div>
 
@@ -26,7 +26,7 @@ function ChatWindow() {
             placeholder="Ask a question..."
             className="flex-1 bg-transparent border-none outline-none text-white p-2 text-sm placeholder:text-white/30"
           />
-          <button className="p-2 text-white/50 hover:text-white transition-colors">
+          <button className="p-2 text-[#B0E0E6] hover:text-white transition-colors">
             <MessageSquare size={18} />
           </button>
         </div>
