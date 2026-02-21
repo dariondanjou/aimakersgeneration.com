@@ -7,7 +7,6 @@ import 'react-datepicker/dist/react-datepicker.css';
 export default function Dashboard({ session }) {
     const [activeTab, setActiveTab] = useState('home');
     const [searchQuery, setSearchQuery] = useState('');
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Profile Edit State
     const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -201,60 +200,48 @@ export default function Dashboard({ session }) {
         <div className="flex flex-col h-full p-6 relative overflow-hidden text-lg">
 
             {/* Top Navigation & Search */}
-            <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 border-b border-white/10 pb-4 relative z-10 gap-4 lg:pr-12">
+            <header className="flex items-center w-full overflow-x-auto custom-scrollbar mb-8 border-b border-white/10 pb-4 relative z-10 gap-6 lg:gap-8">
 
-                {/* Mobile Header Top Row & Site Title */}
-                <div className="flex justify-between items-center w-full lg:w-auto h-10 pr-2 lg:pr-0">
-                    <div className="flex items-center gap-2 sm:gap-3 mr-4 lg:mr-8 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => { setActiveTab('home'); setIsMobileMenuOpen(false); }}>
-                        <Terminal size={24} className="text-[#B0E0E6]" />
-                        <span className="text-lg sm:text-xl font-bold text-white whitespace-nowrap">AI MAKERS GENERATION</span>
-                    </div>
-
-                    <div className="flex items-center gap-2 lg:hidden">
-                        <button className="p-2 text-white hover:bg-white/10 rounded-md transition-colors" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                        </button>
-                        {/* Mobile Sign Out */}
-                        <button onClick={handleSignOut} className="p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors" title="Sign Out">
-                            <LogOut size={18} />
-                        </button>
-                    </div>
+                {/* Site Title */}
+                <div className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity shrink-0 h-10" onClick={() => setActiveTab('home')}>
+                    <Terminal size={24} className="text-[#B0E0E6]" />
+                    <span className="text-lg sm:text-xl font-bold text-white whitespace-nowrap">AI MAKERS GENERATION</span>
                 </div>
 
                 {/* Nav Links */}
-                <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:flex flex-col lg:flex-row gap-4 lg:gap-6 px-2 w-full lg:w-auto items-center h-10`}>
-                    <button onClick={() => { setActiveTab('news'); setIsMobileMenuOpen(false); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'news' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
-                        <Newspaper size={16} className="inline mr-2" /> Feed
+                <div className="flex items-center gap-4 lg:gap-6 shrink-0 h-10">
+                    <button onClick={() => { setActiveTab('news'); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-b-2 text-left ${activeTab === 'news' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
+                        <Newspaper size={16} className="inline mr-2" /> AI News
                     </button>
-                    <button onClick={() => { setActiveTab('resources'); setIsMobileMenuOpen(false); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'resources' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
-                        <Globe size={16} className="inline mr-2" /> Resources
+                    <button onClick={() => { setActiveTab('resources'); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-b-2 text-left ${activeTab === 'resources' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
+                        <Globe size={16} className="inline mr-2" /> AI Resources
                     </button>
-                    <button onClick={() => { setActiveTab('calendar'); setIsMobileMenuOpen(false); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
+                    <button onClick={() => { setActiveTab('calendar'); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-b-2 text-left ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
                         <Calendar size={16} className="inline mr-2" /> Calendar
                     </button>
-                    <button onClick={() => { setActiveTab('people'); setIsMobileMenuOpen(false); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'people' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
+                    <button onClick={() => { setActiveTab('people'); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-b-2 text-left ${activeTab === 'people' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
                         <Users size={16} className="inline mr-2" /> People
                     </button>
                 </div>
 
-                {/* Search */}
-                <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:flex items-center gap-4 w-full lg:w-auto flex-col sm:flex-row h-10`}>
-                    <div className="relative w-full sm:w-auto">
+                <div className="flex-1 min-w-[10px]"></div>
+
+                {/* Search & Sign Out */}
+                <div className="flex items-center gap-4 shrink-0 h-10">
+                    <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" size={16} />
                         <input
                             type="text"
                             placeholder="Search this site..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-full sm:w-64"
+                            className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-40 sm:w-48 lg:w-64"
                         />
                     </div>
+                    <button onClick={handleSignOut} className="p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors flex justify-center items-center shrink-0" title="Sign Out">
+                        <LogOut size={18} />
+                    </button>
                 </div>
-
-                {/* Desktop Sign Out (Absolute Top Right) */}
-                <button onClick={handleSignOut} className="hidden lg:flex absolute right-0 top-0 p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors justify-center items-center" title="Sign Out">
-                    <LogOut size={18} />
-                </button>
             </header>
 
             {/* Main Content Area Based on Tab */}
