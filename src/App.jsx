@@ -6,7 +6,7 @@ import Dashboard from './Dashboard';
 
 function ChatWindow({ session, onDataChange }) {
   const loggedOutWelcome = "Hello! I'm the AI Maker Bot.\nI can answer general questions about the AI MAKERS GENERATION community.";
-  const loggedInWelcome = "Hello! I'm the AI Maker Bot.\n\nI can answer general questions about the AI MAKERS GENERATION community, help you find resources, or guide you on how to contribute to the AI Resources Wiki.\n\nI can also add AI resources, events, and content to the site directly from this chat window.\nTry saying \"add event\", \"add resource\", \"add article\", or \"update profile\" to get started!";
+  const loggedInWelcome = "Hello! I'm the AI Maker Bot.\n\nI can answer general questions about the AI MAKERS GENERATION community, help you find resources, or guide you on how to contribute to the AI Resources Wiki.\n\nI can also add AI resources, events, and content to the site directly from this chat window.\nTry saying \"add event\", \"add resource\", \"add article\", \"update profile\", or \"send feedback\" to get started!";
 
   const [messages, setMessages] = useState([{ role: 'bot', text: loggedOutWelcome }]);
   const [hasSetWelcome, setHasSetWelcome] = useState(false);
@@ -169,15 +169,19 @@ function ChatWindow({ session, onDataChange }) {
       if (!session) { addBotMessage("You need to be signed in to edit your profile. Please log in first!"); return; }
       setFlow({ type: 'profile', step: 0, data: {} });
       addBotMessage("Let's update your profile! What username would you like?");
+    } else if (/\b(send feedback|feedback|suggestion|feature request|critique|contact admin)\b/i.test(text)) {
+      if (!session) { addBotMessage("You need to be signed in to send feedback. Please log in first!"); return; }
+      setFlow({ type: 'feedback', step: 0, data: {} });
+      addBotMessage("I'd love to hear from you! What would you like to share with the admin team?\n\nYou can send a suggestion, feature request, feedback, critique, or ask a question.");
     } else if (/\bhelp\b|what can you do/i.test(text)) {
       if (session) {
-        addBotMessage("Here's what I can do:\n\n• \"Add event\" — Create a new calendar event\n• \"Add resource\" — Add an AI resource to the wiki\n• \"Add article\" — Publish news, an announcement, or video\n• \"Update profile\" — Edit your username, name, and avatar\n• \"Cancel\" — Cancel any in-progress action\n• \"Help\" — Show this message\n\nYou can also attach files using the + button or by dragging and dropping!");
+        addBotMessage("Here's what I can do:\n\n• \"Add event\" — Create a new calendar event\n• \"Add resource\" — Add an AI resource to the wiki\n• \"Add article\" — Publish news, an announcement, or video\n• \"Update profile\" — Edit your username, name, and avatar\n• \"Send feedback\" — Send suggestions, feedback, or questions to the admin team\n• \"Cancel\" — Cancel any in-progress action\n• \"Help\" — Show this message\n\nYou can also attach files using the + button or by dragging and dropping!");
       } else {
         addBotMessage("I can answer general questions about the AI MAKERS GENERATION community.\n\nSign in to add events, resources, articles, and edit your profile!");
       }
     } else {
       if (session) {
-        addBotMessage("I can help you add content to the site! Try saying \"add event\", \"add resource\", \"add article\", or \"update profile\". Type \"help\" for more options.");
+        addBotMessage("I can help you add content to the site! Try saying \"add event\", \"add resource\", \"add article\", \"update profile\", or \"send feedback\". Type \"help\" for more options.");
       } else {
         addBotMessage("I can answer general questions about the AI MAKERS GENERATION community. Sign in to unlock more features!");
       }
@@ -189,6 +193,7 @@ function ChatWindow({ session, onDataChange }) {
     else if (flow.type === 'resource') processResourceStep(text, imageUrl);
     else if (flow.type === 'post') processPostStep(text, imageUrl);
     else if (flow.type === 'profile') processProfileStep(text, imageUrl);
+    else if (flow.type === 'feedback') processFeedbackStep(text);
   };
 
   const processEventStep = (text, imageUrl = null) => {
@@ -417,6 +422,7 @@ function ChatWindow({ session, onDataChange }) {
     } else {
       addBotMessage("Profile updated successfully! Check the People tab.", "What else can I help you with?");
       onDataChange?.();
+      sendThankYouEmail('profile', data.username);
     }
   };
 
@@ -436,6 +442,7 @@ function ChatWindow({ session, onDataChange }) {
     } else {
       addBotMessage("Event added successfully! Check the Calendar tab.", "What else can I help you with?");
       onDataChange?.();
+      sendThankYouEmail('event', data.title);
     }
   };
 
@@ -454,6 +461,7 @@ function ChatWindow({ session, onDataChange }) {
     } else {
       addBotMessage("Resource added to the wiki! Check the Resources tab.", "What else can I help you with?");
       onDataChange?.();
+      sendThankYouEmail('resource', data.title);
     }
   };
 
@@ -477,6 +485,112 @@ function ChatWindow({ session, onDataChange }) {
     } else {
       addBotMessage("Post published! Check the AI News tab.", "What else can I help you with?");
       onDataChange?.();
+      sendThankYouEmail('post', data.title);
+    }
+  };
+
+  const categorizeMessage = (text) => {
+    const lower = text.toLowerCase();
+    if (/\b(feature|add|implement|wish|could you|would be nice|request)\b/.test(lower)) return 'feature_request';
+    if (/\b(suggest|idea|proposal|how about|what if|consider)\b/.test(lower)) return 'suggestion';
+    if (/\b(bad|wrong|broken|issue|problem|hate|dislike|poor|terrible|worse)\b/.test(lower)) return 'critique';
+    if (/\b(how|what|when|where|why|can i|do you|is there|question|\?)\b/.test(lower)) return 'query';
+    return 'feedback';
+  };
+
+  const categoryLabels = {
+    feature_request: 'Feature Request',
+    suggestion: 'Suggestion',
+    feedback: 'General Feedback',
+    critique: 'Critique',
+    query: 'Question / Query',
+  };
+
+  const sendThankYouEmail = (contributionType, title) => {
+    const email = session?.user?.email;
+    if (!email) return;
+    supabase.functions.invoke('send-email', {
+      body: {
+        action: 'contribution_thanks',
+        contribution_type: contributionType,
+        title: title || '',
+        user_email: email,
+      },
+    }).catch((err) => console.error('Thank-you email error:', err));
+  };
+
+  const processFeedbackStep = (text) => {
+    const lower = text.toLowerCase().trim();
+
+    switch (flow.step) {
+      case 0: {
+        const category = categorizeMessage(text);
+        setFlow({ ...flow, step: 1, data: { ...flow.data, message: text.trim(), category } });
+        addBotMessage(`Got it — I've categorized this as: ${categoryLabels[category]}.\n\nWhat's your email address so we can follow up?`);
+        break;
+      }
+      case 1: {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(text.trim())) {
+          addBotMessage("That doesn't look like a valid email. Please enter a valid email address.");
+          return;
+        }
+        const data = { ...flow.data, user_email: text.trim() };
+        setFlow({ ...flow, step: 2, data });
+        addBotMessage(
+          `Here's a summary of your feedback:\n\n` +
+          `• Category: ${categoryLabels[data.category]}\n` +
+          `• Email: ${data.user_email}\n` +
+          `• Message: ${data.message}`,
+          "Does this look correct? (yes / no)"
+        );
+        break;
+      }
+      case 2: {
+        if (lower === 'yes' || lower === 'y') {
+          doSendFeedback(flow.data);
+        } else {
+          setFlow(null);
+          addBotMessage("Feedback cancelled. What else can I help with?");
+        }
+        break;
+      }
+    }
+  };
+
+  const doSendFeedback = async (data) => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-email', {
+        body: {
+          action: 'feedback',
+          category: data.category,
+          message: data.message,
+          user_email: data.user_email,
+          user_id: session?.user?.id || null,
+        },
+      });
+      setFlow(null);
+      setIsSaving(false);
+      if (error) {
+        addBotMessage("There was an error sending your feedback: " + error.message);
+      } else {
+        const thankYouMessages = {
+          feature_request: "Thank you for your feature request! The admin team will review it.",
+          suggestion: "Thank you for your suggestion! We love hearing ideas from the community.",
+          feedback: "Thank you for your feedback! It helps us improve.",
+          critique: "Thank you for your critique! We take all input seriously.",
+          query: "Thank you for your question! We'll get back to you.",
+        };
+        addBotMessage(
+          thankYouMessages[data.category] || "Thank you! Your message has been sent.",
+          "A copy has been sent to your email. What else can I help with?"
+        );
+      }
+    } catch (err) {
+      setFlow(null);
+      setIsSaving(false);
+      addBotMessage("Error sending feedback: " + err.message);
     }
   };
 
