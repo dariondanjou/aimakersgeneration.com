@@ -368,30 +368,32 @@ export default function Dashboard({ session, refreshKey }) {
                             </div>
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                                 <div className="col-span-1 lg:col-span-8 flex flex-col gap-4">
-                                    {loading && <p>Loading news...</p>}
-                                    {!loading && announcements.length === 0 && (
-                                        <div className="glass-panel text-white/50 italic text-center py-12">No news items have been published yet.</div>
-                                    )}
-                                    {announcements.map(post => (
-                                        <div key={post.id} className="glass-panel p-6 border-l-4 border-[#B0E0E6]">
-                                            <h3 className="text-xl font-bold mb-2">{post.title}</h3>
-                                            <p className="text-white/80 mb-4">{post.excerpt}</p>
+                                    {futureToolsFeed.map(feedItem => (
+                                        <div key={feedItem.id} className="glass-panel p-6 border-l-4 border-[#B0E0E6]">
+                                            <a href={feedItem.url} target="_blank" rel="noreferrer" className="block text-xl font-bold mb-2 text-white hover:text-[#B0E0E6] transition-colors">
+                                                {feedItem.title}
+                                            </a>
                                             <div className="flex justify-between text-xs text-white/40 border-t border-white/10 pt-3">
-                                                <span>Posted by {post.profiles?.username || 'Admin'}</span>
-                                                <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                                                <span>FutureTools</span>
+                                                <span>{feedItem.date}</span>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                                 <div className="col-span-1 lg:col-span-4 rounded-lg bg-white/5 border border-white/10 p-6">
-                                    <h3 className="text-xl font-bold mb-4 border-b border-white/10 pb-2">Feed</h3>
+                                    <h3 className="text-xl font-bold mb-4 border-b border-white/10 pb-2">Announcements</h3>
                                     <div className="space-y-4">
-                                        {futureToolsFeed.map(feedItem => (
-                                            <div key={feedItem.id} className="border-b border-white/10 pb-3 last:border-0">
-                                                <a href={feedItem.url} target="_blank" rel="noreferrer" className="block text-sm font-semibold text-white hover:text-[#B0E0E6] transition-colors mb-1 line-clamp-3">
-                                                    {feedItem.title}
-                                                </a>
-                                                <span className="text-[10px] text-white/40 uppercase tracking-wider">{feedItem.date} • FutureTools</span>
+                                        {loading && <p className="text-white/50 text-sm">Loading...</p>}
+                                        {!loading && announcements.length === 0 && (
+                                            <p className="text-white/50 italic text-sm">No announcements yet.</p>
+                                        )}
+                                        {announcements.map(post => (
+                                            <div key={post.id} className="border-b border-white/10 pb-3 last:border-0">
+                                                <h4 className="text-sm font-semibold text-white mb-1">{post.title}</h4>
+                                                {post.excerpt && <p className="text-white/70 text-xs mb-1">{post.excerpt}</p>}
+                                                <span className="text-[10px] text-white/40 uppercase tracking-wider">
+                                                    {post.profiles?.username || 'Admin'} • {new Date(post.created_at).toLocaleDateString()}
+                                                </span>
                                             </div>
                                         ))}
                                     </div>
