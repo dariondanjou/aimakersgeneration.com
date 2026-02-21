@@ -212,13 +212,13 @@ export default function Dashboard({ session }) {
                     </div>
 
                     <div className="flex items-center gap-1 sm:gap-2 lg:hidden ml-auto shrink-0">
-                        {/* Mobile Sign Out (Right aligned) */}
-                        <button onClick={handleSignOut} className="p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors flex justify-center items-center" title="Sign Out">
-                            <LogOut size={18} />
-                        </button>
                         {/* Burger Menu Toggle */}
                         <button className="p-2 text-white hover:bg-white/10 rounded-md transition-colors" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
                             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
+                        {/* Mobile Sign Out (Right aligned) */}
+                        <button onClick={handleSignOut} className="p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors flex justify-center items-center" title="Sign Out">
+                            <LogOut size={18} />
                         </button>
                     </div>
                 </div>
