@@ -201,19 +201,18 @@ export default function Dashboard({ session }) {
         <div className="flex flex-col h-full p-6 relative overflow-hidden text-lg">
 
             {/* Top Navigation & Search */}
-            <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 border-b border-white/10 pb-4 relative z-10 gap-4 lg:gap-6">
+            <header className="flex flex-row justify-between items-center mb-8 border-b border-white/10 pb-4 relative z-10 w-full flex-nowrap lg:pr-12 lg:gap-6">
 
-                {/* Top Row: Title, Burger (Mobile), Sign Out (Mobile) */}
-                <div className="flex justify-between items-center w-full lg:w-auto h-10">
-                    {/* Site Title */}
-                    <div className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity shrink-0 h-10 mr-4" onClick={() => { setActiveTab('home'); setIsMobileMenuOpen(false); }}>
+                {/* Site Title & Mobile Burger/SignOut */}
+                <div className="flex justify-between items-center shrink-0 w-full lg:w-auto h-10">
+                    <div className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity h-10 mr-4" onClick={() => { setActiveTab('home'); setIsMobileMenuOpen(false); }}>
                         <Terminal size={24} className="text-[#B0E0E6]" />
-                        <span className="text-lg sm:text-lg md:text-xl font-bold text-white whitespace-nowrap">AI MAKERS GENERATION</span>
+                        <span className="text-lg md:text-xl font-bold text-white whitespace-nowrap">AI MAKERS GENERATION</span>
                     </div>
 
-                    <div className="flex items-center gap-2 lg:hidden">
-                        {/* Mobile Sign Out (Top Right before Burger) */}
-                        <button onClick={handleSignOut} className="p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors flex justify-center items-center shrink-0" title="Sign Out">
+                    <div className="flex items-center gap-2 lg:hidden shrink-0">
+                        {/* Mobile Sign Out */}
+                        <button onClick={handleSignOut} className="p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors flex justify-center items-center" title="Sign Out">
                             <LogOut size={18} />
                         </button>
                         {/* Burger Menu Toggle */}
@@ -223,40 +222,55 @@ export default function Dashboard({ session }) {
                     </div>
                 </div>
 
-                {/* Middle/Bottom Row on Mobile, Inline on Desktop: Search */}
-                <div className={`w-full md:w-auto md:flex-1 lg:flex-none flex items-center shrink-0 h-10 ${isMobileMenuOpen ? 'flex' : 'hidden'} md:flex lg:order-last`}>
-                    <div className="relative w-full sm:w-auto">
+                {/* Nav Links (Desktop Only, Inline) */}
+                <div className={`${isMobileMenuOpen ? 'flex flex-col absolute top-16 left-0 right-0 bg-[#0f1419] p-4 border border-white/10 z-50 rounded-lg shadow-xl' : 'hidden'} lg:flex lg:flex-row items-center gap-4 xl:gap-6 shrink-0 h-auto lg:h-10`}>
+                    <button onClick={() => { setActiveTab('news'); setIsMobileMenuOpen(false); }} className={`h-10 flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'news' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
+                        <Newspaper size={16} className="inline mr-2" /> AI News
+                    </button>
+                    <button onClick={() => { setActiveTab('resources'); setIsMobileMenuOpen(false); }} className={`h-10 flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'resources' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
+                        <Globe size={16} className="inline mr-2" /> AI Resources
+                    </button>
+                    <button onClick={() => { setActiveTab('calendar'); setIsMobileMenuOpen(false); }} title="Calendar" className={`h-10 flex items-center px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
+                        <Calendar size={18} className="inline lg:hidden mr-2" /> <span className="lg:hidden">Calendar</span> <Calendar size={18} className="hidden lg:block" />
+                    </button>
+                    <button onClick={() => { setActiveTab('people'); setIsMobileMenuOpen(false); }} title="People" className={`h-10 flex items-center px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'people' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
+                        <Users size={18} className="inline lg:hidden mr-2" /> <span className="lg:hidden">People</span> <Users size={18} className="hidden lg:block" />
+                    </button>
+                </div>
+
+                {/* Desktop Stretch Spacer */}
+                <div className="hidden lg:block flex-1 min-w-[10px]"></div>
+
+                {/* Desktop Search & Sign Out */}
+                <div className="hidden lg:flex items-center shrink-0 h-10 w-full lg:w-auto">
+                    <div className="relative mr-4 w-full lg:w-auto">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" size={16} />
                         <input
                             type="text"
                             placeholder="Search this site..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-full sm:w-48 lg:w-48 xl:w-64"
+                            className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-full lg:w-40 xl:w-56"
+                        />
+                    </div>
+                    <button onClick={handleSignOut} className="p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors flex justify-center items-center shrink-0 absolute right-0 top-0 lg:static" title="Sign Out">
+                        <LogOut size={18} />
+                    </button>
+                </div>
+
+                {/* Mobile Search (Inside Burger Menu Flow or Below Title) */}
+                <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:hidden w-full mt-4`}>
+                    <div className="relative w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" size={16} />
+                        <input
+                            type="text"
+                            placeholder="Search this site..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-full"
                         />
                     </div>
                 </div>
-
-                {/* Bottom Row on Mobile, Inline on Desktop: Nav Links */}
-                <div className={`flex-col md:flex-row gap-4 items-start md:items-center shrink-0 w-full lg:w-auto ${isMobileMenuOpen ? 'flex' : 'hidden'} md:flex`}>
-                    <button onClick={() => { setActiveTab('news'); setIsMobileMenuOpen(false); }} className={`h-10 flex items-center px-1 text-sm font-semibold transition-all border-l-2 md:border-l-0 md:border-b-2 text-left ${activeTab === 'news' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
-                        <Newspaper size={16} className="inline mr-2" /> AI News
-                    </button>
-                    <button onClick={() => { setActiveTab('resources'); setIsMobileMenuOpen(false); }} className={`h-10 flex items-center px-1 text-sm font-semibold transition-all border-l-2 md:border-l-0 md:border-b-2 text-left ${activeTab === 'resources' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
-                        <Globe size={16} className="inline mr-2" /> AI Resources
-                    </button>
-                    <button onClick={() => { setActiveTab('calendar'); setIsMobileMenuOpen(false); }} title="Calendar" className={`h-10 flex items-center px-3 text-sm font-semibold transition-all border-l-2 md:border-l-0 md:border-b-2 text-left ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
-                        <Calendar size={18} />
-                    </button>
-                    <button onClick={() => { setActiveTab('people'); setIsMobileMenuOpen(false); }} title="People" className={`h-10 flex items-center px-3 text-sm font-semibold transition-all border-l-2 md:border-l-0 md:border-b-2 text-left ${activeTab === 'people' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
-                        <Users size={18} />
-                    </button>
-                </div>
-
-                {/* Desktop Sign Out (Absolute Top Right for Desktop) */}
-                <button onClick={handleSignOut} className="hidden lg:flex absolute right-0 top-0 p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors justify-center items-center" title="Sign Out">
-                    <LogOut size={18} />
-                </button>
             </header>
 
             {/* Main Content Area Based on Tab */}
