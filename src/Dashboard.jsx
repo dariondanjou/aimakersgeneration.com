@@ -201,7 +201,7 @@ export default function Dashboard({ session }) {
         <div className="flex flex-col h-full p-6 relative overflow-hidden text-lg">
 
             {/* Top Navigation & Search */}
-            <header className="flex flex-row items-center mb-8 border-b border-white/10 pb-4 relative z-10 w-full flex-nowrap lg:pr-12 lg:gap-4 xl:gap-6">
+            <header className="flex flex-row items-center mb-8 border-b border-white/10 pb-4 relative z-10 w-full flex-nowrap lg:gap-4 xl:gap-6">
 
                 {/* Top Row: Title, Burger (Mobile), Sign Out (Mobile) */}
                 <div className="flex justify-between items-center shrink-0 w-full lg:w-auto h-10">
