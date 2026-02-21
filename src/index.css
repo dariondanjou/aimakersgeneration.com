@@ -249,39 +249,35 @@ a:hover {
   color: white !important;
 }
 
-/* Custom Scrollbar */
+/* Sketched Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 14px;
   background: transparent;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: linear-gradient(to right, transparent 6px, rgba(255, 255, 255, 0.6) 6px, rgba(255, 255, 255, 0.6) 8px, transparent 8px);
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--accent-blue);
-  border-radius: 9999px;
-  border: 3px solid var(--bg-blue);
-  background-clip: padding-box;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(176, 224, 230, 0.8);
+  background-color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Ccircle cx='7' cy='7' r='4.5' fill='%230A192F' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 ::-webkit-scrollbar-button:single-button:vertical:decrement {
-  height: 14px;
+  height: 20px;
   width: 14px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Cpath d='M7 4 L11 9 L3 9 Z' fill='%23B0E0E6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='20'%3E%3Cpath d='M3 13 L7 7 L11 13' stroke='rgba(255,255,255,0.9)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: center;
 }
 
 ::-webkit-scrollbar-button:single-button:vertical:increment {
-  height: 14px;
+  height: 20px;
   width: 14px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Cpath d='M3 5 L11 5 L7 10 Z' fill='%23B0E0E6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='20'%3E%3Cpath d='M3 7 L7 13 L11 7' stroke='rgba(255,255,255,0.9)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: center;
 }
