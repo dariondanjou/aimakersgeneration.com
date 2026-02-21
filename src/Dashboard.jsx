@@ -72,6 +72,34 @@ export default function Dashboard({ session }) {
         fetchDashboardData();
     }, []);
 
+    // Static data from FutureTools for the Feed column
+    const futureToolsFeed = [
+        {
+            id: 1,
+            title: "OpenAI Boosts GPT-5.3-Codex-Spark Speed 30% to 1,200+ Tokens per Second",
+            url: "https://x.com/thsottiaux/status/2024947946849186064",
+            date: "Today"
+        },
+        {
+            id: 2,
+            title: "Claude Adds Desktop App Previews, Code Review, and Background CI/PR Handling",
+            url: "https://x.com/claudeai/status/2024937960572104707",
+            date: "Today"
+        },
+        {
+            id: 3,
+            title: "Pika Launches AI Selves With Persistent Memory for User-Created Digital Extensions",
+            url: "https://x.com/pika_labs/status/2024919175878377587",
+            date: "Yesterday"
+        },
+        {
+            id: 4,
+            title: "Anthropic launches Claude Code Security preview to scan codebases and suggest patches",
+            url: "https://www.anthropic.com/news/claude-code-security",
+            date: "Yesterday"
+        }
+    ];
+
     const handleSignOut = async () => {
         await supabase.auth.signOut();
     };
@@ -175,7 +203,7 @@ export default function Dashboard({ session }) {
                         <Globe size={16} className="inline mr-2" /> Home
                     </button>
                     <button onClick={() => setActiveTab('news')} className={`pb-2 px-1 text-sm font-semibold transition-all border-b-2 ${activeTab === 'news' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
-                        <Newspaper size={16} className="inline mr-2" /> News
+                        <Newspaper size={16} className="inline mr-2" /> Feed
                     </button>
                     <button onClick={() => setActiveTab('resources')} className={`pb-2 px-1 text-sm font-semibold transition-all border-b-2 ${activeTab === 'resources' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Globe size={16} className="inline mr-2" /> Resources
@@ -317,8 +345,17 @@ export default function Dashboard({ session }) {
                                 ))}
                             </div>
                             <div className="col-span-4 rounded-lg bg-white/5 border border-white/10 p-6">
-                                <h3 className="text-xl font-bold mb-4 border-b border-white/10 pb-2">FutureTools Feed</h3>
-                                <p className="text-sm text-white/50 italic">Live scraping integration pending backend proxy deployment.</p>
+                                <h3 className="text-xl font-bold mb-4 border-b border-white/10 pb-2">Feed</h3>
+                                <div className="space-y-4">
+                                    {futureToolsFeed.map(feedItem => (
+                                        <div key={feedItem.id} className="border-b border-white/10 pb-3 last:border-0">
+                                            <a href={feedItem.url} target="_blank" rel="noreferrer" className="block text-sm font-semibold text-white hover:text-[#B0E0E6] transition-colors mb-1 line-clamp-3">
+                                                {feedItem.title}
+                                            </a>
+                                            <span className="text-[10px] text-white/40 uppercase tracking-wider">{feedItem.date} • FutureTools</span>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
