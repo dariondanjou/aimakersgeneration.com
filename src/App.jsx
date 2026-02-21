@@ -38,12 +38,10 @@ function ChatWindow() {
 function LandingPage() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 max-w-3xl mx-auto text-center">
-      <div className="flex items-center justify-center gap-4 mb-4">
-        <Terminal size={48} className="text-[#B0E0E6] opacity-80" />
-        <h1 className="text-4xl md:text-5xl lg:text-6xl relative leading-tight">
-          <span className="text-[#FFFFFF]">AI MAKERS GENERATION</span>
-        </h1>
-      </div>
+      <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-5xl mb-4 relative flex items-center justify-center gap-2 sm:gap-4 leading-tight whitespace-nowrap">
+        <Terminal className="text-[#B0E0E6] opacity-80 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14" />
+        <span className="text-[#FFFFFF]">AI MAKERS GENERATION</span>
+      </h1>
 
       <p className="text-base md:text-lg text-white/80 mb-6 max-w-2xl leading-relaxed">
         A community of AI creatives, builders, and makers getting their hands dirty. Share resources, catch up on news, and collaborate on the future.
