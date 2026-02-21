@@ -186,11 +186,21 @@ function ChatWindow({ session, onDataChange }) {
       } else {
         addBotMessage("I can answer general questions about the AI MAKERS GENERATION community.\n\nSign in to add events, resources, articles, and edit your profile!");
       }
+    } else if (/\b(who\s+founded|who\s+started|who\s+created|founders?|started\s+by|created\s+by|who\s+made)\b/i.test(text)) {
+      addBotMessage("AI Makers Generation was founded by Darion D'Anjou and Gheri Thomas — two working AI creative professionals who started it as a \"reason to get out of the house\" and connect with fellow AI creators.");
+    } else if (/\b(film\s*bar\s*ai|filmbar)\b/i.test(text)) {
+      addBotMessage("Film Bar AI is a recurring in-person event series under the AI Makers Generation umbrella. It happens every Tuesday from 6–10pm EST at Halidom Eatery in East Atlanta.\n\nYes, it's happening! Film Bar AI runs without fail every Tuesday evening. Come through!");
+    } else if (/\b(tuesday|in\s*person|meetup|meet\s*up|irl|halidom|east\s*atlanta)\b/i.test(text)) {
+      addBotMessage("Our in-person meetup is Film Bar AI — every Tuesday from 6–10pm EST at Halidom Eatery in East Atlanta. It happens every week without fail. Come hang out with fellow AI creatives!");
+    } else if (/\b(what\s+is|about|tell\s+me\s+about|describe)\b.*\b(ai\s*makers|this\s+community|this\s+site|aimakersgeneration)\b/i.test(text)) {
+      addBotMessage("AI Makers Generation is a community of AI creatives, builders, and makers founded by Darion D'Anjou and Gheri Thomas. We share resources, catch up on AI news, and collaborate on the future.\n\nOur flagship in-person event is Film Bar AI — every Tuesday from 6–10pm EST at Halidom Eatery in East Atlanta.");
+    } else if (/\b(when|where|next\s+event|events?|happening|schedule)\b/i.test(text) && !/\b(add|new|create|edit|update|change|modify)\b/i.test(text)) {
+      addBotMessage("Film Bar AI happens every Tuesday from 6–10pm EST at Halidom Eatery in East Atlanta — no exceptions!\n\nCheck the Calendar tab for all upcoming community events.");
     } else {
       if (session) {
-        addBotMessage("I can help you add or edit content on the site! Try saying \"add event\", \"edit event\", \"add article\", \"edit content\", \"update profile\", or \"send feedback\". Type \"help\" for more options.");
+        addBotMessage("I can help you add or edit content on the site! Try saying \"add event\", \"edit event\", \"add article\", \"edit content\", \"update profile\", or \"send feedback\". Type \"help\" for more options.\n\nYou can also ask me about AI Makers Generation, Film Bar AI, or our events!");
       } else {
-        addBotMessage("I can answer general questions about the AI MAKERS GENERATION community. Sign in to unlock more features!");
+        addBotMessage("I can answer general questions about the AI MAKERS GENERATION community — try asking about Film Bar AI, our founders, or upcoming events.\n\nSign in to unlock more features!");
       }
     }
   };
