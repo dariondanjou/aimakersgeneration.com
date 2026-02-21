@@ -956,7 +956,7 @@ function LandingPage() {
       <div className="flex flex-col md:flex-row items-center gap-6 w-full max-w-2xl relative z-10 mb-6" style={{ marginLeft: '20px' }}>
         {/* Left half: Description */}
         <div className="w-full md:w-1/2 text-left" style={{ marginLeft: '10px' }}>
-          <p className="text-base md:text-lg text-white/80 leading-relaxed">
+          <p className="text-base md:text-lg text-[#B0E0E6] leading-relaxed">
             A community of AI creatives, builders, and makers getting their hands dirty. Share resources, catch up on news, and collaborate on the future.
           </p>
         </div>
