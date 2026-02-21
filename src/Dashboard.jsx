@@ -1,8 +1,9 @@
-import { Globe, Calendar, Users, Newspaper, Search, LogOut, Edit, Plus, X, Check, Menu, Terminal } from 'lucide-react';
+import { Globe, Calendar, Users, Newspaper, Search, LogOut, Edit, Plus, X, Check, Menu, Terminal, MessageCircle, Share2, Trash2, ExternalLink } from 'lucide-react';
 import { supabase } from './supabaseClient';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import Fuse from 'fuse.js';
 
 export default function Dashboard({ session, refreshKey }) {
     const [activeTab, setActiveTab] = useState('home');
@@ -15,8 +16,21 @@ export default function Dashboard({ session, refreshKey }) {
     const [editFirstName, setEditFirstName] = useState('');
     const [editLastName, setEditLastName] = useState('');
     const [editAvatarUrl, setEditAvatarUrl] = useState('');
+    const [editBio, setEditBio] = useState('');
+    const [editLinks, setEditLinks] = useState('');
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+    // Comments State
+    const [comments, setComments] = useState([]);
+    const [commentText, setCommentText] = useState('');
+    const [commentTarget, setCommentTarget] = useState(null); // { type: 'resource'|'event'|'post', id: '...' }
+    const [isSavingComment, setIsSavingComment] = useState(false);
+    const [editingCommentId, setEditingCommentId] = useState(null);
+    const [editCommentText, setEditCommentText] = useState('');
+
+    // Search results visibility
+    const [showSearchResults, setShowSearchResults] = useState(false);
 
     // Event Create State
     const [isAddingEvent, setIsAddingEvent] = useState(false);
@@ -46,12 +60,12 @@ export default function Dashboard({ session, refreshKey }) {
                 .limit(3);
             if (postsData) setAnnouncements(postsData);
 
-            // Fetch top 5 resources
+            // Fetch resources (all for wiki, top 5 shown on home)
             const { data: resourcesData } = await supabase
                 .from('resources')
-                .select(`id, title, url, profiles(username)`)
+                .select('id, title, url, description')
                 .order('created_at', { ascending: false })
-                .limit(5);
+                .limit(50);
             if (resourcesData) setResources(resourcesData);
 
             // Fetch nearest 50 events
@@ -65,7 +79,7 @@ export default function Dashboard({ session, refreshKey }) {
             // Fetch newest users (up to 50 for the People tab)
             const { data: usersData } = await supabase
                 .from('profiles')
-                .select('id, username, first_name, last_name, avatar_url')
+                .select('id, username, first_name, last_name, avatar_url, bio, links, updated_at')
                 .order('updated_at', { ascending: false })
                 .limit(50);
             if (usersData) setUsers(usersData);
@@ -105,11 +119,16 @@ export default function Dashboard({ session, refreshKey }) {
     ];
 
     const youtubeVideos = [
+        { id: 'v-6Tegc7L3k', title: 'Google Drops Gemini 3.1, AI Music & PhotoShoots', channel: 'Theoretically Media', date: 'Feb 20' },
         { id: '5cMZqjrgq6Y', title: 'AI News: 5 New Models Dropped This Week!', channel: 'Matt Wolfe', date: 'Feb 20' },
         { id: 'gDP4bkeWbUs', title: 'Is Seedance 2.0 Overhyped? An Honest AI Video Review', channel: 'Curious Refuge', date: 'Feb 20' },
+        { id: 'yLQClFqzHOU', title: 'How Seedance 2.0 is SO GOOD (And Why Hollywood is Shook)', channel: 'Theoretically Media', date: 'Feb 17' },
         { id: 'SlRzTFx8Qtg', title: 'My Complete AI Workflow for Maximum Productivity', channel: 'Matt Wolfe', date: 'Feb 18' },
+        { id: 'hUtVN-C37gA', title: 'BREAKING: Kling 3.0 Just DESTROYED Every AI Video Model', channel: 'AI Filmmaking Advantage', date: 'Feb 7' },
         { id: 'JSetfLwM5sI', title: 'What Claude Did To Make The Pentagon This Mad', channel: 'Matt Wolfe', date: 'Feb 18' },
+        { id: 'YWz6JxLeu_I', title: 'THIS Will Continue To Be A Problem With AI In 2026', channel: 'AI Filmmaking Advantage', date: 'Feb 7' },
         { id: 'gEHe1-1futI', title: 'The AI Image Workflow That Broke AI Detectors', channel: 'Curious Refuge', date: 'Feb 13' },
+        { id: 'sHoaCAt7kvk', title: 'Seedance 2.0: Is The Hype Real?', channel: 'Theoretically Media', date: 'Feb 12' },
     ];
 
     const handleSignOut = async () => {
@@ -127,12 +146,14 @@ export default function Dashboard({ session, refreshKey }) {
                 first_name: editFirstName,
                 last_name: editLastName,
                 avatar_url: editAvatarUrl,
+                bio: editBio || null,
+                links: editLinks || null,
                 updated_at: new Date()
             });
 
         if (!error) {
             // Re-fetch users
-            const { data } = await supabase.from('profiles').select('id, username, first_name, last_name, avatar_url').order('updated_at', { ascending: false }).limit(50);
+            const { data } = await supabase.from('profiles').select('id, username, first_name, last_name, avatar_url, bio, links, updated_at').order('updated_at', { ascending: false }).limit(50);
             if (data) setUsers(data);
             setIsEditingProfile(false);
         } else {
@@ -205,6 +226,106 @@ export default function Dashboard({ session, refreshKey }) {
         setIsSavingEvent(false);
     };
 
+    // ── Fuzzy Search ──
+    const searchIndex = useMemo(() => {
+        const items = [];
+        futureToolsFeed.forEach(f => items.push({ type: 'news', id: f.id, title: f.title, description: '', tab: 'news' }));
+        youtubeVideos.forEach(v => items.push({ type: 'video', id: v.id, title: v.title, description: v.channel, tab: 'news' }));
+        resources.forEach(r => items.push({ type: 'resource', id: r.id, title: r.title, description: r.description || '', tab: 'resources' }));
+        events.forEach(e => items.push({ type: 'event', id: e.id, title: e.title, description: e.description || '', tab: 'calendar' }));
+        users.forEach(u => items.push({ type: 'person', id: u.id, title: u.username || `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Anonymous', description: u.bio || '', tab: 'people' }));
+        return new Fuse(items, { keys: ['title', 'description'], threshold: 0.4, includeScore: true });
+    }, [resources, events, users]);
+
+    const searchResults = useMemo(() => {
+        if (!searchQuery.trim()) return [];
+        return searchIndex.search(searchQuery.trim()).slice(0, 12);
+    }, [searchQuery, searchIndex]);
+
+    const handleSearchSelect = (result) => {
+        setActiveTab(result.item.tab);
+        setSearchQuery('');
+        setShowSearchResults(false);
+    };
+
+    // ── Comments ──
+    const fetchComments = async (targetType, targetId) => {
+        const { data } = await supabase
+            .from('comments')
+            .select('id, content, created_at, user_id, profiles(username, avatar_url)')
+            .eq('target_type', targetType)
+            .eq('target_id', targetId)
+            .order('created_at', { ascending: true });
+        if (data) setComments(data);
+    };
+
+    const openComments = (targetType, targetId) => {
+        setCommentTarget({ type: targetType, id: targetId });
+        setCommentText('');
+        setEditingCommentId(null);
+        fetchComments(targetType, targetId);
+    };
+
+    const closeComments = () => {
+        setCommentTarget(null);
+        setComments([]);
+    };
+
+    const handleAddComment = async () => {
+        if (!commentText.trim() || !commentTarget) return;
+        setIsSavingComment(true);
+        const { error } = await supabase.from('comments').insert([{
+            target_type: commentTarget.type,
+            target_id: commentTarget.id,
+            user_id: session.user.id,
+            content: commentText.trim()
+        }]);
+        if (!error) {
+            setCommentText('');
+            fetchComments(commentTarget.type, commentTarget.id);
+        }
+        setIsSavingComment(false);
+    };
+
+    const handleEditComment = async (commentId) => {
+        if (!editCommentText.trim()) return;
+        const { error } = await supabase.from('comments').update({ content: editCommentText.trim() }).eq('id', commentId).eq('user_id', session.user.id);
+        if (!error) {
+            setEditingCommentId(null);
+            setEditCommentText('');
+            fetchComments(commentTarget.type, commentTarget.id);
+        }
+    };
+
+    const handleDeleteComment = async (commentId) => {
+        const { error } = await supabase.from('comments').delete().eq('id', commentId).eq('user_id', session.user.id);
+        if (!error) fetchComments(commentTarget.type, commentTarget.id);
+    };
+
+    const handleShare = (title, url) => {
+        const shareUrl = url || window.location.href;
+        const text = `Check out "${title}" on AI Makers Generation`;
+        if (navigator.share) {
+            navigator.share({ title, text, url: shareUrl }).catch(() => {});
+        } else {
+            navigator.clipboard.writeText(`${text}: ${shareUrl}`);
+            alert('Link copied to clipboard!');
+        }
+    };
+
+    // Comment inline component
+    const CommentButton = ({ targetType, targetId }) => (
+        <button onClick={() => openComments(targetType, targetId)} className="text-white/40 hover:text-[#B0E0E6] transition-colors p-1" title="Comments">
+            <MessageCircle size={14} />
+        </button>
+    );
+
+    const ShareButton = ({ title, url }) => (
+        <button onClick={() => handleShare(title, url)} className="text-white/40 hover:text-[#B0E0E6] transition-colors p-1" title="Share">
+            <Share2 size={14} />
+        </button>
+    );
+
     return (
         <div className="main-content custom-scrollbar flex flex-col h-full p-6 relative overflow-y-auto text-lg w-full">
 
@@ -255,9 +376,21 @@ export default function Dashboard({ session, refreshKey }) {
                             type="text"
                             placeholder="Search this site..."
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={(e) => { setSearchQuery(e.target.value); setShowSearchResults(true); }}
+                            onFocus={() => setShowSearchResults(true)}
+                            onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
                             className="bg-transparent border-b border-white/20 py-2 pl-8 lg:pl-10 pr-2 lg:pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-full"
                         />
+                        {showSearchResults && searchResults.length > 0 && (
+                            <div className="absolute top-full left-0 right-0 bg-[#0f1419] border border-white/20 rounded-b-lg shadow-xl z-50 max-h-80 overflow-y-auto">
+                                {searchResults.map((r, i) => (
+                                    <button key={i} onClick={() => handleSearchSelect(r)} className="w-full text-left px-3 py-2 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0">
+                                        <div className="text-sm font-semibold text-white truncate">{r.item.title}</div>
+                                        <div className="text-[10px] text-white/40 uppercase">{r.item.type} • {r.item.tab}</div>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     <button onClick={handleSignOut} className="p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors flex justify-center items-center shrink-0" title="Sign Out">
                         <LogOut size={18} />
@@ -272,9 +405,21 @@ export default function Dashboard({ session, refreshKey }) {
                             type="text"
                             placeholder="Search this site..."
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={(e) => { setSearchQuery(e.target.value); setShowSearchResults(true); }}
+                            onFocus={() => setShowSearchResults(true)}
+                            onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
                             className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-full"
                         />
+                        {showSearchResults && searchResults.length > 0 && (
+                            <div className="absolute top-full left-0 right-0 bg-[#0f1419] border border-white/20 rounded-b-lg shadow-xl z-50 max-h-80 overflow-y-auto">
+                                {searchResults.map((r, i) => (
+                                    <button key={i} onClick={() => { handleSearchSelect(r); setIsMobileMenuOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0">
+                                        <div className="text-sm font-semibold text-white truncate">{r.item.title}</div>
+                                        <div className="text-[10px] text-white/40 uppercase">{r.item.type} • {r.item.tab}</div>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -296,7 +441,12 @@ export default function Dashboard({ session, refreshKey }) {
                                     {futureToolsFeed.slice(0, 3).map(item => (
                                         <div key={item.id} className="border-b border-white/10 pb-3 last:border-0">
                                             <a href={item.url} target="_blank" rel="noreferrer" className="font-bold text-lg text-white hover:text-[#B0E0E6] transition-colors">{item.title}</a>
-                                            <div className="text-xs text-white/40 mt-2">{item.date} • FutureTools</div>
+                                            <div className="flex items-center justify-between mt-2">
+                                                <div className="text-xs text-white/40">{item.date} • FutureTools</div>
+                                                <div className="flex items-center gap-1">
+                                                    <ShareButton title={item.title} url={item.url} />
+                                                </div>
+                                            </div>
                                         </div>
                                     ))}
                                     {youtubeVideos.length > 0 && (
@@ -323,10 +473,10 @@ export default function Dashboard({ session, refreshKey }) {
                                 {loading ? <p className="text-white/50">Loading resources...</p> :
                                     resources.length === 0 ? <p className="text-white/50 italic">No resources added to the wiki yet.</p> :
                                         <ul className="space-y-3">
-                                            {resources.map(res => (
+                                            {resources.slice(0, 5).map(res => (
                                                 <li key={res.id} className="flex flex-col p-3 border-b border-white/10 last:border-0">
                                                     <a href={res.url} target="_blank" rel="noreferrer" className="font-semibold text-white hover:text-[#B0E0E6] transition-colors">{res.title}</a>
-                                                    <span className="text-xs text-white/40 mt-1">Edited by {res.profiles?.username || 'Anonymous'}</span>
+                                                    {res.description && <span className="text-xs text-white/60 mt-1 line-clamp-2">{res.description}</span>}
                                                 </li>
                                             ))}
                                         </ul>
@@ -355,19 +505,21 @@ export default function Dashboard({ session, refreshKey }) {
 
                             <div className="glass-panel p-6">
                                 <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
-                                    <h2 className="text-lg font-bold text-white">Newest Creatives</h2>
+                                    <h2 className="text-lg font-bold text-white">Recently Active</h2>
                                     <button onClick={() => setActiveTab('people')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors">all creatives</button>
                                 </div>
                                 {loading ? <p className="text-white/50 text-sm">Loading network...</p> :
-                                    <div className="mt-4 flex flex-wrap gap-2">
-                                        {users.map(u => (
-                                            <div key={u.id} className="group relative">
-                                                <div className="w-10 h-10 rounded-full bg-black/40 border border-[#B0E0E6]/40 flex items-center justify-center text-sm font-bold shadow-lg overflow-hidden">
+                                    users.length === 0 ? <p className="text-white/50 italic text-sm">No users yet.</p> :
+                                    <div className="space-y-3">
+                                        {users.slice(0, 3).map(u => (
+                                            <div key={u.id} className="flex items-center gap-3 p-2 rounded hover:bg-white/5 transition-colors cursor-pointer" onClick={() => setActiveTab('people')}>
+                                                <div className="w-10 h-10 rounded-full bg-black/40 border border-[#B0E0E6]/40 flex items-center justify-center text-sm font-bold shadow-lg overflow-hidden shrink-0">
                                                     {u.avatar_url ? <img src={u.avatar_url} alt={u.username} className="w-full h-full object-cover" /> : (u.username?.[0]?.toUpperCase() || '?')}
                                                 </div>
-                                                <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity bg-black px-2 py-1 rounded whitespace-nowrap z-20">
-                                                    {u.username || 'Anonymous'}
-                                                </span>
+                                                <div className="min-w-0">
+                                                    <div className="text-sm font-semibold text-white truncate">{u.username || 'Anonymous'}</div>
+                                                    <div className="text-[10px] text-white/40">{u.updated_at ? `Active ${new Date(u.updated_at).toLocaleDateString()}` : 'Member'}</div>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -391,9 +543,12 @@ export default function Dashboard({ session, refreshKey }) {
                                             <a href={feedItem.url} target="_blank" rel="noreferrer" className="block text-xl font-bold mb-2 text-white hover:text-[#B0E0E6] transition-colors">
                                                 {feedItem.title}
                                             </a>
-                                            <div className="flex justify-between text-xs text-white/40 border-t border-white/10 pt-3">
-                                                <span>FutureTools</span>
-                                                <span>{feedItem.date}</span>
+                                            <div className="flex justify-between items-center text-xs text-white/40 border-t border-white/10 pt-3">
+                                                <span>FutureTools • {feedItem.date}</span>
+                                                <div className="flex items-center gap-1">
+                                                    <CommentButton targetType="post" targetId={`news-${feedItem.id}`} />
+                                                    <ShareButton title={feedItem.title} url={feedItem.url} />
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -438,8 +593,8 @@ export default function Dashboard({ session, refreshKey }) {
                                         <thead>
                                             <tr className="border-b border-white/20 text-white/50 text-sm">
                                                 <th className="pb-3 pt-2 px-4 font-normal">Resource Title</th>
+                                                <th className="pb-3 pt-2 px-4 font-normal">Description</th>
                                                 <th className="pb-3 pt-2 px-4 font-normal">Link</th>
-                                                <th className="pb-3 pt-2 px-4 font-normal">Last Edited By</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -448,8 +603,14 @@ export default function Dashboard({ session, refreshKey }) {
                                                     resources.map(res => (
                                                         <tr key={res.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                                                             <td className="py-3 px-4 font-semibold">{res.title}</td>
-                                                            <td className="py-3 px-4"><a href={res.url} className="text-[#B0E0E6] hover:underline truncate inline-block max-w-[200px]" target="_blank" rel="noreferrer">{res.url}</a></td>
-                                                            <td className="py-3 px-4 text-white/60 text-sm">{res.profiles?.username || 'Anonymous'}</td>
+                                                            <td className="py-3 px-4 text-white/60 text-sm max-w-[300px]">{res.description || ''}</td>
+                                                            <td className="py-3 px-4">
+                                                                <div className="flex items-center gap-2">
+                                                                    <a href={res.url} className="text-[#B0E0E6] hover:underline truncate inline-block max-w-[150px]" target="_blank" rel="noreferrer">Visit</a>
+                                                                    <CommentButton targetType="resource" targetId={res.id} />
+                                                                    <ShareButton title={res.title} url={res.url} />
+                                                                </div>
+                                                            </td>
                                                         </tr>
                                                     ))}
                                         </tbody>
@@ -510,11 +671,17 @@ export default function Dashboard({ session, refreshKey }) {
                                 {loading ? <p>Loading calendar...</p> :
                                     events.length === 0 ? <div className="col-span-full glass-panel py-12 text-center text-white/50 italic">No events mapped.</div> :
                                         events.map(ev => (
-                                            <div key={ev.id} onClick={() => setSelectedEvent(ev)} className="cursor-pointer glass-panel border-[#FFFFFF]/30 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden group hover:border-[#FFFFFF] transition-colors">
+                                            <div key={ev.id} className="glass-panel border-[#FFFFFF]/30 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden group hover:border-[#FFFFFF] transition-colors">
                                                 <Calendar size={48} className="text-white/10 absolute -right-4 -bottom-4 group-hover:text-white/20 transition-colors" />
-                                                <div className="text-[#FFFFFF] text-2xl font-bold mb-2">{new Date(ev.event_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
-                                                <h3 className="text-lg font-bold z-10">{ev.title}</h3>
-                                                {ev.description && <p className="text-sm text-white/60 mt-2 z-10 line-clamp-2">{ev.description}</p>}
+                                                <div className="cursor-pointer" onClick={() => setSelectedEvent(ev)}>
+                                                    <div className="text-[#FFFFFF] text-2xl font-bold mb-2">{new Date(ev.event_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
+                                                    <h3 className="text-lg font-bold z-10">{ev.title}</h3>
+                                                    {ev.description && <p className="text-sm text-white/60 mt-2 z-10 line-clamp-2">{ev.description}</p>}
+                                                </div>
+                                                <div className="flex items-center gap-2 mt-3 z-10">
+                                                    <CommentButton targetType="event" targetId={ev.id} />
+                                                    <ShareButton title={ev.title} />
+                                                </div>
                                             </div>
                                         ))
                                 }
@@ -536,6 +703,8 @@ export default function Dashboard({ session, refreshKey }) {
                                             setEditFirstName(myProfile.first_name || '');
                                             setEditLastName(myProfile.last_name || '');
                                             setEditAvatarUrl(myProfile.avatar_url || '');
+                                            setEditBio(myProfile.bio || '');
+                                            setEditLinks(myProfile.links || '');
                                         }
                                         setIsEditingProfile(true);
                                     }} className="btn btn-primary text-sm">
@@ -564,6 +733,14 @@ export default function Dashboard({ session, refreshKey }) {
                                                 <label className="block text-sm text-white/70 mb-1">Last Name (Optional)</label>
                                                 <input type="text" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Nakamoto" />
                                             </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm text-white/70 mb-1">Bio</label>
+                                            <textarea value={editBio} onChange={(e) => setEditBio(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors h-20 text-sm" placeholder="Tell us about yourself..." />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm text-white/70 mb-1">Links (comma-separated URLs)</label>
+                                            <input type="text" value={editLinks} onChange={(e) => setEditLinks(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors text-sm" placeholder="https://portfolio.com, https://github.com/you" />
                                         </div>
                                         <div>
                                             <label className="block text-sm text-white/70 mb-1">Avatar Image</label>
@@ -625,7 +802,17 @@ export default function Dashboard({ session, refreshKey }) {
                                                 {(u.first_name || u.last_name) && u.username && (
                                                     <p className="text-[10px] text-white/40 uppercase tracking-wider -mt-1 mb-1">@{u.username}</p>
                                                 )}
-                                                <p className="text-xs text-[#B0E0E6] mt-1">AI Creative</p>
+                                                {u.bio && <p className="text-xs text-white/60 mt-2 line-clamp-2">{u.bio}</p>}
+                                                {u.links && (
+                                                    <div className="flex flex-wrap justify-center gap-1 mt-2">
+                                                        {u.links.split(',').map((link, i) => {
+                                                            const url = link.trim();
+                                                            if (!url) return null;
+                                                            return <a key={i} href={url.startsWith('http') ? url : `https://${url}`} target="_blank" rel="noreferrer" className="text-[10px] text-[#B0E0E6] hover:underline flex items-center gap-0.5" onClick={e => e.stopPropagation()}><ExternalLink size={8} />{new URL(url.startsWith('http') ? url : `https://${url}`).hostname.replace('www.','')}</a>;
+                                                        })}
+                                                    </div>
+                                                )}
+                                                {!u.bio && !u.links && <p className="text-xs text-[#B0E0E6] mt-1">AI Creative</p>}
                                             </div>
                                         ))
                                 }
@@ -664,6 +851,53 @@ export default function Dashboard({ session, refreshKey }) {
                         </div>
                     )
                 }
+                {/* Comments Modal */}
+                {commentTarget && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={closeComments}>
+                        <div className="glass-panel max-w-lg w-full relative max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                            <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
+                                <h3 className="text-lg font-bold flex items-center gap-2"><MessageCircle size={18} /> Comments</h3>
+                                <button onClick={closeComments} className="text-white/50 hover:text-white"><X size={20} /></button>
+                            </div>
+                            <div className="flex-1 overflow-y-auto space-y-3 mb-4 custom-scrollbar min-h-[100px]">
+                                {comments.length === 0 ? (
+                                    <p className="text-white/50 text-sm italic text-center py-4">No comments yet. Be the first!</p>
+                                ) : comments.map(c => (
+                                    <div key={c.id} className="bg-black/30 rounded-lg p-3">
+                                        <div className="flex items-center justify-between mb-1">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-6 h-6 rounded-full bg-black/40 border border-[#B0E0E6]/30 flex items-center justify-center text-[10px] font-bold overflow-hidden">
+                                                    {c.profiles?.avatar_url ? <img src={c.profiles.avatar_url} alt="" className="w-full h-full object-cover" /> : (c.profiles?.username?.[0]?.toUpperCase() || '?')}
+                                                </div>
+                                                <span className="text-xs font-semibold text-white">{c.profiles?.username || 'Anonymous'}</span>
+                                                <span className="text-[10px] text-white/30">{new Date(c.created_at).toLocaleDateString()}</span>
+                                            </div>
+                                            {c.user_id === session.user.id && (
+                                                <div className="flex items-center gap-1">
+                                                    <button onClick={() => { setEditingCommentId(c.id); setEditCommentText(c.content); }} className="text-white/30 hover:text-[#B0E0E6] p-1"><Edit size={12} /></button>
+                                                    <button onClick={() => handleDeleteComment(c.id)} className="text-white/30 hover:text-red-400 p-1"><Trash2 size={12} /></button>
+                                                </div>
+                                            )}
+                                        </div>
+                                        {editingCommentId === c.id ? (
+                                            <div className="flex gap-2 mt-1">
+                                                <input type="text" value={editCommentText} onChange={e => setEditCommentText(e.target.value)} className="flex-1 bg-black/40 border border-white/20 rounded py-1 px-2 text-sm text-white focus:outline-none focus:border-[#B0E0E6]" onKeyDown={e => e.key === 'Enter' && handleEditComment(c.id)} />
+                                                <button onClick={() => handleEditComment(c.id)} className="text-[#B0E0E6] text-xs font-bold">Save</button>
+                                                <button onClick={() => setEditingCommentId(null)} className="text-white/40 text-xs">Cancel</button>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-white/80">{c.content}</p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="flex gap-2 border-t border-white/10 pt-3">
+                                <input type="text" value={commentText} onChange={e => setCommentText(e.target.value)} placeholder="Write a comment..." className="flex-1 bg-black/40 border border-white/20 rounded py-2 px-3 text-sm text-white focus:outline-none focus:border-[#B0E0E6]" onKeyDown={e => e.key === 'Enter' && handleAddComment()} disabled={isSavingComment} />
+                                <button onClick={handleAddComment} disabled={isSavingComment || !commentText.trim()} className="btn btn-primary text-sm px-4">{isSavingComment ? '...' : 'Post'}</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div >
         </div >
     );

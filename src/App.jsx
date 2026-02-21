@@ -443,9 +443,9 @@ function ChatWindow({ session, onDataChange }) {
     setIsSaving(true);
     const { error } = await supabase.from('resources').insert([{
       title: data.title,
-      content: data.content,
+      description: data.content,
       url: data.url || null,
-      last_edited_by: session?.user?.id || null
+      submitted_by: session?.user?.id || null
     }]);
     setIsSaving(false);
     setFlow(null);
