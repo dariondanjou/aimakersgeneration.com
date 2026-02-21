@@ -232,10 +232,10 @@ export default function Dashboard({ session, refreshKey }) {
                         <Globe size={18} /> <span className="block lg:hidden 2xl:block">AI Resources</span>
                     </button>
                     <button onClick={() => { setActiveTab('calendar'); setIsMobileMenuOpen(false); }} title="Calendar" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
-                        <Calendar size={18} /> <span className="block lg:hidden 2xl:block">Calendar</span>
+                        <Calendar size={18} /> <span className="block lg:hidden">Calendar</span>
                     </button>
                     <button onClick={() => { setActiveTab('people'); setIsMobileMenuOpen(false); }} title="People" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'people' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
-                        <Users size={18} /> <span className="block lg:hidden 2xl:block">People</span>
+                        <Users size={18} /> <span className="block lg:hidden">People</span>
                     </button>
                 </div>
 
@@ -280,7 +280,7 @@ export default function Dashboard({ session, refreshKey }) {
                             <div className="glass-panel relative overflow-hidden min-h-[200px]">
                                 <div className="absolute top-0 right-0 p-4 opacity-10"><Newspaper size={64} /></div>
                                 <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-2xl font-bold text-white">Latest Announcements</h2>
+                                    <h2 className="text-2xl font-bold text-white">Latest AI News</h2>
                                     <button onClick={() => setActiveTab('news')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors">view more</button>
                                 </div>
 
@@ -299,8 +299,8 @@ export default function Dashboard({ session, refreshKey }) {
                             </div>
                             <div className="glass-panel p-6">
                                 <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-xl font-bold">Top Active Resources</h2>
-                                    <button onClick={() => setActiveTab('resources')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors">view wiki</button>
+                                    <h2 className="text-xl font-bold">Active AI Resources</h2>
+                                    <button onClick={() => setActiveTab('resources')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors">view more</button>
                                 </div>
                                 {loading ? <p className="text-white/50">Loading resources...</p> :
                                     resources.length === 0 ? <p className="text-white/50 italic">No resources added to the wiki yet.</p> :
