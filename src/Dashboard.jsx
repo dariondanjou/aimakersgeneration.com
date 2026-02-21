@@ -201,10 +201,10 @@ export default function Dashboard({ session }) {
         <div className="flex flex-col h-full p-6 relative overflow-hidden text-lg">
 
             {/* Top Navigation & Search */}
-            <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 border-b border-white/10 pb-6 relative z-10 gap-4">
+            <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 border-b border-white/10 pb-4 relative z-10 gap-4">
 
                 {/* Mobile Header Top Row & Site Title */}
-                <div className="flex justify-between items-center w-full lg:w-auto">
+                <div className="flex justify-between items-center w-full lg:w-auto h-10">
                     <div className="flex items-center gap-2 sm:gap-3 mr-4 lg:mr-8">
                         <Terminal size={24} className="text-[#B0E0E6]" />
                         <span className="text-lg sm:text-xl font-bold text-white whitespace-nowrap">AI MAKERS GENERATION</span>
@@ -222,31 +222,31 @@ export default function Dashboard({ session }) {
                 </div>
 
                 {/* Nav Links */}
-                <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:flex flex-col lg:flex-row gap-4 lg:gap-6 px-2 w-full lg:w-auto`}>
-                    <button onClick={() => { setActiveTab('home'); setIsMobileMenuOpen(false); }} className={`pb-2 px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'home' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
+                <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:flex flex-col lg:flex-row gap-4 lg:gap-6 px-2 w-full lg:w-auto items-center h-10`}>
+                    <button onClick={() => { setActiveTab('home'); setIsMobileMenuOpen(false); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'home' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Globe size={16} className="inline mr-2" /> Home
                     </button>
-                    <button onClick={() => { setActiveTab('news'); setIsMobileMenuOpen(false); }} className={`pb-2 px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'news' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
+                    <button onClick={() => { setActiveTab('news'); setIsMobileMenuOpen(false); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'news' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Newspaper size={16} className="inline mr-2" /> Feed
                     </button>
-                    <button onClick={() => { setActiveTab('resources'); setIsMobileMenuOpen(false); }} className={`pb-2 px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'resources' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
+                    <button onClick={() => { setActiveTab('resources'); setIsMobileMenuOpen(false); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'resources' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Globe size={16} className="inline mr-2" /> Resources
                     </button>
-                    <button onClick={() => { setActiveTab('calendar'); setIsMobileMenuOpen(false); }} className={`pb-2 px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
+                    <button onClick={() => { setActiveTab('calendar'); setIsMobileMenuOpen(false); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Calendar size={16} className="inline mr-2" /> Calendar
                     </button>
-                    <button onClick={() => { setActiveTab('people'); setIsMobileMenuOpen(false); }} className={`pb-2 px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'people' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
+                    <button onClick={() => { setActiveTab('people'); setIsMobileMenuOpen(false); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'people' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Users size={16} className="inline mr-2" /> People
                     </button>
                 </div>
 
                 {/* Search & Desktop Signout */}
-                <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:flex items-center gap-4 w-full lg:w-auto flex-col sm:flex-row`}>
+                <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:flex items-center gap-4 w-full lg:w-auto flex-col sm:flex-row h-10`}>
                     <div className="relative w-full sm:w-auto">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" size={16} />
                         <input
                             type="text"
-                            placeholder="Fuzzy search anything..."
+                            placeholder="Search this site..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-full sm:w-64"

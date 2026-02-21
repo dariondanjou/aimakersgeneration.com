@@ -6,10 +6,10 @@ import Dashboard from './Dashboard';
 
 function ChatWindow() {
   return (
-    <div className="chat-sidebar p-6">
-      <div className="flex items-center gap-3 mb-8 chalk-border-bottom pb-4 border-b border-white/20">
-        <Bot size={28} className="text-[#B0E0E6]" />
-        <h2 className="text-xl">AI Assistant</h2>
+    <div className="chat-sidebar p-6 lg:pt-8 bg-black/20 lg:bg-transparent">
+      <div className="flex items-center gap-3 mb-8 chalk-border-bottom pb-4 border-b border-white/10 h-10">
+        <Bot size={24} className="text-[#B0E0E6]" />
+        <h2 className="text-lg font-bold">AI Assistant</h2>
       </div>
 
       <div className="flex-1 overflow-y-auto mb-4 space-y-4">
