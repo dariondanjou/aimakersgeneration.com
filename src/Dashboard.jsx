@@ -201,10 +201,10 @@ export default function Dashboard({ session }) {
         <div className="flex flex-col h-full p-6 relative overflow-hidden text-lg">
 
             {/* Top Navigation & Search */}
-            <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 border-b border-white/10 pb-4 relative z-10 gap-4">
+            <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 border-b border-white/10 pb-4 relative z-10 gap-4 lg:pr-12">
 
                 {/* Mobile Header Top Row & Site Title */}
-                <div className="flex justify-between items-center w-full lg:w-auto h-10">
+                <div className="flex justify-between items-center w-full lg:w-auto h-10 pr-2 lg:pr-0">
                     <div className="flex items-center gap-2 sm:gap-3 mr-4 lg:mr-8">
                         <Terminal size={24} className="text-[#B0E0E6]" />
                         <span className="text-lg sm:text-xl font-bold text-white whitespace-nowrap">AI MAKERS GENERATION</span>
@@ -240,7 +240,7 @@ export default function Dashboard({ session }) {
                     </button>
                 </div>
 
-                {/* Search & Desktop Signout */}
+                {/* Search */}
                 <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:flex items-center gap-4 w-full lg:w-auto flex-col sm:flex-row h-10`}>
                     <div className="relative w-full sm:w-auto">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" size={16} />
@@ -252,11 +252,12 @@ export default function Dashboard({ session }) {
                             className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-full sm:w-64"
                         />
                     </div>
-
-                    <button onClick={handleSignOut} className="hidden lg:block p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors" title="Sign Out">
-                        <LogOut size={18} />
-                    </button>
                 </div>
+
+                {/* Desktop Sign Out (Absolute Top Right) */}
+                <button onClick={handleSignOut} className="hidden lg:flex absolute right-0 top-0 p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors justify-center items-center" title="Sign Out">
+                    <LogOut size={18} />
+                </button>
             </header>
 
             {/* Main Content Area Based on Tab */}
