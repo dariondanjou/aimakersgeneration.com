@@ -942,40 +942,44 @@ function LandingPage() {
         <span className="text-[#FFFFFF]">AI MAKERS GENERATION</span>
       </h1>
 
-      <p className="text-base md:text-lg text-white/80 mb-6 max-w-2xl leading-relaxed">
-        A community of AI creatives, builders, and makers getting their hands dirty. Share resources, catch up on news, and collaborate on the future.
-      </p>
-
-      <div className="glass-panel flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8 w-full max-w-2xl relative z-10 p-6">
-        {/* WhatsApp Logo */}
-        <a href="https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity shrink-0 flex items-center justify-center" title="Join our WhatsApp Group">
-          <img src="/logo-whatsapp.png" alt="Join our WhatsApp Group" className="w-16 h-16" />
-        </a>
-
-        {/* QR Code */}
-        <a href="https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity shrink-0" title="Join our WhatsApp Group">
-          <img src="/qrcode-whatsapp.jpeg" alt="Join our WhatsApp Group" className="w-36 h-36 rounded-lg border border-white/10" />
-        </a>
-
-        {/* Auth Buttons */}
-        <div className="flex flex-col gap-2 w-full md:w-auto md:min-w-[220px]">
-          <h3 className="text-sm uppercase tracking-wider text-white/50 mb-1">Connect to the Network</h3>
-          <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-white/5 hover:bg-white/10">
-            <LogIn size={18} /> Google Login
-          </button>
-          <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'twitter', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-[#1D9BF0]/10 hover:bg-[#1D9BF0]/20">
-            <Twitter size={18} /> Continue with X
-          </button>
-          <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'discord', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-[#5865F2]/10 hover:bg-[#5865F2]/20">
-            <MessageSquare size={18} /> Continue with Discord
-          </button>
-          <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-white/5 hover:bg-white/10">
-            <Github size={18} /> Continue with GitHub
-          </button>
-          <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'facebook', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-[#1877F2]/10 hover:bg-[#1877F2]/20">
-            <Facebook size={18} /> Continue with Facebook
-          </button>
+      {/* Top row: Description left, WhatsApp links right */}
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 w-full max-w-2xl relative z-10 mb-6">
+        {/* Left: Description */}
+        <div className="flex-1 text-left">
+          <p className="text-base md:text-lg text-white/80 leading-relaxed">
+            A community of AI creatives, builders, and makers getting their hands dirty. Share resources, catch up on news, and collaborate on the future.
+          </p>
         </div>
+
+        {/* Right: WhatsApp logo + QR code */}
+        <div className="flex flex-col items-center gap-3 shrink-0">
+          <a href="https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" title="Join our WhatsApp Group">
+            <img src="/logo-whatsapp.png" alt="Join our WhatsApp Group" className="w-48 h-48" />
+          </a>
+          <a href="https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" title="Join our WhatsApp Group">
+            <img src="/qrcode-whatsapp.jpeg" alt="Join our WhatsApp Group" className="w-36 h-36 rounded-lg border border-white/10" />
+          </a>
+        </div>
+      </div>
+
+      {/* Auth buttons centered below */}
+      <div className="glass-panel flex flex-col items-center gap-2 w-full max-w-sm relative z-10 p-4">
+        <h3 className="text-sm uppercase tracking-wider text-white/50 mb-1">Connect to the Network</h3>
+        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-white/5 hover:bg-white/10">
+          <LogIn size={18} /> Google Login
+        </button>
+        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'twitter', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-[#1D9BF0]/10 hover:bg-[#1D9BF0]/20">
+          <Twitter size={18} /> Continue with X
+        </button>
+        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'discord', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-[#5865F2]/10 hover:bg-[#5865F2]/20">
+          <MessageSquare size={18} /> Continue with Discord
+        </button>
+        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-white/5 hover:bg-white/10">
+          <Github size={18} /> Continue with GitHub
+        </button>
+        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'facebook', options: { redirectTo: window.location.origin } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-[#1877F2]/10 hover:bg-[#1877F2]/20">
+          <Facebook size={18} /> Continue with Facebook
+        </button>
       </div>
 
       {/* Floating Placeholders for future graphical assets */}
