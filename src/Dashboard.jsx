@@ -1,4 +1,4 @@
-import { Globe, Calendar, Users, Newspaper, Search, LogOut, Edit, Plus, X, Check, Menu } from 'lucide-react';
+import { Globe, Calendar, Users, Newspaper, Search, LogOut, Edit, Plus, X, Check, Menu, Terminal } from 'lucide-react';
 import { supabase } from './supabaseClient';
 import { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
@@ -203,15 +203,22 @@ export default function Dashboard({ session }) {
             {/* Top Navigation & Search */}
             <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 border-b border-white/10 pb-6 relative z-10 gap-4">
 
-                {/* Mobile Header Top Row */}
+                {/* Mobile Header Top Row & Site Title */}
                 <div className="flex justify-between items-center w-full lg:w-auto">
-                    <button className="lg:hidden p-2 text-white hover:bg-white/10 rounded-md transition-colors" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                    </button>
-                    {/* Mobile Sign Out */}
-                    <button onClick={handleSignOut} className="lg:hidden p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors" title="Sign Out">
-                        <LogOut size={18} />
-                    </button>
+                    <div className="flex items-center gap-2 sm:gap-3 mr-4 lg:mr-8">
+                        <Terminal size={24} className="text-[#B0E0E6]" />
+                        <span className="text-lg sm:text-xl font-bold text-white whitespace-nowrap">AI MAKERS GENERATION</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 lg:hidden">
+                        <button className="p-2 text-white hover:bg-white/10 rounded-md transition-colors" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
+                        {/* Mobile Sign Out */}
+                        <button onClick={handleSignOut} className="p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors" title="Sign Out">
+                            <LogOut size={18} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Nav Links */}
