@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-export default function Dashboard({ session }) {
+export default function Dashboard({ session, refreshKey }) {
     const [activeTab, setActiveTab] = useState('home');
     const [searchQuery, setSearchQuery] = useState('');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -74,7 +74,7 @@ export default function Dashboard({ session }) {
         }
 
         fetchDashboardData();
-    }, []);
+    }, [refreshKey]);
 
     // Static data from FutureTools for the Feed column
     const futureToolsFeed = [
