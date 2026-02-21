@@ -952,16 +952,16 @@ function LandingPage() {
         </div>
 
         {/* Right half: WhatsApp logo + QR code side by side */}
-        <div className="w-full md:w-1/2 flex flex-col items-center gap-1">
-          <span className="text-xs uppercase tracking-wider text-white/50">Join us on</span>
-          <div className="flex items-center justify-center gap-4">
-            <a href="https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity shrink-0" title="Join our WhatsApp Group">
+        <div className="w-full md:w-1/2 flex items-center justify-center gap-4">
+          <div className="flex flex-col items-center gap-1 shrink-0">
+            <span className="text-xs uppercase tracking-wider text-white/50">Join us on</span>
+            <a href="https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" title="Join our WhatsApp Group">
               <img src="/logo-whatsapp.png" alt="Join our WhatsApp Group" className="w-24 h-24" />
             </a>
-            <a href="https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity shrink-0" title="Join our WhatsApp Group">
-              <img src="/qrcode-whatsapp.jpeg" alt="Join our WhatsApp Group" className="w-36 h-36 rounded-lg border border-white/10" />
-            </a>
           </div>
+          <a href="https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity shrink-0" title="Join our WhatsApp Group">
+            <img src="/qrcode-whatsapp.jpeg" alt="Join our WhatsApp Group" className="w-36 h-36 rounded-lg border border-white/10" />
+          </a>
         </div>
       </div>
 
