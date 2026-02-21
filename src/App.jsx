@@ -14,7 +14,7 @@ function ChatWindow() {
 
       <div className="flex-1 overflow-y-auto mb-4 space-y-4">
         <div className="glass-panel text-sm">
-          <p>Hello! I'm the AI Makers Generation assistant.</p>
+          <p>Hello! I'm the AI Maker Bot.</p>
           <p className="mt-2 text-white/70">I can answer general questions about the community, help you find resources, or guide you on how to contribute to the Wiki.</p>
         </div>
       </div>

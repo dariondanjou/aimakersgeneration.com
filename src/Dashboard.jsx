@@ -216,11 +216,11 @@ export default function Dashboard({ session }) {
                     <button onClick={() => { setActiveTab('resources'); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-b-2 text-left ${activeTab === 'resources' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
                         <Globe size={16} className="inline mr-2" /> AI Resources
                     </button>
-                    <button onClick={() => { setActiveTab('calendar'); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-b-2 text-left ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
-                        <Calendar size={16} className="inline mr-2" /> Calendar
+                    <button onClick={() => { setActiveTab('calendar'); }} title="Calendar" className={`h-full flex items-center px-3 text-sm font-semibold transition-all border-b-2 text-left ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
+                        <Calendar size={18} />
                     </button>
-                    <button onClick={() => { setActiveTab('people'); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-b-2 text-left ${activeTab === 'people' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
-                        <Users size={16} className="inline mr-2" /> People
+                    <button onClick={() => { setActiveTab('people'); }} title="People" className={`h-full flex items-center px-3 text-sm font-semibold transition-all border-b-2 text-left ${activeTab === 'people' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
+                        <Users size={18} />
                     </button>
                 </div>
 
