@@ -104,6 +104,14 @@ export default function Dashboard({ session, refreshKey }) {
         }
     ];
 
+    const youtubeVideos = [
+        { id: '5cMZqjrgq6Y', title: 'AI News: 5 New Models Dropped This Week!', channel: 'Matt Wolfe', date: 'Feb 20' },
+        { id: 'gDP4bkeWbUs', title: 'Is Seedance 2.0 Overhyped? An Honest AI Video Review', channel: 'Curious Refuge', date: 'Feb 20' },
+        { id: 'SlRzTFx8Qtg', title: 'My Complete AI Workflow for Maximum Productivity', channel: 'Matt Wolfe', date: 'Feb 18' },
+        { id: 'JSetfLwM5sI', title: 'What Claude Did To Make The Pentagon This Mad', channel: 'Matt Wolfe', date: 'Feb 18' },
+        { id: 'gEHe1-1futI', title: 'The AI Image Workflow That Broke AI Detectors', channel: 'Curious Refuge', date: 'Feb 13' },
+    ];
+
     const handleSignOut = async () => {
         await supabase.auth.signOut();
     };
@@ -284,18 +292,28 @@ export default function Dashboard({ session, refreshKey }) {
                                     <button onClick={() => setActiveTab('news')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors cursor-pointer">view more</button>
                                 </div>
 
-                                {loading ? <p className="text-white/50">Loading announcements...</p> :
-                                    announcements.length === 0 ? <p className="text-white/50 italic">No announcements posted yet.</p> :
-                                        <div className="space-y-4 relative z-10">
-                                            {announcements.map(post => (
-                                                <div key={post.id} className="border-b border-white/10 pb-3 last:border-0">
-                                                    <h4 className="font-bold text-lg">{post.title}</h4>
-                                                    {post.excerpt && <p className="text-white/70 text-sm mt-1">{post.excerpt}</p>}
-                                                    <div className="text-xs text-white/40 mt-2">Posted by {post.profiles?.username || 'Admin'} • {new Date(post.created_at).toLocaleDateString()}</div>
-                                                </div>
-                                            ))}
+                                <div className="space-y-4 relative z-10">
+                                    {futureToolsFeed.slice(0, 3).map(item => (
+                                        <div key={item.id} className="border-b border-white/10 pb-3 last:border-0">
+                                            <a href={item.url} target="_blank" rel="noreferrer" className="font-bold text-lg text-white hover:text-[#B0E0E6] transition-colors">{item.title}</a>
+                                            <div className="text-xs text-white/40 mt-2">{item.date} • FutureTools</div>
                                         </div>
-                                }
+                                    ))}
+                                    {youtubeVideos.length > 0 && (
+                                        <a href={`https://www.youtube.com/watch?v=${youtubeVideos[0].id}`} target="_blank" rel="noreferrer" className="block group border-b border-white/10 pb-3">
+                                            <div className="relative rounded-lg overflow-hidden border border-white/10 group-hover:border-[#B0E0E6]/50 transition-colors">
+                                                <img src={`https://img.youtube.com/vi/${youtubeVideos[0].id}/mqdefault.jpg`} alt={youtubeVideos[0].title} className="w-full aspect-video object-cover" />
+                                                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                                    <div className="w-10 h-10 rounded-full bg-red-600/90 flex items-center justify-center">
+                                                        <div className="w-0 h-0 border-l-[14px] border-l-white border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent ml-1" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <h4 className="font-bold text-lg text-white group-hover:text-[#B0E0E6] transition-colors mt-2">{youtubeVideos[0].title}</h4>
+                                            <div className="text-xs text-white/40 mt-1">{youtubeVideos[0].channel} • {youtubeVideos[0].date}</div>
+                                        </a>
+                                    )}
+                                </div>
                             </div>
                             <div className="glass-panel p-6">
                                 <div className="flex justify-between items-center mb-4 relative z-10">
@@ -380,23 +398,26 @@ export default function Dashboard({ session, refreshKey }) {
                                         </div>
                                     ))}
                                 </div>
-                                <div className="col-span-1 lg:col-span-4 rounded-lg bg-white/5 border border-white/10 p-6">
-                                    <h3 className="text-xl font-bold mb-4 border-b border-white/10 pb-2">Announcements</h3>
-                                    <div className="space-y-4">
-                                        {loading && <p className="text-white/50 text-sm">Loading...</p>}
-                                        {!loading && announcements.length === 0 && (
-                                            <p className="text-white/50 italic text-sm">No announcements yet.</p>
-                                        )}
-                                        {announcements.map(post => (
-                                            <div key={post.id} className="border-b border-white/10 pb-3 last:border-0">
-                                                <h4 className="text-sm font-semibold text-white mb-1">{post.title}</h4>
-                                                {post.excerpt && <p className="text-white/70 text-xs mb-1">{post.excerpt}</p>}
-                                                <span className="text-[10px] text-white/40 uppercase tracking-wider">
-                                                    {post.profiles?.username || 'Admin'} • {new Date(post.created_at).toLocaleDateString()}
-                                                </span>
+                                <div className="col-span-1 lg:col-span-4 flex flex-col gap-4">
+                                    <h3 className="text-xl font-bold border-b border-white/10 pb-2">Latest Videos</h3>
+                                    {youtubeVideos.map(video => (
+                                        <a key={video.id} href={`https://www.youtube.com/watch?v=${video.id}`} target="_blank" rel="noreferrer" className="block group">
+                                            <div className="relative rounded-lg overflow-hidden border border-white/10 group-hover:border-[#B0E0E6]/50 transition-colors">
+                                                <img
+                                                    src={`https://img.youtube.com/vi/${video.id}/mqdefault.jpg`}
+                                                    alt={video.title}
+                                                    className="w-full aspect-video object-cover"
+                                                />
+                                                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                                    <div className="w-10 h-10 rounded-full bg-red-600/90 flex items-center justify-center">
+                                                        <div className="w-0 h-0 border-l-[14px] border-l-white border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent ml-1" />
+                                                    </div>
+                                                </div>
                                             </div>
-                                        ))}
-                                    </div>
+                                            <h4 className="text-sm font-semibold text-white group-hover:text-[#B0E0E6] transition-colors mt-2 line-clamp-2">{video.title}</h4>
+                                            <span className="text-[10px] text-white/40 uppercase tracking-wider">{video.channel} • {video.date}</span>
+                                        </a>
+                                    ))}
                                 </div>
                             </div>
                         </div>
