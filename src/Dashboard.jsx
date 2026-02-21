@@ -1,4 +1,4 @@
-import { Globe, Calendar, Users, Newspaper, Search, LogOut, Edit, Plus, X, Check } from 'lucide-react';
+import { Globe, Calendar, Users, Newspaper, Search, LogOut, Edit, Plus, X, Check, Menu } from 'lucide-react';
 import { supabase } from './supabaseClient';
 import { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
@@ -7,6 +7,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 export default function Dashboard({ session }) {
     const [activeTab, setActiveTab] = useState('home');
     const [searchQuery, setSearchQuery] = useState('');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Profile Edit State
     const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -197,38 +198,52 @@ export default function Dashboard({ session }) {
         <div className="flex flex-col h-full p-6 relative overflow-hidden text-lg">
 
             {/* Top Navigation & Search */}
-            <header className="flex justify-between items-center mb-8 border-b border-white/10 pb-6 relative z-10">
-                <div className="flex gap-6 px-2">
-                    <button onClick={() => setActiveTab('home')} className={`pb-2 px-1 text-sm font-semibold transition-all border-b-2 ${activeTab === 'home' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
+            <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 border-b border-white/10 pb-6 relative z-10 gap-4">
+
+                {/* Mobile Header Top Row */}
+                <div className="flex justify-between items-center w-full lg:w-auto">
+                    <button className="lg:hidden p-2 text-white hover:bg-white/10 rounded-md transition-colors" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                    {/* Mobile Sign Out */}
+                    <button onClick={handleSignOut} className="lg:hidden p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors" title="Sign Out">
+                        <LogOut size={18} />
+                    </button>
+                </div>
+
+                {/* Nav Links */}
+                <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:flex flex-col lg:flex-row gap-4 lg:gap-6 px-2 w-full lg:w-auto`}>
+                    <button onClick={() => { setActiveTab('home'); setIsMobileMenuOpen(false); }} className={`pb-2 px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'home' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Globe size={16} className="inline mr-2" /> Home
                     </button>
-                    <button onClick={() => setActiveTab('news')} className={`pb-2 px-1 text-sm font-semibold transition-all border-b-2 ${activeTab === 'news' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
+                    <button onClick={() => { setActiveTab('news'); setIsMobileMenuOpen(false); }} className={`pb-2 px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'news' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Newspaper size={16} className="inline mr-2" /> Feed
                     </button>
-                    <button onClick={() => setActiveTab('resources')} className={`pb-2 px-1 text-sm font-semibold transition-all border-b-2 ${activeTab === 'resources' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
+                    <button onClick={() => { setActiveTab('resources'); setIsMobileMenuOpen(false); }} className={`pb-2 px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'resources' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Globe size={16} className="inline mr-2" /> Resources
                     </button>
-                    <button onClick={() => setActiveTab('calendar')} className={`pb-2 px-1 text-sm font-semibold transition-all border-b-2 ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
+                    <button onClick={() => { setActiveTab('calendar'); setIsMobileMenuOpen(false); }} className={`pb-2 px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Calendar size={16} className="inline mr-2" /> Calendar
                     </button>
-                    <button onClick={() => setActiveTab('people')} className={`pb-2 px-1 text-sm font-semibold transition-all border-b-2 ${activeTab === 'people' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
+                    <button onClick={() => { setActiveTab('people'); setIsMobileMenuOpen(false); }} className={`pb-2 px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'people' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Users size={16} className="inline mr-2" /> People
                     </button>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="relative">
+                {/* Search & Desktop Signout */}
+                <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:flex items-center gap-4 w-full lg:w-auto flex-col sm:flex-row`}>
+                    <div className="relative w-full sm:w-auto">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" size={16} />
                         <input
                             type="text"
                             placeholder="Fuzzy search anything..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-64"
+                            className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-full sm:w-64"
                         />
                     </div>
 
-                    <button onClick={handleSignOut} className="p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors" title="Sign Out">
+                    <button onClick={handleSignOut} className="hidden lg:block p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors" title="Sign Out">
                         <LogOut size={18} />
                     </button>
                 </div>
@@ -237,8 +252,8 @@ export default function Dashboard({ session }) {
             {/* Main Content Area Based on Tab */}
             <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar relative z-10">
                 {activeTab === 'home' && (
-                    <div className="grid grid-cols-12 gap-6">
-                        <div className="col-span-8 flex flex-col gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <div className="col-span-1 lg:col-span-8 flex flex-col gap-6">
                             <div className="glass-panel relative overflow-hidden min-h-[200px]">
                                 <div className="absolute top-0 right-0 p-4 opacity-10"><Newspaper size={64} /></div>
                                 <div className="flex justify-between items-center mb-4">
@@ -278,7 +293,7 @@ export default function Dashboard({ session }) {
                             </div>
                         </div>
 
-                        <div className="col-span-4 flex flex-col gap-6">
+                        <div className="col-span-1 lg:col-span-4 flex flex-col gap-6">
                             <div className="glass-panel p-6">
                                 <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
                                     <h2 className="text-lg font-bold">Upcoming Events</h2>
@@ -327,8 +342,8 @@ export default function Dashboard({ session }) {
                             <h2 className="text-3xl font-bold text-white">AI News</h2>
                             <button className="btn btn-primary text-sm">Submit News</button>
                         </div>
-                        <div className="grid grid-cols-12 gap-6">
-                            <div className="col-span-8 flex flex-col gap-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                            <div className="col-span-1 lg:col-span-8 flex flex-col gap-4">
                                 {loading && <p>Loading news...</p>}
                                 {!loading && announcements.length === 0 && (
                                     <div className="glass-panel text-white/50 italic text-center py-12">No news items have been published yet.</div>
@@ -344,7 +359,7 @@ export default function Dashboard({ session }) {
                                     </div>
                                 ))}
                             </div>
-                            <div className="col-span-4 rounded-lg bg-white/5 border border-white/10 p-6">
+                            <div className="col-span-1 lg:col-span-4 rounded-lg bg-white/5 border border-white/10 p-6">
                                 <h3 className="text-xl font-bold mb-4 border-b border-white/10 pb-2">Feed</h3>
                                 <div className="space-y-4">
                                     {futureToolsFeed.map(feedItem => (
@@ -487,7 +502,7 @@ export default function Dashboard({ session }) {
                                         <label className="block text-sm text-white/70 mb-1">Username</label>
                                         <input type="text" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. AI Architect" required />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm text-white/70 mb-1">First Name (Optional)</label>
                                             <input type="text" value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Satoshi" />
