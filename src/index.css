@@ -249,7 +249,7 @@ a:hover {
   color: white !important;
 }
 
-/* Sketched Custom Scrollbar */
+/* Sketched Custom Scrollbar (Base64 Encoded for Maximum Compatibility) */
 ::-webkit-scrollbar {
   width: 14px;
   background: transparent;
@@ -261,23 +261,23 @@ a:hover {
 
 ::-webkit-scrollbar-thumb {
   background-color: transparent;
-  background-image: url("./assets/scroll-thumb.svg");
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNCIgaGVpZ2h0PSIxNCI+PGNpcmNsZSBjeD0iNyIgY3k9IjciIHI9IjQuNSIgZmlsbD0iIzBBMTkyRiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utb3BhY2l0eT0iMC45IiBzdHJva2Utd2lkdGg9IjEuNSIvPjwvc3ZnPg==");
   background-repeat: no-repeat;
   background-position: center;
 }
 
 ::-webkit-scrollbar-button:single-button:vertical:decrement {
-  height: 20px;
+  height: 18px;
   width: 14px;
-  background-image: url("./assets/scroll-up.svg");
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNCIgaGVpZ2h0PSIyMCI+PHBhdGggZD0iTTMgMTMgTDcgNyBMMTEgMTMiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLW9wYWNpdHk9IjAuOSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZmlsbD0ibm9uZSIvPjwvc3ZnPg==");
   background-repeat: no-repeat;
   background-position: center;
 }
 
 ::-webkit-scrollbar-button:single-button:vertical:increment {
-  height: 20px;
+  height: 18px;
   width: 14px;
-  background-image: url("./assets/scroll-down.svg");
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNCIgaGVpZ2h0PSIyMCI+PHBhdGggZD0iTTMgNyBMNyAxMyBMMTEgNyIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utb3BhY2l0eT0iMC45IiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBmaWxsPSJub25lIi8+PC9zdmc+");
   background-repeat: no-repeat;
   background-position: center;
 }
