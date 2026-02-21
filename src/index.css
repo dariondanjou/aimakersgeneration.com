@@ -114,7 +114,7 @@ a:hover {
   overflow-y: auto;
   padding: 1rem;
   scrollbar-width: thin;
-  scrollbar-color: var(--accent-blue) transparent;
+  scrollbar-color: var(--chalk-dim) transparent;
 }
 
 @media (min-width: 1024px) {
@@ -261,7 +261,7 @@ a:hover {
 
 ::-webkit-scrollbar-thumb {
   background-color: transparent;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Ccircle cx='7' cy='7' r='4.5' fill='%230A192F' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Ccircle cx='7' cy='7' r='4.5' fill='%230A192F' stroke='%23FFFFFF' stroke-opacity='0.9' stroke-width='1.5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: center;
 }
@@ -269,7 +269,7 @@ a:hover {
 ::-webkit-scrollbar-button:single-button:vertical:decrement {
   height: 20px;
   width: 14px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='20'%3E%3Cpath d='M3 13 L7 7 L11 13' stroke='rgba(255,255,255,0.9)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='20'%3E%3Cpath d='M3 13 L7 7 L11 13' stroke='%23FFFFFF' stroke-opacity='0.9' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: center;
 }
@@ -277,7 +277,7 @@ a:hover {
 ::-webkit-scrollbar-button:single-button:vertical:increment {
   height: 20px;
   width: 14px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='20'%3E%3Cpath d='M3 7 L7 13 L11 7' stroke='rgba(255,255,255,0.9)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='20'%3E%3Cpath d='M3 7 L7 13 L11 7' stroke='%23FFFFFF' stroke-opacity='0.9' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: center;
 }
