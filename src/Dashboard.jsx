@@ -198,7 +198,7 @@ export default function Dashboard({ session }) {
     };
 
     return (
-        <div className="flex flex-col h-full p-6 relative overflow-hidden text-lg">
+        <div className="main-content custom-scrollbar flex flex-col h-full p-6 relative overflow-y-auto text-lg w-full">
 
             {/* Top Navigation & Search */}
             <header className="flex flex-row items-center mb-8 border-b border-white/10 pb-4 relative z-10 w-full flex-nowrap lg:gap-4 xl:gap-6">
