@@ -205,7 +205,7 @@ export default function Dashboard({ session }) {
 
                 {/* Mobile Header Top Row & Site Title */}
                 <div className="flex justify-between items-center w-full lg:w-auto h-10 pr-2 lg:pr-0">
-                    <div className="flex items-center gap-2 sm:gap-3 mr-4 lg:mr-8">
+                    <div className="flex items-center gap-2 sm:gap-3 mr-4 lg:mr-8 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => { setActiveTab('home'); setIsMobileMenuOpen(false); }}>
                         <Terminal size={24} className="text-[#B0E0E6]" />
                         <span className="text-lg sm:text-xl font-bold text-white whitespace-nowrap">AI MAKERS GENERATION</span>
                     </div>
@@ -223,9 +223,6 @@ export default function Dashboard({ session }) {
 
                 {/* Nav Links */}
                 <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:flex flex-col lg:flex-row gap-4 lg:gap-6 px-2 w-full lg:w-auto items-center h-10`}>
-                    <button onClick={() => { setActiveTab('home'); setIsMobileMenuOpen(false); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'home' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
-                        <Globe size={16} className="inline mr-2" /> Home
-                    </button>
                     <button onClick={() => { setActiveTab('news'); setIsMobileMenuOpen(false); }} className={`h-full flex items-center px-1 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left ${activeTab === 'news' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} `}>
                         <Newspaper size={16} className="inline mr-2" /> Feed
                     </button>
