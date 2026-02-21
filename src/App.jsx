@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Bot, LogIn, Github, Twitter, Facebook, MessageSquare, Terminal, Send, Plus, X, Upload } from 'lucide-react';
+import { Bot, LogIn, Github, Twitter, Facebook, MessageSquare, Terminal, Plus, X, Upload } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from './supabaseClient';
 import Dashboard from './Dashboard';
@@ -570,7 +570,7 @@ function ChatWindow({ session, onDataChange }) {
             className="flex-1 bg-transparent border-none outline-none text-white p-2 text-sm placeholder:text-white/30"
           />
           <button onClick={handleSend} disabled={isSaving || isUploading} className="p-2 text-[#B0E0E6] hover:text-white transition-colors">
-            <Send size={18} />
+            <MessageSquare size={18} />
           </button>
         </div>
       </div>
