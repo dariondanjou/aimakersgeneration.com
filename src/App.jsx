@@ -957,7 +957,7 @@ function LandingPage() {
         {/* Left half: Description */}
         <div className="w-full md:w-1/2 text-left" style={{ marginLeft: '10px' }}>
           <p className="text-base md:text-lg text-[#B0E0E6] leading-relaxed">
-            A community of AI creatives, builders, and makers getting their hands dirty. Share resources, catch up on news, and collaborate on the future.
+            We are a community of AI creatives, builders, and makers getting our hands dirty. Share resources, catch up on news, and collaborate on the future.
           </p>
         </div>
 
