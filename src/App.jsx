@@ -12,7 +12,7 @@ function ChatWindow({ session, onDataChange }) {
       ];
     }
     return [
-      { role: 'bot', text: "Hello! I'm the AI Maker Bot.\nI can answer general questions about the AI MAKERS GENERATION community, help you find resources, or guide you on how to contribute to the AI Resources Wiki." }
+      { role: 'bot', text: "Hello! I'm the AI Maker Bot.\nI can answer general questions about the AI MAKERS GENERATION community." }
     ];
   });
   const [input, setInput] = useState('');
@@ -166,9 +166,17 @@ function ChatWindow({ session, onDataChange }) {
       setFlow({ type: 'profile', step: 0, data: {} });
       addBotMessage("Let's update your profile! What username would you like?");
     } else if (/\bhelp\b|what can you do/i.test(text)) {
-      addBotMessage("Here's what I can do:\n\n• \"Add event\" — Create a new calendar event\n• \"Add resource\" — Add an AI resource to the wiki\n• \"Add article\" — Publish news, an announcement, or video\n• \"Update profile\" — Edit your username, name, and avatar\n• \"Cancel\" — Cancel any in-progress action\n• \"Help\" — Show this message\n\nYou can also attach files using the + button or by dragging and dropping!");
+      if (session) {
+        addBotMessage("Here's what I can do:\n\n• \"Add event\" — Create a new calendar event\n• \"Add resource\" — Add an AI resource to the wiki\n• \"Add article\" — Publish news, an announcement, or video\n• \"Update profile\" — Edit your username, name, and avatar\n• \"Cancel\" — Cancel any in-progress action\n• \"Help\" — Show this message\n\nYou can also attach files using the + button or by dragging and dropping!");
+      } else {
+        addBotMessage("I can answer general questions about the AI MAKERS GENERATION community.\n\nSign in to add events, resources, articles, and edit your profile!");
+      }
     } else {
-      addBotMessage("I can help you add content to the site! Try saying \"add event\", \"add resource\", \"add article\", or \"update profile\". Type \"help\" for more options.");
+      if (session) {
+        addBotMessage("I can help you add content to the site! Try saying \"add event\", \"add resource\", \"add article\", or \"update profile\". Type \"help\" for more options.");
+      } else {
+        addBotMessage("I can answer general questions about the AI MAKERS GENERATION community. Sign in to unlock more features!");
+      }
     }
   };
 
@@ -414,7 +422,8 @@ function ChatWindow({ session, onDataChange }) {
       title: data.title,
       description: data.description || null,
       event_date: data.event_date.toISOString().split('T')[0],
-      url: data.url || null
+      url: data.url || null,
+      created_by: session?.user?.id || null
     }]);
     setIsSaving(false);
     setFlow(null);
@@ -528,21 +537,25 @@ function ChatWindow({ session, onDataChange }) {
           </div>
         )}
         <div className={`flex items-center chalk-border bg-black/20 p-1 ${pendingFile ? 'rounded-t-none' : ''}`}>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,video/*"
-            className="hidden"
-            onChange={handleFileSelect}
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isSaving || isUploading}
-            className="p-2 text-white/40 hover:text-[#B0E0E6] transition-colors"
-            title="Attach file"
-          >
-            <Plus size={18} />
-          </button>
+          {session && (
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/*"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isSaving || isUploading}
+                className="p-2 text-white/40 hover:text-[#B0E0E6] transition-colors"
+                title="Attach file"
+              >
+                <Plus size={18} />
+              </button>
+            </>
+          )}
           <input
             type="text"
             placeholder={flow ? "Type your answer..." : "Ask a question..."}
