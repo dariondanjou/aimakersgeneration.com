@@ -232,10 +232,10 @@ export default function Dashboard({ session, refreshKey }) {
                         <Globe size={18} /> <span className="block lg:hidden 2xl:block">AI Resources</span>
                     </button>
                     <button onClick={() => { setActiveTab('calendar'); setIsMobileMenuOpen(false); }} title="Calendar" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
-                        <Calendar size={18} /> <span className="block lg:hidden">Calendar</span>
+                        <Calendar size={18} /> <span className="block lg:hidden 2xl:block">Calendar</span>
                     </button>
                     <button onClick={() => { setActiveTab('people'); setIsMobileMenuOpen(false); }} title="People" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'people' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
-                        <Users size={18} /> <span className="block lg:hidden">People</span>
+                        <Users size={18} /> <span className="block lg:hidden 2xl:block">People</span>
                     </button>
                 </div>
 
