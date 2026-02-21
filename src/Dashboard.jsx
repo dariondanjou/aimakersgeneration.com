@@ -1,11 +1,14 @@
 import { Globe, Calendar, Users, Newspaper, Search, LogOut, Edit, Plus, X, Check, Menu, Terminal, MessageCircle, Share2, Trash2, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { getSocialPlatform, getSocialTooltip } from './socialPlatforms';
 import { useState, useEffect, useMemo } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Fuse from 'fuse.js';
 
 export default function Dashboard({ session, refreshKey }) {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('home');
     const [searchQuery, setSearchQuery] = useState('');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -18,6 +21,7 @@ export default function Dashboard({ session, refreshKey }) {
     const [editAvatarUrl, setEditAvatarUrl] = useState('');
     const [editBio, setEditBio] = useState('');
     const [editLinks, setEditLinks] = useState('');
+    const [editTitle, setEditTitle] = useState('');
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
@@ -81,7 +85,7 @@ export default function Dashboard({ session, refreshKey }) {
             // Fetch newest users (up to 50 for the People tab)
             const { data: usersData } = await supabase
                 .from('profiles')
-                .select('id, username, first_name, last_name, avatar_url, bio, links, updated_at')
+                .select('id, username, first_name, last_name, avatar_url, bio, links, title, updated_at')
                 .order('updated_at', { ascending: false })
                 .limit(50);
             if (usersData) setUsers(usersData);
@@ -125,12 +129,13 @@ export default function Dashboard({ session, refreshKey }) {
                 avatar_url: editAvatarUrl,
                 bio: editBio || null,
                 links: editLinks || null,
+                title: editTitle || 'AI Creative',
                 updated_at: new Date()
             });
 
         if (!error) {
             // Re-fetch users
-            const { data } = await supabase.from('profiles').select('id, username, first_name, last_name, avatar_url, bio, links, updated_at').order('updated_at', { ascending: false }).limit(50);
+            const { data } = await supabase.from('profiles').select('id, username, first_name, last_name, avatar_url, bio, links, title, updated_at').order('updated_at', { ascending: false }).limit(50);
             if (data) setUsers(data);
             setIsEditingProfile(false);
         } else {
@@ -684,6 +689,7 @@ export default function Dashboard({ session, refreshKey }) {
                                             setEditAvatarUrl(myProfile.avatar_url || '');
                                             setEditBio(myProfile.bio || '');
                                             setEditLinks(myProfile.links || '');
+                                            setEditTitle(myProfile.title || 'AI Creative');
                                         }
                                         setIsEditingProfile(true);
                                     }} className="btn btn-primary text-sm">
@@ -699,28 +705,6 @@ export default function Dashboard({ session, refreshKey }) {
                                         <button onClick={() => setIsEditingProfile(false)} className="text-white/50 hover:text-white"><X size={20} /></button>
                                     </div>
                                     <form onSubmit={handleEditProfileSave} className="flex flex-col gap-4 max-w-md">
-                                        <div>
-                                            <label className="block text-sm text-white/70 mb-1">Username</label>
-                                            <input type="text" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. AI Architect" required />
-                                        </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm text-white/70 mb-1">First Name (Optional)</label>
-                                                <input type="text" value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Satoshi" />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm text-white/70 mb-1">Last Name (Optional)</label>
-                                                <input type="text" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Nakamoto" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm text-white/70 mb-1">Bio</label>
-                                            <textarea value={editBio} onChange={(e) => setEditBio(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors h-20 text-sm" placeholder="Tell us about yourself..." />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm text-white/70 mb-1">Links (comma-separated URLs)</label>
-                                            <input type="text" value={editLinks} onChange={(e) => setEditLinks(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors text-sm" placeholder="https://portfolio.com, https://github.com/you" />
-                                        </div>
                                         <div>
                                             <label className="block text-sm text-white/70 mb-1">Avatar Image</label>
                                             <div
@@ -760,6 +744,32 @@ export default function Dashboard({ session, refreshKey }) {
                                                 </div>
                                             )}
                                         </div>
+                                        <div>
+                                            <label className="block text-sm text-white/70 mb-1">Title</label>
+                                            <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. AI Creative" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm text-white/70 mb-1">Username</label>
+                                            <input type="text" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. AI Architect" required />
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm text-white/70 mb-1">First Name (Optional)</label>
+                                                <input type="text" value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Satoshi" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm text-white/70 mb-1">Last Name (Optional)</label>
+                                                <input type="text" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Nakamoto" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm text-white/70 mb-1">Bio</label>
+                                            <textarea value={editBio} onChange={(e) => setEditBio(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors h-20 text-sm" placeholder="Tell us about yourself..." />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm text-white/70 mb-1">Links (comma-separated URLs)</label>
+                                            <input type="text" value={editLinks} onChange={(e) => setEditLinks(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors text-sm" placeholder="https://portfolio.com, https://github.com/you" />
+                                        </div>
                                         <button type="submit" disabled={isSavingProfile} className="btn btn-primary w-fit mt-2">
                                             {isSavingProfile ? 'Saving...' : <><Check size={16} className="inline mr-2" /> Save Profile</>}
                                         </button>
@@ -770,30 +780,35 @@ export default function Dashboard({ session, refreshKey }) {
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 {loading ? <p>Loading network...</p> :
                                     users.length === 0 ? <p className="col-span-full">No creatives registered entirely.</p> :
-                                        users.map(u => (
-                                            <div key={u.id} className="glass-panel flex flex-col items-center p-6 hover:bg-white/10 transition-colors cursor-pointer text-center">
-                                                <div className="w-20 h-20 rounded-full bg-black/40 border-2 border-[#B0E0E6]/40 flex items-center justify-center text-xl font-bold shadow-lg overflow-hidden mb-4">
+                                        users.map(u => {
+                                            const firstName = u.first_name || u.username || 'User';
+                                            return (
+                                            <div key={u.id} onClick={() => navigate(`/profile/${u.id}`)} className="glass-panel flex flex-col items-center p-6 hover:bg-white/10 transition-colors cursor-pointer text-center">
+                                                <div className="w-20 h-20 rounded-full bg-black/40 border-2 border-[#B0E0E6]/40 flex items-center justify-center text-xl font-bold shadow-lg overflow-hidden mb-2">
                                                     {u.avatar_url ? <img src={u.avatar_url} alt={u.username} className="w-full h-full object-cover" /> : (u.username?.[0]?.toUpperCase() || '?')}
                                                 </div>
+                                                <p className="text-xs text-[#B0E0E6] mb-2">{u.title || 'AI Creative'}</p>
                                                 <h3 className="font-bold text-lg truncate w-full">
                                                     {(u.first_name || u.last_name) ? `${u.first_name || ''} ${u.last_name || ''}`.trim() : (u.username || 'Anonymous')}
                                                 </h3>
-                                                {(u.first_name || u.last_name) && u.username && (
-                                                    <p className="text-[10px] text-white/40 uppercase tracking-wider -mt-1 mb-1">@{u.username}</p>
-                                                )}
-                                                {u.bio && <p className="text-xs text-white/60 mt-2 line-clamp-2">{u.bio}</p>}
                                                 {u.links && (
-                                                    <div className="flex flex-wrap justify-center gap-1 mt-2">
+                                                    <div className="flex flex-wrap justify-center gap-2 mt-3">
                                                         {u.links.split(',').map((link, i) => {
                                                             const url = link.trim();
                                                             if (!url) return null;
-                                                            return <a key={i} href={url.startsWith('http') ? url : `https://${url}`} target="_blank" rel="noreferrer" className="text-[10px] text-[#B0E0E6] hover:underline flex items-center gap-0.5" onClick={e => e.stopPropagation()}><ExternalLink size={8} />{new URL(url.startsWith('http') ? url : `https://${url}`).hostname.replace('www.','')}</a>;
+                                                            const platform = getSocialPlatform(url);
+                                                            const tooltip = getSocialTooltip(url, firstName);
+                                                            return (
+                                                                <a key={i} href={url.startsWith('http') ? url : `https://${url}`} target="_blank" rel="noreferrer" title={tooltip} className="w-7 h-7 rounded bg-white/5 border border-white/10 hover:border-[#B0E0E6]/50 flex items-center justify-center transition-all" onClick={e => e.stopPropagation()}>
+                                                                    {platform.logo ? <img src={platform.logo} alt={platform.name} className="w-4 h-4" /> : <ExternalLink size={12} className="text-white/60" />}
+                                                                </a>
+                                                            );
                                                         })}
                                                     </div>
                                                 )}
-                                                {!u.bio && !u.links && <p className="text-xs text-[#B0E0E6] mt-1">AI Creative</p>}
                                             </div>
-                                        ))
+                                            );
+                                        })
                                 }
                             </div>
                         </div>
