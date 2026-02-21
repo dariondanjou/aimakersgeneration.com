@@ -6,7 +6,7 @@ import Dashboard from './Dashboard';
 
 function ChatWindow({ session, onDataChange }) {
   const loggedOutWelcome = "Hello! I'm the AI Maker Bot.\nI can answer general questions about the AI MAKERS GENERATION community.";
-  const loggedInWelcome = "Hello! I'm the AI Maker Bot.\n\nI can answer general questions about the AI MAKERS GENERATION community, help you find resources, or guide you on how to contribute to the AI Resources Wiki.\n\nI can also add AI resources, events, and content to the site directly from this chat window.\nTry saying \"add event\", \"add resource\", \"add article\", \"update profile\", or \"send feedback\" to get started!";
+  const loggedInWelcome = "Hello! I'm the AI Maker Bot.\n\nI can answer general questions about the AI MAKERS GENERATION community, help you find resources, or guide you on how to contribute to the AI Resources Wiki.\n\nI can also add AI resources, events, and content to the site directly from this chat window.\nTry saying \"add event\", \"add resource\", \"add article\", \"edit event\", \"edit content\", \"update profile\", or \"send feedback\" to get started!";
 
   const [messages, setMessages] = useState([{ role: 'bot', text: loggedOutWelcome }]);
   const [hasSetWelcome, setHasSetWelcome] = useState(false);
@@ -165,6 +165,12 @@ function ChatWindow({ session, onDataChange }) {
       if (!session) { addBotMessage("You need to be signed in to add content. Please log in first!"); return; }
       setFlow({ type: 'post', step: 0, data: {} });
       addBotMessage("Let's create a new post! What type is it?", "Choose one: announcement, news, or video");
+    } else if (/\b(edit|update|change|modify)\b.*\bevent\b/i.test(text)) {
+      if (!session) { addBotMessage("You need to be signed in to edit events. Please log in first!"); return; }
+      startEditEventFlow();
+    } else if (/\b(edit|update|change|modify)\b.*\b(article|post|news|announcement|content|video)\b/i.test(text)) {
+      if (!session) { addBotMessage("You need to be signed in to edit content. Please log in first!"); return; }
+      startEditPostFlow();
     } else if (/\b(update|edit|change)\b.*\bprofile\b/i.test(text)) {
       if (!session) { addBotMessage("You need to be signed in to edit your profile. Please log in first!"); return; }
       setFlow({ type: 'profile', step: 0, data: {} });
@@ -175,13 +181,13 @@ function ChatWindow({ session, onDataChange }) {
       addBotMessage("I'd love to hear from you! What would you like to share with the admin team?\n\nYou can send a suggestion, feature request, feedback, critique, or ask a question.");
     } else if (/\bhelp\b|what can you do/i.test(text)) {
       if (session) {
-        addBotMessage("Here's what I can do:\n\n• \"Add event\" — Create a new calendar event\n• \"Add resource\" — Add an AI resource to the wiki\n• \"Add article\" — Publish news, an announcement, or video\n• \"Update profile\" — Edit your username, name, and avatar\n• \"Send feedback\" — Send suggestions, feedback, or questions to the admin team\n• \"Cancel\" — Cancel any in-progress action\n• \"Help\" — Show this message\n\nYou can also attach files using the + button or by dragging and dropping!");
+        addBotMessage("Here's what I can do:\n\n• \"Add event\" — Create a new calendar event\n• \"Add resource\" — Add an AI resource to the wiki\n• \"Add article\" — Publish news, an announcement, or video\n• \"Edit event\" — Update an existing event (title, date, time, etc.)\n• \"Edit content\" — Update an existing post or article\n• \"Update profile\" — Edit your username, name, and avatar\n• \"Send feedback\" — Send suggestions, feedback, or questions to the admin team\n• \"Cancel\" — Cancel any in-progress action\n• \"Help\" — Show this message\n\nYou can also attach files using the + button or by dragging and dropping!");
       } else {
         addBotMessage("I can answer general questions about the AI MAKERS GENERATION community.\n\nSign in to add events, resources, articles, and edit your profile!");
       }
     } else {
       if (session) {
-        addBotMessage("I can help you add content to the site! Try saying \"add event\", \"add resource\", \"add article\", \"update profile\", or \"send feedback\". Type \"help\" for more options.");
+        addBotMessage("I can help you add or edit content on the site! Try saying \"add event\", \"edit event\", \"add article\", \"edit content\", \"update profile\", or \"send feedback\". Type \"help\" for more options.");
       } else {
         addBotMessage("I can answer general questions about the AI MAKERS GENERATION community. Sign in to unlock more features!");
       }
@@ -194,6 +200,8 @@ function ChatWindow({ session, onDataChange }) {
     else if (flow.type === 'post') processPostStep(text, imageUrl);
     else if (flow.type === 'profile') processProfileStep(text, imageUrl);
     else if (flow.type === 'feedback') processFeedbackStep(text);
+    else if (flow.type === 'edit_event') processEditEventStep(text);
+    else if (flow.type === 'edit_post') processEditPostStep(text);
   };
 
   const processEventStep = (text, imageUrl = null) => {
@@ -486,6 +494,239 @@ function ChatWindow({ session, onDataChange }) {
       addBotMessage("Post published! Check the AI News tab.", "What else can I help you with?");
       onDataChange?.();
       sendThankYouEmail('post', data.title);
+    }
+  };
+
+  const startEditEventFlow = async () => {
+    setIsSaving(true);
+    const { data: events, error } = await supabase
+      .from('events')
+      .select('*')
+      .order('event_date', { ascending: false })
+      .limit(10);
+    setIsSaving(false);
+    if (error) { addBotMessage("Error loading events: " + error.message); return; }
+    if (!events || events.length === 0) { addBotMessage("There are no events to edit right now."); return; }
+    const list = events.map((e, i) =>
+      `${i + 1}. ${e.title} — ${new Date(e.event_date).toLocaleDateString()}`
+    ).join('\n');
+    setFlow({ type: 'edit_event', step: 0, data: { events } });
+    addBotMessage(`Here are the recent events:\n\n${list}`, "Which one would you like to edit? (enter the number)");
+  };
+
+  const processEditEventStep = (text) => {
+    const lower = text.toLowerCase().trim();
+    switch (flow.step) {
+      case 0: {
+        const num = parseInt(text.trim());
+        const events = flow.data.events;
+        if (isNaN(num) || num < 1 || num > events.length) {
+          addBotMessage(`Please enter a number between 1 and ${events.length}.`);
+          return;
+        }
+        const selected = events[num - 1];
+        setFlow({ ...flow, step: 1, data: { ...flow.data, selected } });
+        addBotMessage(
+          `Current details for "${selected.title}":\n\n` +
+          `• Title: ${selected.title}\n` +
+          `• Description: ${selected.description || '(none)'}\n` +
+          `• Date: ${new Date(selected.event_date).toLocaleDateString()}\n` +
+          `• URL: ${selected.url || '(none)'}`,
+          "What would you like to change? Describe your updates in plain English.\n\nExamples:\n• \"change the title to AI Workshop\"\n• \"add time 2pm-5pm\"\n• \"update the description to A hands-on workshop\"\n• \"move the date to March 25, 2026\""
+        );
+        break;
+      }
+      case 1: {
+        const changes = parseEventChanges(text);
+        if (Object.keys(changes).length === 0) {
+          addBotMessage("I couldn't understand what to change. Try being more specific, e.g.:\n• \"change the title to New Title\"\n• \"add time 2pm to 5pm\"\n• \"update description to New description\"\n• \"change date to April 1, 2026\"\n• \"set url to https://example.com\"");
+          return;
+        }
+        setFlow({ ...flow, step: 2, data: { ...flow.data, changes } });
+        const selected = flow.data.selected;
+        let summary = `Here's what I'll update on "${selected.title}":\n`;
+        if (changes.title) summary += `\n• Title: ${selected.title} → ${changes.title}`;
+        if (changes.description !== undefined) summary += `\n• Description → ${changes.description}`;
+        if (changes.time) summary += `\n• Time: (adding) ${changes.time}`;
+        if (changes.event_date) summary += `\n• Date: ${new Date(selected.event_date).toLocaleDateString()} → ${changes.event_date.toLocaleDateString()}`;
+        if (changes.url) summary += `\n• URL → ${changes.url}`;
+        addBotMessage(summary, "Does this look correct? (yes / no)");
+        break;
+      }
+      case 2: {
+        if (lower === 'yes' || lower === 'y') {
+          doUpdateEvent(flow.data.selected, flow.data.changes);
+        } else {
+          setFlow(null);
+          addBotMessage("Edit cancelled. What else can I help with?");
+        }
+        break;
+      }
+    }
+  };
+
+  const parseEventChanges = (text) => {
+    const changes = {};
+    const extract = (pattern) => {
+      const m = text.match(pattern);
+      if (!m) return null;
+      return m[1]
+        .replace(/\s*,?\s*\band\b\s+(?:change|set|update|add|remove|move|reschedule|make|rename)\b.*/i, '')
+        .trim().replace(/^["']|["']$/g, '');
+    };
+    const title = extract(/(?:change|set|update|rename|make)\s+(?:the\s+)?title\s+(?:to|as)\s+(.+)/i)
+      || extract(/\btitle\s*:\s*(.+)/i);
+    if (title) changes.title = title;
+    const desc = extract(/(?:change|set|update|add|make)\s+(?:the\s+)?description\s+(?:to|as)\s+(.+)/i)
+      || extract(/\bdescription\s*:\s*(.+)/i);
+    if (desc) changes.description = desc;
+    const dateStr = extract(/(?:change|set|update|move|reschedule|make)\s+(?:the\s+)?(?:date|event)\s+(?:to|for)\s+(.+)/i)
+      || extract(/(?:move|reschedule)\s+(?:it\s+)?(?:to|for)\s+(.+)/i)
+      || extract(/\bdate\s*:\s*(.+)/i);
+    if (dateStr) {
+      const parsed = new Date(dateStr);
+      if (!isNaN(parsed.getTime())) changes.event_date = parsed;
+    }
+    const timeStr = extract(/(?:add|set|change|update)\s+(?:a\s+)?(?:the\s+)?time(?:\s+range)?(?:\s+to|\s+of|\s+as)?\s+(.+)/i)
+      || extract(/\btime\s*:\s*(.+)/i);
+    if (timeStr) changes.time = timeStr;
+    if (!changes.time) {
+      const m = text.match(/\b(\d{1,2}(?::\d{2})?\s*(?:am|pm)\s*(?:to|-)\s*\d{1,2}(?::\d{2})?\s*(?:am|pm))\b/i);
+      if (m) changes.time = m[1].trim();
+    }
+    const url = extract(/(?:change|set|update|add|make)\s+(?:the\s+)?(?:url|link)\s+(?:to|as)\s+(.+)/i)
+      || extract(/\b(?:url|link)\s*:\s*(.+)/i);
+    if (url) changes.url = url;
+    return changes;
+  };
+
+  const doUpdateEvent = async (event, changes) => {
+    setIsSaving(true);
+    const updateData = {};
+    if (changes.title) updateData.title = changes.title;
+    if (changes.description !== undefined) updateData.description = changes.description;
+    if (changes.event_date) updateData.event_date = changes.event_date.toISOString().split('T')[0];
+    if (changes.url) updateData.url = changes.url;
+    if (changes.time) {
+      const currentDesc = changes.description !== undefined ? changes.description : (event.description || '');
+      updateData.description = currentDesc ? `${currentDesc} | Time: ${changes.time}` : `Time: ${changes.time}`;
+    }
+    const { error } = await supabase.from('events').update(updateData).eq('id', event.id);
+    setIsSaving(false);
+    setFlow(null);
+    if (error) {
+      addBotMessage("Error updating event: " + error.message);
+    } else {
+      addBotMessage(`Event "${changes.title || event.title}" updated successfully!`, "What else can I help you with?");
+      onDataChange?.();
+    }
+  };
+
+  const startEditPostFlow = async () => {
+    setIsSaving(true);
+    const { data: posts, error } = await supabase
+      .from('posts')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(10);
+    setIsSaving(false);
+    if (error) { addBotMessage("Error loading content: " + error.message); return; }
+    if (!posts || posts.length === 0) { addBotMessage("There's no content to edit right now."); return; }
+    const list = posts.map((p, i) =>
+      `${i + 1}. [${p.type}] ${p.title}`
+    ).join('\n');
+    setFlow({ type: 'edit_post', step: 0, data: { posts } });
+    addBotMessage(`Here's the recent content:\n\n${list}`, "Which one would you like to edit? (enter the number)");
+  };
+
+  const processEditPostStep = (text) => {
+    const lower = text.toLowerCase().trim();
+    switch (flow.step) {
+      case 0: {
+        const num = parseInt(text.trim());
+        const posts = flow.data.posts;
+        if (isNaN(num) || num < 1 || num > posts.length) {
+          addBotMessage(`Please enter a number between 1 and ${posts.length}.`);
+          return;
+        }
+        const selected = posts[num - 1];
+        setFlow({ ...flow, step: 1, data: { ...flow.data, selected } });
+        let details = `Current details for "${selected.title}":\n\n` +
+          `• Type: ${selected.type}\n` +
+          `• Title: ${selected.title}\n` +
+          `• Content: ${selected.content?.substring(0, 200) || '(none)'}${(selected.content?.length || 0) > 200 ? '...' : ''}\n` +
+          `• Excerpt: ${selected.excerpt || '(none)'}`;
+        if (selected.type === 'video') details += `\n• Video URL: ${selected.video_url || '(none)'}`;
+        addBotMessage(details, "What would you like to change? Describe your updates in plain English.\n\nExamples:\n• \"change the title to New Title\"\n• \"update the content to New content here\"\n• \"change the excerpt to New summary\"");
+        break;
+      }
+      case 1: {
+        const changes = parsePostChanges(text);
+        if (Object.keys(changes).length === 0) {
+          addBotMessage("I couldn't understand what to change. Try being more specific, e.g.:\n• \"change the title to New Title\"\n• \"update content to New content\"\n• \"change excerpt to New summary\"\n• \"set video url to https://youtube.com/...\"");
+          return;
+        }
+        setFlow({ ...flow, step: 2, data: { ...flow.data, changes } });
+        const selected = flow.data.selected;
+        let summary = `Here's what I'll update on "${selected.title}":\n`;
+        if (changes.title) summary += `\n• Title: ${selected.title} → ${changes.title}`;
+        if (changes.content) summary += `\n• Content: (updated)`;
+        if (changes.excerpt) summary += `\n• Excerpt → ${changes.excerpt}`;
+        if (changes.video_url) summary += `\n• Video URL → ${changes.video_url}`;
+        addBotMessage(summary, "Does this look correct? (yes / no)");
+        break;
+      }
+      case 2: {
+        if (lower === 'yes' || lower === 'y') {
+          doUpdatePost(flow.data.selected, flow.data.changes);
+        } else {
+          setFlow(null);
+          addBotMessage("Edit cancelled. What else can I help with?");
+        }
+        break;
+      }
+    }
+  };
+
+  const parsePostChanges = (text) => {
+    const changes = {};
+    const extract = (pattern) => {
+      const m = text.match(pattern);
+      if (!m) return null;
+      return m[1]
+        .replace(/\s*,?\s*\band\b\s+(?:change|set|update|add|remove|make|rename)\b.*/i, '')
+        .trim().replace(/^["']|["']$/g, '');
+    };
+    const title = extract(/(?:change|set|update|rename|make)\s+(?:the\s+)?title\s+(?:to|as)\s+(.+)/i)
+      || extract(/\btitle\s*:\s*(.+)/i);
+    if (title) changes.title = title;
+    const content = extract(/(?:change|set|update|replace|make)\s+(?:the\s+)?content\s+(?:to|as|with)\s+(.+)/i)
+      || extract(/\bcontent\s*:\s*(.+)/i);
+    if (content) changes.content = content;
+    const excerpt = extract(/(?:change|set|update|add|make)\s+(?:the\s+)?(?:excerpt|summary)\s+(?:to|as)\s+(.+)/i)
+      || extract(/\b(?:excerpt|summary)\s*:\s*(.+)/i);
+    if (excerpt) changes.excerpt = excerpt;
+    const videoUrl = extract(/(?:change|set|update|add|make)\s+(?:the\s+)?video\s*(?:url|link)\s+(?:to|as)\s+(.+)/i)
+      || extract(/\bvideo\s*(?:url|link)\s*:\s*(.+)/i);
+    if (videoUrl) changes.video_url = videoUrl;
+    return changes;
+  };
+
+  const doUpdatePost = async (post, changes) => {
+    setIsSaving(true);
+    const updateData = {};
+    if (changes.title) updateData.title = changes.title;
+    if (changes.content) updateData.content = changes.content;
+    if (changes.excerpt) updateData.excerpt = changes.excerpt;
+    if (changes.video_url) updateData.video_url = changes.video_url;
+    const { error } = await supabase.from('posts').update(updateData).eq('id', post.id);
+    setIsSaving(false);
+    setFlow(null);
+    if (error) {
+      addBotMessage("Error updating post: " + error.message);
+    } else {
+      addBotMessage(`"${changes.title || post.title}" updated successfully!`, "What else can I help you with?");
+      onDataChange?.();
     }
   };
 
