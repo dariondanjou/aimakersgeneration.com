@@ -945,6 +945,16 @@ function LandingPage() {
         A community of AI creatives, builders, and makers getting their hands dirty. Share resources, catch up on news, and collaborate on the future.
       </p>
 
+      <div className="glass-panel flex flex-col items-center w-full max-w-sm gap-3 relative z-10 p-4 mb-4">
+        <a href="https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <img src="/logo-whatsapp.svg" alt="WhatsApp" className="w-7 h-7" />
+          <span className="text-sm uppercase tracking-wider text-white/50">Join our WhatsApp Group</span>
+        </a>
+        <a href="https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+          <img src="/qrcode-whatsapp.jpeg" alt="Scan to join AI Makers Generation WhatsApp group" className="w-40 h-40 rounded-lg border border-white/10" />
+        </a>
+      </div>
+
       <div className="glass-panel flex flex-col w-full max-w-sm gap-2 relative z-10 p-4">
         <h3 className="text-sm uppercase tracking-wider text-white/50 mb-1">Connect to the Network</h3>
 
