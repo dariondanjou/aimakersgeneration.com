@@ -315,7 +315,7 @@ export default function Dashboard({ session, refreshKey }) {
         <div className="main-content custom-scrollbar flex flex-col h-full p-6 relative overflow-y-auto text-lg w-full">
 
             {/* Top Navigation & Search */}
-            <header className="flex flex-row items-center mb-8 border-b border-white/10 pb-4 relative z-10 w-full flex-nowrap lg:gap-4 xl:gap-6">
+            <header className="flex flex-row items-center mb-8 border-b border-white/10 pb-4 relative z-10 w-full flex-nowrap lg:gap-4 xl:gap-6" style={{ marginTop: '-3px' }}>
 
                 {/* Top Row: Title, Burger (Mobile), Sign Out (Mobile) */}
                 <div className="flex justify-between items-center shrink-0 w-full lg:w-auto h-10">
