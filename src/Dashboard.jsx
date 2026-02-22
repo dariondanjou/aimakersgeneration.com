@@ -475,7 +475,7 @@ export default function Dashboard({ session, refreshKey }) {
                                 {loading ? <p className="text-white/50 text-sm">Loading events...</p> :
                                     events.length === 0 ? <p className="text-white/50 italic text-sm">No upcoming events scheduled.</p> :
                                         <ul className="space-y-4">
-                                            {events.map(ev => (
+                                            {events.slice(0, 5).map(ev => (
                                                 <li key={ev.id} onClick={() => setSelectedEvent(ev)} className="cursor-pointer hover:bg-white/5 p-2 rounded transition-colors -mx-2">
                                                     <div className="font-bold text-sm text-[#FFFFFF]">{new Date(ev.event_date).toLocaleDateString()}</div>
                                                     <div className="text-sm">{ev.title}</div>
