@@ -457,10 +457,10 @@ export default function Dashboard({ session, refreshKey }) {
                                 </div>
                                 {loading ? <p className="text-white/50">Loading resources...</p> :
                                     resources.length === 0 ? <p className="text-white/50 italic">No resources added to the wiki yet.</p> :
-                                        <ul className="space-y-3">
+                                        <ul className="space-y-3" style={{ marginLeft: '-10px' }}>
                                             {resources.slice(0, 5).map(res => (
                                                 <li key={res.id} className="flex flex-col p-3 border-b border-white/10 last:border-0">
-                                                    <a href={res.url} target="_blank" rel="noreferrer" className="font-semibold text-white hover:text-[#B0E0E6] transition-colors">{res.title}</a>
+                                                    <a href={res.url} target="_blank" rel="noreferrer" className="font-semibold text-[#B0E0E6] hover:text-white transition-colors">{res.title}</a>
                                                     {res.description && <span className="text-xs text-white/60 mt-1 line-clamp-2">{res.description}</span>}
                                                 </li>
                                             ))}
@@ -471,7 +471,7 @@ export default function Dashboard({ session, refreshKey }) {
 
                         <div className="col-span-1 lg:col-span-4 flex flex-col gap-6">
                             <div className="glass-panel p-6">
-                                <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
+                                <div className="flex justify-between items-center border-b border-white/10 pb-2" style={{ marginBottom: '11px' }}>
                                     <h2 className="text-lg font-bold">Upcoming Events</h2>
                                     <button onClick={() => setActiveTab('calendar')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors">full calendar</button>
                                 </div>
