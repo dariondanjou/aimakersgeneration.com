@@ -480,7 +480,7 @@ export default function Dashboard({ session, refreshKey }) {
                                         <ul className="space-y-4">
                                             {events.slice(0, 5).map(ev => (
                                                 <li key={ev.id} onClick={() => setSelectedEvent(ev)} className="cursor-pointer hover:bg-white/5 p-2 rounded transition-colors -mx-2">
-                                                    <div className="font-bold text-sm text-[#FFFFFF]">{new Date(ev.event_date).toLocaleDateString()}</div>
+                                                    <div className="font-bold text-sm text-[#FFFFFF]">{new Date(ev.event_date + 'T00:00:00').toLocaleDateString()}</div>
                                                     <div className="text-sm">{ev.title}</div>
                                                 </li>
                                             ))}
@@ -661,7 +661,7 @@ export default function Dashboard({ session, refreshKey }) {
                                             <div key={ev.id} className="glass-panel border-[#FFFFFF]/30 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden group hover:border-[#FFFFFF] transition-colors">
                                                 <Calendar size={48} className="text-white/10 absolute -right-4 -bottom-4 group-hover:text-white/20 transition-colors" />
                                                 <div className="cursor-pointer" onClick={() => setSelectedEvent(ev)}>
-                                                    <div className="text-[#FFFFFF] text-2xl font-bold mb-2">{new Date(ev.event_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
+                                                    <div className="text-[#FFFFFF] text-2xl font-bold mb-2">{new Date(ev.event_date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
                                                     <h3 className="text-lg font-bold z-10">{ev.title}</h3>
                                                     {ev.description && <p className="text-sm text-white/60 mt-2 z-10 line-clamp-2">{ev.description}</p>}
                                                 </div>
@@ -829,7 +829,7 @@ export default function Dashboard({ session, refreshKey }) {
                                     <Calendar size={48} className="text-[#B0E0E6] opacity-50 mb-4" />
                                     <h2 className="text-3xl font-bold text-center mb-2">{selectedEvent.title}</h2>
                                     <div className="text-lg font-semibold text-[#B0E0E6]">
-                                        {new Date(selectedEvent.event_date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                        {new Date(selectedEvent.event_date + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                                     </div>
                                 </div>
                                 {selectedEvent.description ? (
