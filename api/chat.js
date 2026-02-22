@@ -51,7 +51,6 @@ const TOOLS = [
         title: { type: "string", description: "Event title" },
         description: { type: "string", description: "Event description (include time, location, etc.)" },
         event_date: { type: "string", description: "Event date in YYYY-MM-DD format" },
-        url: { type: "string", description: "Optional URL for the event" },
       },
       required: ["title", "event_date"],
     },
@@ -72,11 +71,12 @@ const TOOLS = [
   },
   {
     name: "list_events",
-    description: "List recent events from the calendar. Use this when the user wants to edit or delete an event, or wants to see what's scheduled.",
+    description: "List events from the calendar. Use this when the user wants to edit or delete an event, or wants to see what's scheduled.",
     input_schema: {
       type: "object",
       properties: {
         limit: { type: "integer", description: "Number of events to return (default 10)" },
+        title_filter: { type: "string", description: "Optional: filter events by title (case-insensitive partial match)" },
       },
     },
   },
@@ -86,13 +86,25 @@ const TOOLS = [
     input_schema: {
       type: "object",
       properties: {
-        event_id: { type: "integer", description: "The ID of the event to update" },
+        event_id: { type: "string", description: "The UUID of the event to update" },
         title: { type: "string", description: "New title" },
         description: { type: "string", description: "New description" },
         event_date: { type: "string", description: "New date in YYYY-MM-DD format" },
-        url: { type: "string", description: "New URL" },
       },
       required: ["event_id"],
+    },
+  },
+  {
+    name: "batch_update_events",
+    description: "Update multiple events at once by their IDs. Use this when the user wants to change the same field(s) across many events (e.g., rename all Film Bar AI events). Always confirm with the user before calling this.",
+    input_schema: {
+      type: "object",
+      properties: {
+        event_ids: { type: "array", items: { type: "string" }, description: "Array of event UUIDs to update" },
+        title: { type: "string", description: "New title for all events" },
+        description: { type: "string", description: "New description for all events" },
+      },
+      required: ["event_ids"],
     },
   },
   {
@@ -101,7 +113,7 @@ const TOOLS = [
     input_schema: {
       type: "object",
       properties: {
-        event_id: { type: "integer", description: "The ID of the event to delete" },
+        event_id: { type: "string", description: "The UUID of the event to delete" },
       },
       required: ["event_id"],
     },
@@ -137,7 +149,7 @@ const TOOLS = [
     input_schema: {
       type: "object",
       properties: {
-        post_id: { type: "integer", description: "The ID of the post to update" },
+        post_id: { type: "string", description: "The UUID of the post to update" },
         title: { type: "string", description: "New title" },
         content: { type: "string", description: "New content" },
         excerpt: { type: "string", description: "New excerpt" },
@@ -152,7 +164,7 @@ const TOOLS = [
     input_schema: {
       type: "object",
       properties: {
-        post_id: { type: "integer", description: "The ID of the post to delete" },
+        post_id: { type: "string", description: "The UUID of the post to delete" },
       },
       required: ["post_id"],
     },
@@ -186,7 +198,7 @@ const TOOLS = [
     input_schema: {
       type: "object",
       properties: {
-        resource_id: { type: "integer", description: "The ID of the resource to update" },
+        resource_id: { type: "string", description: "The UUID of the resource to update" },
         title: { type: "string", description: "New title" },
         description: { type: "string", description: "New description" },
         url: { type: "string", description: "New URL" },
@@ -200,7 +212,7 @@ const TOOLS = [
     input_schema: {
       type: "object",
       properties: {
-        resource_id: { type: "integer", description: "The ID of the resource to delete" },
+        resource_id: { type: "string", description: "The UUID of the resource to delete" },
       },
       required: ["resource_id"],
     },
@@ -264,7 +276,6 @@ async function executeTool(supabase, toolName, input, userId, userEmail) {
         title: input.title,
         description: input.description || null,
         event_date: input.event_date,
-        url: input.url || null,
         created_by: userId || null,
       }]).select();
       if (error) return { success: false, error: error.message };
@@ -286,11 +297,14 @@ async function executeTool(supabase, toolName, input, userId, userEmail) {
     }
 
     case "list_events": {
-      const { data, error } = await supabase
+      let query = supabase
         .from("events")
-        .select("id, title, description, event_date, url")
-        .order("event_date", { ascending: false })
-        .limit(input.limit || 10);
+        .select("id, title, description, event_date")
+        .order("event_date", { ascending: true });
+      if (input.title_filter) {
+        query = query.ilike("title", `%${input.title_filter}%`);
+      }
+      const { data, error } = await query.limit(input.limit || 10);
       if (error) return { success: false, error: error.message };
       return { success: true, events: data };
     }
@@ -300,10 +314,18 @@ async function executeTool(supabase, toolName, input, userId, userEmail) {
       if (input.title) updateData.title = input.title;
       if (input.description !== undefined) updateData.description = input.description;
       if (input.event_date) updateData.event_date = input.event_date;
-      if (input.url !== undefined) updateData.url = input.url;
       const { error } = await supabase.from("events").update(updateData).eq("id", input.event_id);
       if (error) return { success: false, error: error.message };
       return { success: true, message: `Event updated successfully.` };
+    }
+
+    case "batch_update_events": {
+      const updateData = {};
+      if (input.title) updateData.title = input.title;
+      if (input.description !== undefined) updateData.description = input.description;
+      const { error } = await supabase.from("events").update(updateData).in("id", input.event_ids);
+      if (error) return { success: false, error: error.message };
+      return { success: true, message: `Updated ${input.event_ids.length} events successfully.` };
     }
 
     case "delete_event": {
@@ -329,7 +351,7 @@ async function executeTool(supabase, toolName, input, userId, userEmail) {
     case "list_posts": {
       const { data, error } = await supabase
         .from("posts")
-        .select("id, type, title, content, excerpt, video_url")
+        .select("*")
         .order("created_at", { ascending: false })
         .limit(input.limit || 10);
       if (error) return { success: false, error: error.message };
@@ -440,7 +462,7 @@ async function executeTool(supabase, toolName, input, userId, userEmail) {
 
 // Tools that modify data (for data_changed flag)
 const WRITE_TOOLS = new Set([
-  "create_event", "create_recurring_events", "update_event", "delete_event",
+  "create_event", "create_recurring_events", "update_event", "batch_update_events", "delete_event",
   "create_post", "update_post", "delete_post",
   "create_resource", "update_resource", "delete_resource",
   "update_profile", "submit_feedback",
