@@ -315,7 +315,7 @@ export default function Dashboard({ session, refreshKey }) {
         <div className="main-content custom-scrollbar flex flex-col h-full p-6 relative overflow-y-auto text-lg w-full">
 
             {/* Top Navigation & Search */}
-            <header className="flex flex-row items-center mb-8 border-b border-white/10 pb-4 relative z-10 w-full flex-nowrap lg:gap-4 xl:gap-6" style={{ marginTop: '-3px' }}>
+            <header className="flex flex-row items-center mb-8 border-b border-white/10 pb-4 relative z-10 w-full flex-nowrap lg:gap-4 xl:gap-6" style={{ marginTop: '-4px' }}>
 
                 {/* Top Row: Title, Burger (Mobile), Sign Out (Mobile) */}
                 <div className="flex justify-between items-center shrink-0 w-full lg:w-auto h-10">
@@ -422,11 +422,11 @@ export default function Dashboard({ session, refreshKey }) {
                                     <button onClick={() => setActiveTab('news')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors cursor-pointer">view more</button>
                                 </div>
 
-                                <div className="space-y-4 relative z-10">
+                                <div className="space-y-2 relative z-10">
                                     {newsArticles.slice(0, 3).map(item => (
-                                        <div key={item.id} className="border-b border-white/10 pb-3 last:border-0">
-                                            <a href={item.url} target="_blank" rel="noreferrer" className="font-bold text-lg text-[#B0E0E6] hover:text-white transition-colors">{item.title}</a>
-                                            <div className="flex items-center justify-between mt-2">
+                                        <div key={item.id} className="border-b border-white/10 pb-2 last:border-0">
+                                            <a href={item.url} target="_blank" rel="noreferrer" className="font-bold text-lg text-[#B0E0E6] hover:text-white transition-colors leading-tight">{item.title}</a>
+                                            <div className="flex items-center justify-between mt-1">
                                                 <div className="text-xs text-white/40">{new Date(item.published_at).toLocaleDateString()} • {item.source}</div>
                                                 <div className="flex items-center gap-1">
                                                     <ShareButton title={item.title} url={item.url} />
