@@ -74,10 +74,12 @@ export default function Dashboard({ session, refreshKey }) {
                 .limit(50);
             if (resourcesData) setResources(resourcesData);
 
-            // Fetch nearest 50 events
+            // Fetch future events (including today)
+            const today = new Date().toISOString().split('T')[0];
             const { data: eventsData } = await supabase
                 .from('events')
                 .select('*')
+                .gte('event_date', today)
                 .order('event_date', { ascending: true })
                 .limit(50);
             if (eventsData) setEvents(eventsData);
@@ -197,8 +199,9 @@ export default function Dashboard({ session, refreshKey }) {
             .insert([{ title: eventTitle, description: eventDescription, event_date: isoDate }]);
 
         if (!error) {
-            // Re-fetch events
-            const { data } = await supabase.from('events').select('*').order('event_date', { ascending: true }).limit(50);
+            // Re-fetch future events (including today)
+            const refetchToday = new Date().toISOString().split('T')[0];
+            const { data } = await supabase.from('events').select('*').gte('event_date', refetchToday).order('event_date', { ascending: true }).limit(50);
             if (data) setEvents(data);
             setIsAddingEvent(false);
             setEventTitle(''); setEventDescription(''); setEventDate(new Date());
