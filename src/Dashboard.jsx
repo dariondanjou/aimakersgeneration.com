@@ -415,7 +415,7 @@ export default function Dashboard({ session, refreshKey }) {
                             <div className="glass-panel relative overflow-hidden min-h-[200px]">
                                 <div className="absolute top-0 right-0 p-4 opacity-10"><Newspaper size={64} /></div>
                                 <div className="flex justify-between items-center mb-4 relative z-10">
-                                    <h2 className="text-2xl font-bold text-white">Latest AI News</h2>
+                                    <h2 className="text-lg font-bold text-white">Latest AI News</h2>
                                     <button onClick={() => setActiveTab('news')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors cursor-pointer">view more</button>
                                 </div>
 
@@ -449,7 +449,7 @@ export default function Dashboard({ session, refreshKey }) {
                             </div>
                             <div className="glass-panel p-6">
                                 <div className="flex justify-between items-center mb-4 relative z-10">
-                                    <h2 className="text-xl font-bold">Active AI Resources</h2>
+                                    <h2 className="text-lg font-bold">Active AI Resources</h2>
                                     <button onClick={() => setActiveTab('resources')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors cursor-pointer">view more</button>
                                 </div>
                                 {loading ? <p className="text-white/50">Loading resources...</p> :
