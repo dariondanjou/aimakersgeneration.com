@@ -471,7 +471,7 @@ export default function Dashboard({ session, refreshKey }) {
 
                         <div className="col-span-1 lg:col-span-4 flex flex-col gap-6">
                             <div className="glass-panel p-6">
-                                <div className="flex justify-between items-center border-b border-white/10 pb-2" style={{ marginBottom: '6px' }}>
+                                <div className="flex justify-between items-center border-b border-white/10 pb-2" style={{ marginBottom: '1px' }}>
                                     <h2 className="text-lg font-bold">Upcoming Events</h2>
                                     <button onClick={() => setActiveTab('calendar')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors">full calendar</button>
                                 </div>
