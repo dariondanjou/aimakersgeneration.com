@@ -7,7 +7,7 @@ import ProfilePage from './ProfilePage';
 
 function ChatWindow({ session, onDataChange }) {
   const loggedOutWelcome = "Hello! I'm the AI Maker Bot.\n\nI can answer general questions about the AI MAKERS GENERATION community.";
-  const loggedInWelcome = "Hello! I'm the AI Maker Bot, powered by Claude.\n\nI can have natural conversations, answer questions about AI Makers Generation, and help you manage events, articles, resources, and your profile. Just tell me what you need!";
+  const loggedInWelcome = "Hello! I'm the AI Maker Bot.\n\nI can answer general questions about the AI MAKERS GENERATION community, help you find resources, or guide you on how to contribute to the AI Resources Wiki.\n\nI can also add AI resources, events, and content to the site directly from this chat window.";
 
   const [messages, setMessages] = useState([{ role: 'bot', text: loggedOutWelcome }]);
   const [hasSetWelcome, setHasSetWelcome] = useState(false);
