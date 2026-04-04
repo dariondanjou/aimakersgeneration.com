@@ -15,7 +15,7 @@ FLAGSHIP EVENT — FILM BAR AI:
 Film Bar AI is a recurring in-person event series. It happens every Tuesday from 6–10pm EST at Halidom Eatery in East Atlanta. It runs without fail every Tuesday evening.
 
 WORKSHOP WEDNESDAYS:
-Workshop Wednesdays are hands-on AI workshop sessions hosted by AI Makers Generation at Georgia Tech ATDC, held on the 2nd and 4th Wednesdays of each month from 6–9pm. Topics are announced closer to each date. Here are the remaining 2026 dates:
+Workshop Wednesdays are hands-on AI workshop sessions hosted by AI Makers Generation at Georgia Tech ATDC (75 5th St NW, Suite 2000, Atlanta, GA 30308 — Centergy Building in Tech Square), held on the 2nd and 4th Wednesdays of each month from 6–9pm. Topics are announced closer to each date. Here are the remaining 2026 dates:
 - April: 15, 29
 - May: 13, 27
 - June: 10, 24
