@@ -290,6 +290,10 @@ function CommunityGate() {
         <span className="text-[#FFFFFF]">AI MAKERS GENERATION</span>
       </h1>
 
+      <p className="text-lg sm:text-xl md:text-2xl font-semibold text-[#6FCF4B] mb-5 tracking-tight">
+        Build the Future. Share the knowledge.
+      </p>
+
       {/* Top row: Description left half, WhatsApp logo + QR code right half */}
       <div className="flex flex-col md:flex-row items-center gap-6 w-full max-w-2xl relative z-10 mb-6" style={{ marginLeft: '20px' }}>
         {/* Left half: Description */}
@@ -316,6 +320,7 @@ function CommunityGate() {
       {/* Auth buttons centered below */}
       <div className="glass-panel flex flex-col items-center gap-2 w-full max-w-sm relative z-10 p-4">
         <h3 className="text-sm uppercase tracking-wider text-white/50 mb-1">Connect to the Network</h3>
+        <p className="text-sm text-[#B0E0E6] mb-2">Log in to see member profiles.</p>
         <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: oauthRedirect() } })} className="btn w-full justify-start border-white/20 hover:border-white/50 bg-white/5 hover:bg-white/10">
           <LogIn size={18} /> Google Login
         </button>
@@ -374,8 +379,8 @@ function App() {
           </Routes>
         </main>
 
-        {/* Right Half: Chat Window */}
-        <ChatWindow session={session} onDataChange={handleDataChange} />
+        {/* Chat is now the shared floating AI MAKERS BOT widget (see app.html /aimg-bot.js),
+            consistent with the landing page. The old docked ChatWindow was removed. */}
       </div>
     </Router>
   );

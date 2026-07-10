@@ -1,5 +1,10 @@
-/* Import the Outfit font */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+/* Match the landing page font families: Poppins (display) + Inter (body) */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --font-display: "Poppins", "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+h1, h2, h3, h4 { font-family: var(--font-display); }
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -20,7 +25,7 @@
 }
 
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-body);
   background-color: var(--bg-blue);
   color: var(--chalk-white);
   min-height: 100vh;
@@ -158,7 +163,7 @@ a:hover {
   color: var(--chalk-white);
   border: 1px solid var(--chalk-dim);
   padding: 0.5rem 1rem;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-body);
   font-weight: 600;
   cursor: pointer;
   border-radius: 0;

@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Enroll in the Summer 2026 Cohort — AI Makers Generation</title>
+<title>Enroll in the Summer 2026 Cohort — AI MAKERS GENERATION</title>
 <meta name="description" content="Enroll in the AIMG Summer 2026 cohort in Atlanta. Eight Saturdays, twenty seats, starts July 18. Tuition $800, paid in full. Bring your own laptop. No experience required.">
 <link rel="canonical" href="https://cohorts.aimakersgeneration.com/">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://cohorts.aimakersgeneration.com/">
-<meta property="og:site_name" content="AI Makers Generation">
-<meta property="og:title" content="Enroll in the Summer 2026 Cohort — AI Makers Generation">
+<meta property="og:site_name" content="AI MAKERS GENERATION">
+<meta property="og:title" content="Enroll in the Summer 2026 Cohort — AI MAKERS GENERATION">
 <meta property="og:description" content="Eight Saturdays. Twenty seats. One room. Starts July 18 in Atlanta.">
 <meta property="og:image" content="https://aimakersgeneration.com/brand/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
@@ -56,6 +56,11 @@
   .mark img{height:34px;width:auto;flex:none}
   .nav a.back{color:var(--graphite);text-decoration:none;font-weight:500;font-size:.95rem}
   .nav a.back:hover{color:var(--near)}
+  .nav-right{display:flex;align-items:center;gap:18px}
+  .nav a.nav-bot{display:inline-flex;align-items:center;gap:6px;color:var(--green-deep);font-weight:600;
+    text-decoration:none;border:1px solid var(--green-deep);border-radius:999px;padding:7px 14px;font-size:.9rem}
+  .nav a.nav-bot:hover{background:var(--green-deep);color:#fff}
+  .nav a.nav-bot svg{flex:none}
 
   .top{background:#101210;color:#fff;padding:76px 0 68px}
   .top-logo{height:126px;width:auto;margin:0 0 32px}
@@ -206,14 +211,20 @@
     <a class="mark" href="/">
       <img src="/brand/aimg-mark-256.png" width="256" height="254" alt="">AIMG
     </a>
-    <a class="back" href="/">← Back to aimakersgeneration.com</a>
+    <div class="nav-right">
+      <a class="nav-bot" href="#" data-aimg-bot title="Ask the AI MAKERS BOT" aria-label="Ask the AI MAKERS BOT">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7a8.5 8.5 0 1 1 16.1-3.8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Ask the Bot
+      </a>
+      <a class="back" href="/">← Back</a>
+    </div>
   </div>
 </nav>
 
 <header class="top">
   <div class="wrap">
     <img class="top-logo" src="/brand/aimg-logo-520.png" width="520" height="432"
-         alt="AI Makers Generation">
+         alt="AI MAKERS GENERATION">
     <p class="eyebrow">Summer 2026 Cohort</p>
     <h1>Enroll in the Summer 2026 Cohort</h1>
     <p class="sub">Eight Saturdays. Twenty seats. One room.</p>
@@ -582,7 +593,7 @@
             </label>
             <label class="opt">
               <input type="checkbox" name="consent_photo_release" required>
-              <span><strong>Photo &amp; video release.</strong> I grant AI Makers Generation permission to photograph and record me at AIMG events, and to use those images and recordings in AIMG's educational and promotional materials.
+              <span><strong>Photo &amp; video release.</strong> I grant AI MAKERS GENERATION permission to photograph and record me at AIMG events, and to use those images and recordings in AIMG's educational and promotional materials.
                 <em>I understand sessions are recorded so that absent students can catch up, and that I may withdraw this permission at any time by emailing AIMG, after which AIMG will stop using new material featuring me.</em></span>
             </label>
             <label class="opt">
@@ -659,7 +670,7 @@
          it is not us — please report it to us immediately.</p>
     </div>
 
-    <p class="entity">AI Makers Generation is a registered trade name of D'Anjou, Inc.</p>
+    <p class="entity">AI MAKERS GENERATION is a registered trade name of D'Anjou, Inc.</p>
   </div>
 </section>
 
@@ -793,6 +804,9 @@
   });
 })();
 </script>
+
+<!-- AI MAKERS BOT — floating chat widget -->
+<script src="/aimg-bot.js" defer></script>
 
 </body>
 </html>
