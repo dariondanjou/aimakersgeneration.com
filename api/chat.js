@@ -3,6 +3,38 @@ import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://xnejbxdvqmzlaljkgwaf.supabase.co";
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+
+// Optional comma-separated allowlist of profile UUIDs permitted to manage the
+// shared event calendar. migration.sql marks events admin-only. If unset, any
+// signed-in member may manage events (the prior behaviour).
+const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || "")
+  .split(",").map(s => s.trim()).filter(Boolean);
+
+/**
+ * Resolve the caller from a verified Supabase access token.
+ *
+ * This is the ONLY source of identity. The request body is attacker-controlled:
+ * because the tool executor runs with the service-role key (which bypasses RLS),
+ * trusting a body-supplied user_id would let anyone delete or rewrite any row.
+ * Returns null for anonymous callers, who get no tools.
+ */
+async function getVerifiedUser(req) {
+  const header = req.headers.authorization || "";
+  if (!header.startsWith("Bearer ")) return null;
+  const token = header.slice(7).trim();
+  if (!token) return null;
+
+  if (!SUPABASE_ANON_KEY) {
+    console.error("SUPABASE_ANON_KEY is not set — cannot verify access tokens.");
+    return null;
+  }
+
+  const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const { data, error } = await authClient.auth.getUser(token);
+  if (error || !data?.user) return null;
+  return data.user;
+}
 
 const SYSTEM_PROMPT = `You are the AI Maker Bot, the friendly assistant for AI MAKERS GENERATION — a community of AI creatives, builders, and makers.
 
@@ -15,17 +47,28 @@ FLAGSHIP EVENT — FILM BAR AI:
 Film Bar AI is a recurring in-person event series. It happens every Tuesday from 6–10pm EST at Halidom Eatery in East Atlanta. It runs without fail every Tuesday evening.
 
 WORKSHOP WEDNESDAYS:
-Workshop Wednesdays are hands-on AI workshop sessions hosted by AI Makers Generation at Georgia Tech ATDC (75 5th St NW, Suite 2000, Atlanta, GA 30308 — Centergy Building in Tech Square), held on the 2nd and 4th Wednesdays of each month from 6–9pm. Topics are announced closer to each date. Here are the remaining 2026 dates:
-- April: 15, 29
-- May: 13, 27
-- June: 10, 24
+Workshop Wednesdays are hands-on AI workshop sessions hosted by AI Makers Generation at Georgia Tech ATDC (75 5th St NW, Suite 2000, Atlanta, GA 30308 — Centergy Building in Tech Square), held on the 2nd and 4th Wednesdays of each month from 6–10pm. Topics are announced closer to each date. Bring a charged laptop. Here are the remaining 2026 dates:
 - July: 8, 22
 - August: 12, 26
 - September: 16, 30
 - October: 14, 28
 - November: 11, 25
 - December: 9, 23
-To stay updated on topics and announcements, join the WhatsApp group: https://chat.whatsapp.com/GelyV1XoEL9HVnlA9QrxDn
+
+Workshops are FREE TO ATTEND. Donations are welcome and never required — a $15 donation is suggested and entirely optional, and nobody is turned away. NEVER describe a donation as an entry fee, admission, cover, ticket, or minimum. ATDC is a nonprofit venue and that wording creates real liability.
+
+AIMG COHORTS — SUMMER 2026:
+An eight-week, in-person career cohort. Eight Saturdays, 1–4pm (NOT evenings), at the Russell Innovation Center for Entrepreneurs (RICE Center) in Atlanta. The eight sessions are Jul 18, Jul 25, Aug 1, Aug 8, Aug 15, Aug 22, Aug 29, and Sep 5, 2026. Twenty seats — that is the whole room.
+
+Tuition is $800, PAID IN FULL ONLINE WHEN YOU ENROLL, at https://aimakersgeneration.com/apply. Paying is what reserves the seat — there is no acceptance step and no waiting list. AIMG does not take deposits, partial payments, or installments. Never tell anyone they can pay at class or on the first day; that policy changed on July 9, 2026.
+
+Graduates leave with: a polished résumé, a matching LinkedIn profile, a portfolio website, salary negotiation skills, a contract toolkit, and interview preparation for AI industry careers. They finish by delivering either a mock interview assessment or a startup pitch deck. There is weekly homework, critiqued in the room.
+
+Students must bring their own laptop, powerful enough to run DaVinci Resolve, Blender, the Adobe Creative Suite, and Higgsfield. AIMG provides no laptops, software, or licenses. Chromebooks, tablets, and 8GB machines will not work. Attendance at all eight sessions is required; a student who misses one gets a recording but still owes that week's assignment.
+
+NEVER promise a job, a placement, an interview, a hire, or any salary or income. The cohort PREPARES people; it does not guarantee outcomes. NEVER share a phone number or a payment handle (Zelle, Cash App, Venmo). AIMG only ever takes payment through the Stripe checkout on the website.
+
+To stay updated on topics and announcements, join the WhatsApp group: https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5
 
 WHAT YOU CAN DO:
 - Answer questions about AI Makers Generation, Film Bar AI, the founders, and the community
@@ -260,6 +303,19 @@ const TOOLS = [
 
 // --- Tool execution ---
 
+// Tools that modify data (drives the data_changed flag and the signed-in check)
+const WRITE_TOOLS = new Set([
+  "create_event", "create_recurring_events", "update_event", "batch_update_events", "delete_event",
+  "create_post", "update_post", "delete_post",
+  "create_resource", "update_resource", "delete_resource",
+  "update_profile", "submit_feedback",
+]);
+
+// The shared calendar is admin-only per migration.sql.
+const EVENT_WRITE_TOOLS = new Set([
+  "create_event", "create_recurring_events", "update_event", "batch_update_events", "delete_event",
+]);
+
 function getNextDayOfWeek(targetDay) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -282,7 +338,17 @@ function generateRecurringDates(dayOfWeek, endDateStr) {
   return dates;
 }
 
-async function executeTool(supabase, toolName, input, userId, userEmail) {
+async function executeTool(supabase, toolName, input, userId, userEmail, isAdmin) {
+  // Belt and braces: tools are never offered to anonymous callers, but the
+  // executor runs with the service-role key, so re-check before any write.
+  if (WRITE_TOOLS.has(toolName) && !userId) {
+    return { success: false, error: "You must be signed in to do that." };
+  }
+  // migration.sql: "Only admins can manage events."
+  if (EVENT_WRITE_TOOLS.has(toolName) && !isAdmin) {
+    return { success: false, error: "Only an admin can change the event calendar." };
+  }
+
   switch (toolName) {
     case "create_event": {
       const { data, error } = await supabase.from("events").insert([{
@@ -377,14 +443,21 @@ async function executeTool(supabase, toolName, input, userId, userEmail) {
       if (input.content) updateData.content = input.content;
       if (input.excerpt !== undefined) updateData.excerpt = input.excerpt;
       if (input.video_url !== undefined) updateData.video_url = input.video_url;
-      const { error } = await supabase.from("posts").update(updateData).eq("id", input.post_id);
+      // Service role bypasses RLS, so scope the write to the author ourselves.
+      let q = supabase.from("posts").update(updateData).eq("id", input.post_id);
+      if (!isAdmin) q = q.eq("author_id", userId);
+      const { data, error } = await q.select("id");
       if (error) return { success: false, error: error.message };
+      if (!data?.length) return { success: false, error: "That post doesn't exist, or it isn't yours to edit." };
       return { success: true, message: `Post updated successfully.` };
     }
 
     case "delete_post": {
-      const { error } = await supabase.from("posts").delete().eq("id", input.post_id);
+      let q = supabase.from("posts").delete().eq("id", input.post_id);
+      if (!isAdmin) q = q.eq("author_id", userId);
+      const { data, error } = await q.select("id");
       if (error) return { success: false, error: error.message };
+      if (!data?.length) return { success: false, error: "That post doesn't exist, or it isn't yours to delete." };
       return { success: true, message: `Post deleted.` };
     }
 
@@ -473,14 +546,6 @@ async function executeTool(supabase, toolName, input, userId, userEmail) {
   }
 }
 
-// Tools that modify data (for data_changed flag)
-const WRITE_TOOLS = new Set([
-  "create_event", "create_recurring_events", "update_event", "batch_update_events", "delete_event",
-  "create_post", "update_post", "delete_post",
-  "create_resource", "update_resource", "delete_resource",
-  "update_profile", "submit_feedback",
-]);
-
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
     return res.status(200).end();
@@ -490,7 +555,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { messages, user_id, user_email } = req.body;
+  const { messages } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: "messages array is required" });
   }
@@ -499,10 +564,17 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "ANTHROPIC_API_KEY not configured" });
   }
 
+  // Identity comes from the verified JWT, never from req.body.
+  const authedUser = await getVerifiedUser(req);
+  const user_id = authedUser?.id || null;
+  const user_email = authedUser?.email || null;
+  // No allowlist configured → every signed-in member may manage events (prior behaviour).
+  const isAdmin = !!user_id && (ADMIN_USER_IDS.length === 0 || ADMIN_USER_IDS.includes(user_id));
+
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  // Only provide tools if the user is logged in
+  // Anonymous callers can ask questions but get no tools at all.
   const toolsForRequest = user_id ? TOOLS : [];
 
   try {
@@ -526,7 +598,7 @@ export default async function handler(req, res) {
       const toolResults = [];
 
       for (const toolUse of toolUseBlocks) {
-        const result = await executeTool(supabase, toolUse.name, toolUse.input, user_id, user_email);
+        const result = await executeTool(supabase, toolUse.name, toolUse.input, user_id, user_email, isAdmin);
         if (WRITE_TOOLS.has(toolUse.name) && result.success) dataChanged = true;
         toolResults.push({
           type: "tool_result",

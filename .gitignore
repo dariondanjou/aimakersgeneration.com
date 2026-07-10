@@ -24,3 +24,9 @@ dist-ssr
 *.sw?
 
 .env*.local
+
+# Supabase CLI local state (contains no secrets, but not repo content)
+supabase/.temp/
+
+# Local operational notes — keep out of the public repo
+STRIPE-CONNECTION-INFO.txt

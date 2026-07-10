@@ -1,0 +1,36 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//AI Makers Generation//Summer 2026 Cohort//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VTIMEZONE
+TZID:America/New_York
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0500
+TZOFFSETTO:-0400
+TZNAME:EDT
+DTSTART:20260308T020000
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0400
+TZOFFSETTO:-0500
+TZNAME:EST
+DTSTART:20261101T020000
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:summer-2026-session-1@aimakersgeneration.com
+DTSTAMP:20260709T120000Z
+DTSTART;TZID=America/New_York:20260718T130000
+DTEND;TZID=America/New_York:20260718T160000
+SUMMARY:AIMG Summer Cohort — Session 1
+LOCATION:Russell Innovation Center for Entrepreneurs, Atlanta, GA
+DESCRIPTION:Session 1 of the AI Makers Generation Summer 2026 Cohort. Your tuition is already paid — bring your charged laptop and this week's assignment.\n\nEight Saturdays: Jul 18, Jul 25, Aug 1, Aug 8, Aug 15, Aug 22, Aug 29, Sep 5. Attendance at all eight is required.\n\nhttps://aimakersgeneration.com/
+URL:https://aimakersgeneration.com/
+BEGIN:VALARM
+TRIGGER:-P1D
+ACTION:DISPLAY
+DESCRIPTION:AIMG Cohort Session 1 is tomorrow, 1–4 PM. Bring a charged laptop.
+END:VALARM
+END:VEVENT
+END:VCALENDAR

@@ -1,17 +1,815 @@
 <!doctype html>
 <html lang="en">
-
 <head>
-  <!-- Cache Buster 1 -->
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/png" href="/favicon.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Makers Generation</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learn AI in Atlanta — AI Makers Generation</title>
+<meta name="description" content="A free AI meetup every Tuesday, hands-on workshops twice a month, and an 8-week AI cohort in Atlanta. Beginners welcome. Build the Future. Share the Knowledge.">
+<link rel="canonical" href="https://aimakersgeneration.com/">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://aimakersgeneration.com/">
+<meta property="og:site_name" content="AI Makers Generation">
+<meta property="og:title" content="Learn AI in Atlanta — AI Makers Generation">
+<meta property="og:description" content="A free AI meetup every Tuesday, hands-on workshops twice a month, and an 8-week AI cohort in Atlanta. Beginners welcome.">
+<meta property="og:image" content="https://aimakersgeneration.com/brand/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@aimakersgen">
+<meta name="twitter:title" content="Learn AI in Atlanta — AI Makers Generation">
+<meta name="twitter:description" content="A free AI meetup every Tuesday, hands-on workshops twice a month, and an 8-week AI cohort in Atlanta.">
+<meta name="twitter:image" content="https://aimakersgeneration.com/brand/og.jpg">
+
+<link rel="icon" href="/brand/favicon.png" sizes="any">
+<link rel="icon" href="/brand/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --white:#FFFFFF;
+    --warm:#F4F4F2;
+    --near:#1A1A1A;
+    --graphite:#5C5C5C;
+    --green:#6FCF4B;      /* fills + 24px+ display type only */
+    --green-deep:#3E9E28; /* text on white — 4.6:1 */
+    --forest:#0F7B3F;     /* cohorts */
+    --rule:#E3E3DF;
+
+    /* Film Bar AI — the Halidom identity */
+    --fb-ground:#1A1116;
+    --fb-pink:#FF1E8C;
+    --fb-blush:#E9C9B4;
+
+    --display:"Poppins","Montserrat","Helvetica Neue",Helvetica,Arial,sans-serif;
+    --body:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+  }
+  body{
+    margin:0;background:var(--white);color:var(--near);
+    font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;
+  }
+  img{max-width:100%;display:block}
+  a{color:var(--green-deep)}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+  :focus-visible{outline:3px solid var(--green-deep);outline-offset:3px;border-radius:4px}
+  .skip{
+    position:absolute;left:-9999px;top:0;background:var(--near);color:#fff;
+    padding:12px 18px;z-index:100;border-radius:0 0 8px 0;font-weight:600
+  }
+  .skip:focus{left:0}
+
+  /* ── type ── */
+  h1,h2,h3{font-family:var(--display);font-weight:800;letter-spacing:-.03em;line-height:1.04;margin:0}
+  h1{font-size:clamp(2.4rem,6.2vw,4.6rem);text-transform:uppercase}
+  h2{font-size:clamp(1.9rem,3.9vw,2.9rem);text-transform:uppercase}
+  h3{font-size:1.22rem;letter-spacing:-.015em;line-height:1.25}
+  .eyebrow{
+    font-family:var(--body);font-size:.72rem;font-weight:600;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--green-deep);margin:0 0 16px
+  }
+  .lede{font-size:1.12rem;color:var(--graphite);max-width:62ch;margin:0}
+
+  /* ── buttons ── */
+  .btn{
+    display:inline-flex;align-items:center;gap:10px;justify-content:center;
+    font-family:var(--body);font-weight:600;font-size:1rem;
+    padding:15px 28px;border-radius:999px;text-decoration:none;border:2px solid transparent;
+    transition:transform .15s ease,background .15s ease,color .15s ease;
+  }
+  .btn:hover{transform:translateY(-1px)}
+  .btn-primary{background:var(--green);color:#0C1408;border-color:var(--green)}
+  .btn-primary:hover{background:#7fdc5b;border-color:#7fdc5b}
+  .btn-ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.32)}
+  .btn-ghost:hover{border-color:#fff;background:rgba(255,255,255,.07)}
+  .btn-onforest{background:#fff;color:var(--forest);border-color:#fff}
+  .btn-onforest:hover{background:#EAF6EE}
+
+  /* ── nav ── */
+  .nav{
+    position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);
+    backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--rule)
+  }
+  .nav-in{display:flex;align-items:center;justify-content:space-between;gap:20px;height:68px}
+  .mark{
+    font-family:var(--display);font-weight:800;font-size:1.32rem;letter-spacing:-.04em;
+    color:var(--near);text-decoration:none;display:flex;align-items:center;gap:11px
+  }
+  .mark img{height:34px;width:auto;flex:none}
+  .nav-links{display:flex;align-items:center;gap:30px}
+  .nav-links a{
+    color:var(--graphite);text-decoration:none;font-weight:500;font-size:.95rem
+  }
+  .nav-links a:hover{color:var(--near)}
+  /* must out-specify `.nav-links a`, or the pill inherits graphite on forest */
+  .nav-links a.nav-cta{
+    background:var(--forest);color:#fff;text-decoration:none;font-weight:600;font-size:.92rem;
+    padding:10px 20px;border-radius:999px;white-space:nowrap
+  }
+  .nav-links a.nav-cta:hover{background:#0d6b37;color:#fff}
+  @media(max-width:900px){ .nav-links a:not(.nav-cta){display:none} }
+
+  /* ── hero ── */
+  .hero{background:#101210;color:#fff;padding:96px 0 92px;position:relative;overflow:hidden}
+  .hero::after{
+    content:"";position:absolute;right:-14%;top:-32%;width:640px;height:640px;border-radius:50%;
+    background:radial-gradient(circle,rgba(111,207,75,.15),transparent 66%);pointer-events:none
+  }
+  .hero > .wrap{position:relative;z-index:1}
+  .hero-logo{height:150px;width:auto;margin:0 0 36px}
+  @media(max-width:600px){.hero-logo{height:110px}}
+  .hero h1{color:#fff;max-width:14ch;text-wrap:balance}
+  .hero h1 span{color:var(--green);display:block}
+  .hero .lede{color:#B9C0B4;margin-top:26px;font-size:1.2rem}
+  .hero .lede strong{color:#fff;font-weight:600}
+  .hero-cta{display:flex;flex-wrap:wrap;gap:14px;margin-top:40px}
+  .hero-note{margin-top:26px;color:#818A7C;font-size:.92rem}
+  .hero .eyebrow{color:var(--green)}
+
+  /* ── next up ── */
+  .band-warm{background:var(--warm);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  section{padding:92px 0}
+  .sec-head{margin-bottom:44px;max-width:70ch}
+  .sec-head .lede{margin-top:18px}
+
+  .next-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:18px}
+  .ev{
+    background:#fff;border:1px solid var(--rule);border-radius:16px;padding:26px;
+    display:flex;flex-direction:column;gap:14px
+  }
+  .ev-when{display:flex;align-items:baseline;gap:11px}
+  .ev-dow{font-size:.74rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--graphite)}
+  .ev-date{font-family:var(--display);font-weight:800;font-size:1.65rem;letter-spacing:-.03em}
+  .ev h3{margin-top:2px}
+  .ev-meta{color:var(--graphite);font-size:.94rem;margin:0}
+  .tag{
+    align-self:flex-start;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    padding:6px 12px;border-radius:999px
+  }
+  .tag-free,.tag-don{background:#EAF7E4;color:var(--green-deep)}
+  .tag-cohort{background:#E4F1EA;color:var(--forest)}
+
+  /* ── tracks ── */
+  .tracks{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px}
+  .track{border-radius:20px;padding:36px;display:flex;flex-direction:column;min-height:100%}
+  .track h3{font-size:1.6rem;text-transform:uppercase;margin-bottom:6px}
+  .track .price{font-weight:700;font-size:.95rem;margin:0 0 20px}
+  .track p{margin:0 0 22px}
+  .track ul{list-style:none;padding:0;margin:0 0 28px;display:flex;flex-direction:column;gap:9px;font-size:.95rem}
+  .track li{padding-left:20px;position:relative}
+  .track li::before{content:"";position:absolute;left:0;top:.62em;width:7px;height:7px;border-radius:50%}
+  .track .spacer{flex:1}
+  .track a.tlink{font-weight:600;text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+
+  .t-film{background:var(--fb-ground);color:#fff}
+  .t-film h3 em{color:var(--fb-pink);font-style:normal}
+  .t-film .price{color:var(--fb-blush)}
+  .t-film p,.t-film li{color:#D6CBD1}
+  .t-film li::before{background:var(--fb-pink)}
+  .t-film a.tlink{color:var(--fb-pink)}
+
+  .t-work{background:var(--warm);color:var(--near);border:1px solid var(--rule)}
+  .t-work .price{color:var(--green-deep)}
+  .t-work p,.t-work li{color:var(--graphite)}
+  .t-work li::before{background:var(--green)}
+  .t-work a.tlink{color:var(--green-deep)}
+
+  .t-cohort{background:var(--forest);color:#fff}
+  .t-cohort .price{color:#B7E3C8}
+  .t-cohort p,.t-cohort li{color:#D8EDE1}
+  .t-cohort li::before{background:#fff}
+  .t-cohort a.tlink{color:#fff}
+
+  /* ── why ── */
+  .why{display:grid;grid-template-columns:1.05fr .95fr;gap:66px;align-items:start}
+  @media(max-width:880px){.why{grid-template-columns:1fr;gap:44px}}
+  .values{display:flex;flex-wrap:wrap;gap:9px;margin-top:30px;padding:0;list-style:none}
+  .values li{
+    font-size:.83rem;font-weight:600;padding:8px 15px;border-radius:999px;
+    background:var(--warm);border:1px solid var(--rule);color:var(--graphite)
+  }
+  .leave{background:var(--warm);border:1px solid var(--rule);border-radius:20px;padding:34px}
+  .leave h3{margin-bottom:20px}
+  .leave ol{margin:0;padding-left:0;list-style:none;counter-reset:l}
+  .leave li{
+    counter-increment:l;position:relative;padding:14px 0 14px 46px;border-bottom:1px solid var(--rule);
+    font-weight:500
+  }
+  .leave li:last-child{border-bottom:0;padding-bottom:0}
+  .leave li::before{
+    content:counter(l,decimal-leading-zero);position:absolute;left:0;top:15px;
+    font-family:var(--display);font-weight:800;font-size:.82rem;color:var(--green-deep)
+  }
+
+  /* ── founders ── */
+  .founders{display:grid;grid-template-columns:1fr 1fr;gap:38px}
+  @media(max-width:760px){.founders{grid-template-columns:1fr}}
+  .founder img{border-radius:18px;aspect-ratio:4/5;object-fit:cover;object-position:center 18%;width:100%}
+  .founder h3{margin:22px 0 4px}
+  .founder .role{
+    font-size:.74rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--green-deep);margin:0 0 12px
+  }
+  .founder p{color:var(--graphite);margin:0}
+
+  /* ── apply band ── */
+  .apply-band{background:var(--forest);color:#fff}
+  .apply-band h2{color:#fff;max-width:18ch;text-wrap:balance}
+  .apply-in{display:grid;grid-template-columns:1.15fr .85fr;gap:60px;align-items:center}
+  @media(max-width:880px){.apply-in{grid-template-columns:1fr;gap:36px}}
+  .apply-band .eyebrow{color:#B7E3C8}
+  .apply-band p{color:#D8EDE1;font-size:1.08rem}
+  .facts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0}
+  .facts li{display:flex;justify-content:space-between;gap:20px;padding:15px 0;border-bottom:1px solid rgba(255,255,255,.2)}
+  .facts .k{color:#B7E3C8;font-size:.9rem}
+  .facts .v{font-weight:600;text-align:right}
+
+  /* ── faq ── */
+  .faq{max-width:840px}
+  details{border-bottom:1px solid var(--rule)}
+  summary{
+    cursor:pointer;list-style:none;padding:24px 44px 24px 0;position:relative;
+    font-weight:600;font-size:1.06rem;font-family:var(--body)
+  }
+  summary::-webkit-details-marker{display:none}
+  summary::after{
+    content:"+";position:absolute;right:6px;top:50%;transform:translateY(-50%);
+    font-size:1.6rem;font-weight:400;color:var(--green-deep);line-height:1
+  }
+  details[open] summary::after{content:"–"}
+  details p{color:var(--graphite);margin:0 0 24px;max-width:70ch}
+
+  .scam{
+    margin-top:44px;background:#FFF6F6;border:1px solid #F3D5D5;border-left:4px solid #C0392B;
+    border-radius:0 12px 12px 0;padding:22px 26px
+  }
+  .scam strong{color:#8E2A20}
+  .scam p{margin:0;color:#6B3A34;font-size:.96rem}
+
+  /* ── footer ── */
+  footer{background:var(--near);color:#9DA398;padding:76px 0 44px}
+  .foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:44px;margin-bottom:56px}
+  @media(max-width:760px){.foot-grid{grid-template-columns:1fr;gap:36px}}
+  footer h4{
+    font-family:var(--body);font-size:.72rem;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;color:#fff;margin:0 0 18px
+  }
+  footer a{color:#9DA398;text-decoration:none;display:block;padding:5px 0}
+  footer a:hover{color:var(--green)}
+  .legal{
+    border-top:1px solid #2E312C;padding-top:28px;display:flex;flex-wrap:wrap;gap:16px;
+    justify-content:space-between;font-size:.85rem
+  }
+  .legal p{margin:0}
+</style>
 </head>
-
 <body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
-</body>
 
+<a class="skip" href="#main">Skip to content</a>
+
+<nav class="nav">
+  <div class="wrap nav-in">
+    <a class="mark" href="/">
+      <img src="/brand/aimg-mark-256.png" width="256" height="254" alt="">AIMG
+    </a>
+    <div class="nav-links">
+      <a href="#next">What's next</a>
+      <a href="#tracks">Three ways in</a>
+      <a href="#founders">Who we are</a>
+      <a href="#faq">FAQ</a>
+      <a href="/community">Members</a>
+      <a class="nav-cta" href="/apply">Apply to the cohort</a>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+  <!-- ───────────────────────── HERO ───────────────────────── -->
+  <header class="hero">
+    <div class="wrap">
+      <img class="hero-logo" src="/brand/aimg-logo-520.png" width="520" height="432"
+           alt="AI Makers Generation">
+      <p class="eyebrow">Atlanta, Georgia</p>
+      <h1>Build the Future.<span>Share the Knowledge.</span></h1>
+      <p class="lede">
+        <strong>Learn AI in Atlanta.</strong> We run a free AI meetup every Tuesday, hands-on
+        workshops twice a month, and an eight-week cohort that ends with a portfolio, a résumé,
+        and a plan. No experience assumed. We teach every level.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="/apply">Apply to the Summer Cohort</a>
+        <a class="btn btn-ghost" href="#film-bar">Or come Tuesday — it's free</a>
+      </div>
+      <p class="hero-note">Summer Cohort starts Saturday, July 18. Twenty seats. That's the whole room.</p>
+    </div>
+  </header>
+
+  <!-- ───────────────────────── WHAT'S NEXT ───────────────────────── -->
+  <div class="band-warm">
+    <section id="next">
+      <div class="wrap">
+        <div class="sec-head">
+          <p class="eyebrow">What's next</p>
+          <h2>The next three things happening</h2>
+          <p class="lede">Everything is in Atlanta. Everything is in person. Show up.</p>
+        </div>
+        <!-- Rendered statically for crawlers and no-JS; re-sorted and pruned by the script below. -->
+        <div class="next-grid" id="next-grid">
+          <article class="ev">
+            <div class="ev-when"><span class="ev-dow">Tue</span><span class="ev-date">Jul 14</span></div>
+            <h3>Film Bar AI</h3>
+            <p class="ev-meta">Halidom Eatery · 6:00–10:00 PM</p>
+            <span class="tag tag-free">Free</span>
+          </article>
+          <article class="ev">
+            <div class="ev-when"><span class="ev-dow">Sat</span><span class="ev-date">Jul 18</span></div>
+            <h3>Cohort · Session 1</h3>
+            <p class="ev-meta">RICE Center · 1:00–4:00 PM</p>
+            <span class="tag tag-cohort">Summer Cohort</span>
+          </article>
+          <article class="ev">
+            <div class="ev-when"><span class="ev-dow">Wed</span><span class="ev-date">Jul 22</span></div>
+            <h3>Workshop Wednesday</h3>
+            <p class="ev-meta">Georgia Tech ATDC · 6:00–10:00 PM</p>
+            <span class="tag tag-don">Donation optional</span>
+          </article>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ───────────────────────── TRACKS ───────────────────────── -->
+  <section id="tracks">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Three ways in</p>
+        <h2>Start free. Go as far as you want.</h2>
+        <p class="lede">
+          Most people walk in on a Tuesday, stay for the conversation, and come back.
+          Nobody has to start with the cohort.
+        </p>
+      </div>
+
+      <div class="tracks">
+
+        <article class="track t-film" id="film-bar">
+          <h3>Film <em>Bar</em> AI</h3>
+          <p class="price">Free · Every Tuesday · 6–10 PM</p>
+          <p>A free room full of people figuring out AI together. Live music, full bar, food vendors, and quiet corners away from the noise.</p>
+          <ul>
+            <li>Halidom Eatery, Atlanta</li>
+            <li>Unstructured — chat, show-and-tell, industry news</li>
+            <li>No ticket. No RSVP. No cover.</li>
+            <li>Parking is free too</li>
+          </ul>
+          <div class="spacer"></div>
+          <a class="tlink" href="https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5" target="_blank" rel="noopener">Join the WhatsApp community →</a>
+        </article>
+
+        <article class="track t-work" id="workshops">
+          <h3>AIMG Workshops</h3>
+          <p class="price">Donation-based · 2nd &amp; 4th Wednesday · 6–10 PM</p>
+          <p>Show up with a laptop. Leave with something you built. Recent sessions covered building and deploying a real website with AI — no code required.</p>
+          <ul>
+            <li>Georgia Tech ATDC, 2nd Floor</li>
+            <li>75 5th St NW, Atlanta, GA 30308</li>
+            <li>Free to attend — donations welcome, never required</li>
+            <li>Lessons stand alone. Come in any order.</li>
+          </ul>
+          <div class="spacer"></div>
+          <a class="tlink" href="#next">See the next workshop →</a>
+        </article>
+
+        <article class="track t-cohort" id="cohort">
+          <h3>AIMG Cohorts</h3>
+          <p class="price">$800 · Eight Saturdays · 1–4 PM</p>
+          <p>Eight Saturdays to a portfolio, a résumé, and a plan. Weekly homework, critiqued in the room by your peers and by working professionals.</p>
+          <ul>
+            <li>Russell Innovation Center for Entrepreneurs</li>
+            <li>Starts Saturday, July 18, 2026</li>
+            <li>Twenty seats. That's the whole room.</li>
+            <li>Tuition $800, paid in full</li>
+          </ul>
+          <div class="spacer"></div>
+          <a class="tlink" href="/apply">Apply to the Summer Cohort →</a>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── WHY ───────────────────────── -->
+  <div class="band-warm">
+    <section id="why">
+      <div class="wrap why">
+        <div>
+          <p class="eyebrow">Why AIMG</p>
+          <h2>AI literacy, as common as digital literacy</h2>
+          <p class="lede" style="margin-top:20px">
+            We're practitioners, not gurus. Our mission is to help people everywhere understand,
+            build, and responsibly use AI — through education, innovation, collaboration, and community.
+          </p>
+          <p class="lede" style="margin-top:18px">
+            We believe AI should be built responsibly, understood broadly, shared generously,
+            and designed for humanity.
+          </p>
+          <ul class="values">
+            <li>Curiosity</li><li>Integrity</li><li>Innovation</li><li>Accessibility</li>
+            <li>Collaboration</li><li>Excellence</li><li>Responsibility</li><li>Community</li>
+          </ul>
+        </div>
+
+        <div class="leave">
+          <h3>What you leave the cohort with</h3>
+          <ol>
+            <li>A polished résumé</li>
+            <li>A matching LinkedIn profile</li>
+            <li>A portfolio website</li>
+            <li>Salary negotiation skills</li>
+            <li>A contract toolkit you can actually use</li>
+            <li>Interview prep for AI industry careers</li>
+          </ol>
+          <p style="margin:26px 0 0;color:var(--graphite);font-size:.94rem">
+            You finish by delivering either a professional mock interview assessment
+            or a full startup pitch deck to investors and co-founders.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ───────────────────────── FOUNDERS ───────────────────────── -->
+  <section id="founders">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Who we are</p>
+        <h2>Meet the founders</h2>
+      </div>
+      <div class="founders">
+        <article class="founder">
+          <img src="/brand/darion-danjou.jpg" width="900" height="1125"
+               alt="Darion D'Anjou, co-founder of AI Makers Generation">
+          <h3>Darion D'Anjou</h3>
+          <p class="role">Co-Founder</p>
+          <!-- TODO(AIMG): replace with 2–3 real sentences on why Darion started AIMG. -->
+          <p>Bio to come.</p>
+        </article>
+        <article class="founder">
+          <img src="/brand/gheri-thomas.jpg" width="900" height="1125"
+               alt="Gheri Thomas, co-founder of AI Makers Generation">
+          <h3>Gheri Thomas</h3>
+          <p class="role">Co-Founder</p>
+          <!-- TODO(AIMG): replace with 2–3 real sentences on why Gheri started AIMG. -->
+          <p>Bio to come.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── APPLY ───────────────────────── -->
+  <div class="apply-band">
+    <section id="apply">
+      <div class="wrap apply-in">
+        <div>
+          <p class="eyebrow">Summer 2026 Cohort</p>
+          <h2>Eight Saturdays. Twenty seats. One room.</h2>
+          <p style="margin:22px 0 34px">
+            Eight weeks from now you could have a portfolio website, a résumé that matches your
+            LinkedIn, and the skills to negotiate what you're worth. There's homework every week,
+            and the room critiques it. That part is not optional, and it's the part that works.
+          </p>
+          <a class="btn btn-onforest" href="/apply">Apply to the Summer Cohort</a>
+          <p style="margin-top:22px;font-size:.93rem;color:#B7E3C8">
+            Not sure yet? Come meet us first. Film Bar AI is free, every Tuesday.
+          </p>
+        </div>
+        <ul class="facts">
+          <li><span class="k">Starts</span><span class="v">Sat, Jul 18, 2026</span></li>
+          <li><span class="k">When</span><span class="v">Saturdays, 1–4 PM</span></li>
+          <li><span class="k">Length</span><span class="v">8 weeks</span></li>
+          <li><span class="k">Where</span><span class="v">RICE Center, Atlanta</span></li>
+          <li><span class="k">Tuition</span><span class="v">$800, paid in full</span></li>
+          <li><span class="k">Seats</span><span class="v">20</span></li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <!-- ───────────────────────── FAQ ───────────────────────── -->
+  <section id="faq">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Questions</p>
+        <h2>The things people ask</h2>
+      </div>
+
+      <div class="faq">
+        <details open>
+          <summary>Do I need any experience with AI or coding?</summary>
+          <p>No. We teach every level, and most people arrive having only tried ChatGPT a few times.
+             The cohort application asks where you're starting from — there are no wrong answers.</p>
+        </details>
+
+        <details>
+          <summary>What does each thing cost?</summary>
+          <p><strong>Film Bar AI is free</strong>, every Tuesday. Parking is free too.</p>
+          <p><strong>Workshop Wednesdays are free to attend.</strong> A $15 donation is suggested and
+             entirely optional. Nobody is turned away.</p>
+          <p><strong>The cohort is $800</strong>, paid in full when you apply.</p>
+        </details>
+
+        <details>
+          <summary>Can I pay the cohort tuition in installments, or leave a deposit?</summary>
+          <p>No. Tuition is $800 and must be paid in full — we don't take partial payments, and we
+             don't hold seats with a deposit. You pay securely by card when you apply.</p>
+          <p>If that's a barrier, come to Film Bar AI on a Tuesday and talk to us in person.</p>
+        </details>
+
+        <details>
+          <summary>Do I have to attend the workshops in order?</summary>
+          <p>No. Every lesson stands alone. Join chronologically or sporadically — the curriculum
+             compounds into a working portfolio either way.</p>
+        </details>
+
+        <details>
+          <summary>What do I bring?</summary>
+          <p>To Film Bar AI: yourself. A laptop if you feel like it.</p>
+          <p>To a Workshop Wednesday or a cohort session: a charged laptop.</p>
+        </details>
+
+        <details>
+          <summary>Is there homework in the cohort?</summary>
+          <p>Yes — every week, submitted at the start of each in-person session for peer critique
+             and professional feedback. It's the part that works.</p>
+        </details>
+
+        <details>
+          <summary>Will this get me a job?</summary>
+          <p>We won't promise that, and you should be skeptical of anyone who does. The cohort
+             prepares you: you leave with a résumé, a matching LinkedIn, a portfolio website,
+             negotiation skills, a contract toolkit, and interview prep for AI industry careers.
+             What you do with them is yours.</p>
+        </details>
+
+        <details>
+          <summary>How do I join the community?</summary>
+          <p>The WhatsApp group is where the conversation lives between events, and there's a
+             Facebook group too. Both are linked in the footer. Members can also sign in to the
+             <a href="/community">community site</a> for resources, events, and the AI Maker Bot.</p>
+        </details>
+
+        <details>
+          <summary>What if I miss a cohort Saturday?</summary>
+          <p>The application asks. Missing one is workable; missing two or more means you'd get
+             more out of the Winter cohort. Tell us honestly and we'll talk it through.</p>
+        </details>
+      </div>
+
+      <aside class="scam">
+        <p><strong>We take tuition exactly one way: by card, at cohorts.aimakersgeneration.com.</strong>
+           We never accept Zelle, Cash App, Venmo, wire transfers, or gift cards, and we never ask
+           for money in a DM. If anyone contacts you asking to pay another way — or asking for a
+           deposit to hold your seat — it is not us. Please report it to us immediately.</p>
+      </aside>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <img src="/brand/aimg-mark-256.png" width="256" height="254" alt=""
+             style="height:56px;width:auto;margin-bottom:24px">
+        <p style="margin:0;max-width:38ch;font-size:.94rem">
+          AI Makers Generation is a registered trade name of D'Anjou, Inc. Atlanta, Georgia.
+        </p>
+      </div>
+      <div>
+        <h4>Come find us</h4>
+        <a href="https://instagram.com/aimakersgeneration" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://tiktok.com/@aimakersgeneration" target="_blank" rel="noopener">TikTok</a>
+        <a href="https://x.com/aimakersgen" target="_blank" rel="noopener">X / Twitter</a>
+        <a href="https://facebook.com/share/g/1BYbDKRKR5" target="_blank" rel="noopener">Facebook group</a>
+        <a href="https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5" target="_blank" rel="noopener">WhatsApp community</a>
+      </div>
+      <div>
+        <h4>The three tracks</h4>
+        <a href="#film-bar">Film Bar AI — free Tuesdays</a>
+        <a href="#workshops">Workshop Wednesdays</a>
+        <a href="#cohort">Summer Cohort</a>
+        <a href="/apply">Apply</a>
+        <a href="/community">Members — sign in</a>
+      </div>
+    </div>
+    <div class="legal">
+      <p>© <span id="yr">2026</span> D'Anjou, Inc. All rights reserved.</p>
+      <p>Atlanta, GA · <a href="/apply#privacy" style="display:inline">Privacy notice</a></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ────────────────────────────────────────────────────────────
+   "What's next" — computed from the recurrence rules in
+   BRAND-CORE.md, not a hardcoded list, so the page stays
+   correct without anyone editing it.
+
+     Film Bar AI ....... every Tuesday, 6–10 PM
+     Workshop Wednesday  2nd & 4th Wednesday, 6–10 PM
+     Cohort ............ the eight fixed Saturdays
+
+   The static markup above is the no-JS / crawler fallback.
+   ──────────────────────────────────────────────────────────── */
+(function () {
+  var TUE = 2, WED = 3;
+  var COHORT = ['2026-07-18','2026-07-25','2026-08-01','2026-08-08',
+                '2026-08-15','2026-08-22','2026-08-29','2026-09-05'];
+
+  var today = new Date(); today.setHours(0,0,0,0);
+  function d(y,m,day){ return new Date(y, m, day); }
+
+  function nthWeekday(year, month, weekday, n) {
+    var first = d(year, month, 1);
+    var shift = (weekday - first.getDay() + 7) % 7;
+    return d(year, month, 1 + shift + (n - 1) * 7);
+  }
+
+  var events = [];
+
+  // Film Bar AI — next 12 Tuesdays
+  var t = new Date(today);
+  t.setDate(t.getDate() + ((TUE - t.getDay() + 7) % 7));
+  for (var i = 0; i < 12; i++) {
+    events.push({
+      date: new Date(t), track: 'film',
+      title: 'Film Bar AI',
+      meta: 'Halidom Eatery · 6:00–10:00 PM',
+      tag: 'Free', cls: 'tag-free'
+    });
+    t.setDate(t.getDate() + 7);
+  }
+
+  // Workshop Wednesdays — 2nd & 4th Wednesday, this month + next 3
+  for (var mo = 0; mo < 4; mo++) {
+    var base = d(today.getFullYear(), today.getMonth() + mo, 1);
+    [2, 4].forEach(function (n) {
+      var w = nthWeekday(base.getFullYear(), base.getMonth(), WED, n);
+      if (w.getMonth() !== base.getMonth()) return; // no 4th Wed this month
+      events.push({
+        date: w, track: 'workshop',
+        title: 'Workshop Wednesday',
+        meta: 'Georgia Tech ATDC · 6:00–10:00 PM',
+        tag: 'Donation optional', cls: 'tag-don'
+      });
+    });
+  }
+
+  // Cohort — the eight fixed Saturdays
+  COHORT.forEach(function (iso, idx) {
+    var p = iso.split('-');
+    events.push({
+      date: d(+p[0], +p[1] - 1, +p[2]), track: 'cohort',
+      title: 'Cohort · Session ' + (idx + 1),
+      meta: 'RICE Center · 1:00–4:00 PM',
+      tag: 'Summer Cohort', cls: 'tag-cohort'
+    });
+  });
+
+  // The next occurrence of each track, so all three doors stay visible —
+  // then in date order. (Three chronological events would often be two Tuesdays.)
+  var seen = {};
+  var upcoming = events
+    .filter(function (e) { return e.date >= today; })
+    .sort(function (a, b) { return a.date - b.date; })
+    .filter(function (e) {
+      if (seen[e.track]) return false;
+      seen[e.track] = true;
+      return true;
+    })
+    .sort(function (a, b) { return a.date - b.date; });
+
+  if (!upcoming.length) return; // keep the static fallback
+
+  var DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  document.getElementById('next-grid').innerHTML = upcoming.map(function (e) {
+    return '<article class="ev">' +
+      '<div class="ev-when"><span class="ev-dow">' + DOW[e.date.getDay()] + '</span>' +
+      '<span class="ev-date">' + MON[e.date.getMonth()] + ' ' + e.date.getDate() + '</span></div>' +
+      '<h3>' + e.title + '</h3>' +
+      '<p class="ev-meta">' + e.meta + '</p>' +
+      '<span class="tag ' + e.cls + '">' + e.tag + '</span>' +
+      '</article>';
+  }).join('');
+
+  document.getElementById('yr').textContent = today.getFullYear();
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "EducationalOrganization",
+      "@id": "https://aimakersgeneration.com/#org",
+      "name": "AI Makers Generation",
+      "alternateName": "AIMG",
+      "slogan": "Build the Future. Share the Knowledge.",
+      "url": "https://aimakersgeneration.com/",
+      "description": "AI education and community in Atlanta: a free weekly meetup, donation-based hands-on workshops, and an eight-week career cohort.",
+      "areaServed": { "@type": "City", "name": "Atlanta", "addressRegion": "GA" },
+      "parentOrganization": { "@type": "Organization", "name": "D'Anjou, Inc." },
+      "sameAs": [
+        "https://instagram.com/aimakersgeneration",
+        "https://tiktok.com/@aimakersgeneration",
+        "https://x.com/aimakersgen"
+      ]
+    },
+    {
+      "@type": "EducationalOccupationalProgram",
+      "name": "AIMG Summer 2026 Cohort",
+      "provider": { "@id": "https://aimakersgeneration.com/#org" },
+      "description": "An eight-week, in-person AI cohort in Atlanta. Graduates leave with a résumé, a matching LinkedIn profile, a portfolio website, salary negotiation skills, a contract toolkit, and interview prep for AI industry careers.",
+      "programPrerequisites": "No prior experience required.",
+      "timeToComplete": "P8W",
+      "startDate": "2026-07-18",
+      "endDate": "2026-09-05",
+      "maximumEnrollment": 20,
+      "url": "https://cohorts.aimakersgeneration.com/",
+      "offers": {
+        "@type": "Offer",
+        "price": "800",
+        "priceCurrency": "USD",
+        "category": "Tuition",
+        "url": "https://cohorts.aimakersgeneration.com/"
+      }
+    },
+    {
+      "@type": "Event",
+      "name": "Film Bar AI",
+      "description": "A free weekly AI meetup in Atlanta. Unstructured networking, community show-and-tells, and industry updates.",
+      "eventSchedule": {
+        "@type": "Schedule",
+        "byDay": "https://schema.org/Tuesday",
+        "startTime": "18:00",
+        "endTime": "22:00",
+        "repeatFrequency": "P1W",
+        "scheduleTimezone": "America/New_York"
+      },
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+      "location": {
+        "@type": "Place",
+        "name": "Halidom Eatery",
+        "address": { "@type": "PostalAddress", "addressLocality": "Atlanta", "addressRegion": "GA", "addressCountry": "US" }
+      },
+      "organizer": { "@id": "https://aimakersgeneration.com/#org" },
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock" }
+    },
+    {
+      "@type": "Event",
+      "name": "Workshop Wednesday",
+      "description": "A hands-on AI workshop in Atlanta on the 2nd and 4th Wednesday of each month. Free to attend; donations welcome, never required. Bring a charged laptop.",
+      "eventSchedule": {
+        "@type": "Schedule",
+        "byDay": "https://schema.org/Wednesday",
+        "startTime": "18:00",
+        "endTime": "22:00",
+        "scheduleTimezone": "America/New_York"
+      },
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+      "location": {
+        "@type": "Place",
+        "name": "Georgia Tech ATDC",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "75 5th St NW, 2nd Floor",
+          "addressLocality": "Atlanta", "addressRegion": "GA",
+          "postalCode": "30308", "addressCountry": "US"
+        }
+      },
+      "organizer": { "@id": "https://aimakersgeneration.com/#org" },
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock" }
+    }
+  ]
+}
+</script>
+
+</body>
 </html>
