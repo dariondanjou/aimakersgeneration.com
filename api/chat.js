@@ -583,8 +583,9 @@ export default async function handler(req, res) {
     let maxToolRounds = 5; // Safety limit
 
     let response = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1024,
+      model: "claude-sonnet-5",
+      max_tokens: 2048,
+      thinking: { type: "disabled" },
       system: SYSTEM_PROMPT,
       tools: toolsForRequest,
       messages: currentMessages,
@@ -614,8 +615,9 @@ export default async function handler(req, res) {
       ];
 
       response = await client.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1024,
+        model: "claude-sonnet-5",
+        max_tokens: 2048,
+        thinking: { type: "disabled" },
         system: SYSTEM_PROMPT,
         tools: toolsForRequest,
         messages: currentMessages,
