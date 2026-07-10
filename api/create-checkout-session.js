@@ -22,7 +22,7 @@ const REQUIRED_TEXT = [
 
 const REQUIRED_CONSENTS = [
   "consent_tuition", "consent_equipment", "consent_attendance", "consent_homework",
-  "consent_photo_release", "consent_privacy", "consent_conduct",
+  "consent_photo_release", "consent_privacy", "consent_conduct", "consent_confidentiality",
 ];
 
 const ALLOWED = {
@@ -132,6 +132,7 @@ export default async function handler(req, res) {
       consent_photo_release: true,
       consent_privacy: true,
       consent_conduct: true,
+      consent_confidentiality: true,
       amount_cents: TUITION_CENTS,
     };
 
