@@ -21,7 +21,7 @@
       "has": [{ "type": "host", "value": "cohorts.aimakersgeneration.com" }],
       "destination": "/apply.html"
     },
-    { "source": "/community", "destination": "/app.html" },
-    { "source": "/community/(.*)", "destination": "/app.html" }
+    { "source": "/community", "destination": "/app" },
+    { "source": "/community/(.*)", "destination": "/app" }
   ]
 }
