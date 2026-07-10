@@ -4,23 +4,24 @@
     {
       "source": "/apply",
       "has": [{ "type": "host", "value": "aimakersgeneration.com" }],
-      "destination": "https://cohorts.aimakersgeneration.com/",
+      "destination": "https://cohorts.aimakersgeneration.com/apply",
       "permanent": true
     },
     {
       "source": "/apply",
       "has": [{ "type": "host", "value": "www.aimakersgeneration.com" }],
-      "destination": "https://cohorts.aimakersgeneration.com/",
+      "destination": "https://cohorts.aimakersgeneration.com/apply",
       "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "cohorts.aimakersgeneration.com" }],
+      "destination": "/apply",
+      "permanent": false
     }
   ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
-    {
-      "source": "/",
-      "has": [{ "type": "host", "value": "cohorts.aimakersgeneration.com" }],
-      "destination": "/apply"
-    },
     { "source": "/community", "destination": "/app" },
     { "source": "/community/(.*)", "destination": "/app" }
   ]
