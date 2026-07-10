@@ -143,6 +143,9 @@
   /* the acknowledgements that carry legal weight */
   .opt.hard{border-color:var(--err-rule);background:#FFFCFC}
   .opt.hard:has(input:checked){border-color:var(--green-deep);background:#F5FBF3}
+  /* the master "accept all" control */
+  .consent .opt.accept-all{border:1.5px solid var(--green-deep);background:#EFF8EB;margin-bottom:4px}
+  .consent .opt.accept-all span{font-size:.96rem}
 
   .inline-url{display:flex;flex-direction:column;gap:12px}
 
@@ -642,6 +645,10 @@
             <p class="leg-note">All eight are required. Read them — they are the terms of your enrollment.</p>
           </legend>
           <div class="fields consent">
+            <label class="opt accept-all">
+              <input type="checkbox" id="accept_all" name="accept_all">
+              <span><strong>I have read and agree to all eight acknowledgements below.</strong> Checking this box checks all of them; you can still review and uncheck any individually.</span>
+            </label>
             <label class="opt hard">
               <input type="checkbox" name="consent_tuition" required>
               <span><strong>Tuition.</strong> I understand tuition is <strong>$800, payable in full now</strong>, that AIMG does not accept deposits, partial payments, or installments, and that my payment — not an acceptance decision — is what reserves my seat. My seat is <strong>personal to me and non-transferable</strong>: if I cannot attend for any reason, including illness or emergency, I may not send a substitute, sell, gift, or let anyone else use my seat.
@@ -820,6 +827,23 @@
     tick();
   });
 
+  /* ── "Accept all" toggles every required acknowledgement ── */
+  var acceptAll = document.getElementById('accept_all');
+  var consentBoxes = Array.prototype.slice.call(
+    document.querySelectorAll('.consent input[name^="consent_"]')
+  );
+  if (acceptAll) {
+    acceptAll.addEventListener('change', function () {
+      consentBoxes.forEach(function (cb) { cb.checked = acceptAll.checked; });
+    });
+    // Keep the master box in sync when individual boxes change.
+    consentBoxes.forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        acceptAll.checked = consentBoxes.every(function (c) { return c.checked; });
+      });
+    });
+  }
+
   /* ── "not yet" and a portfolio URL are mutually exclusive ── */
   var noPortfolio = document.getElementById('no_portfolio');
   var portfolio   = document.getElementById('portfolio_url');
@@ -853,11 +877,10 @@
     var payload = {};
     fd.forEach(function (v, k) { payload[k] = v; });
 
-    // checkboxes → real booleans; the server validates these again anyway
-    ['consent_tuition','consent_equipment','consent_attendance','consent_homework',
-     'consent_photo_release','consent_privacy','consent_conduct','no_portfolio'
-    ].forEach(function (k) {
-      payload[k] = !!form.querySelector('[name="' + k + '"]').checked;
+    // Every checkbox → a real boolean (FormData sends "on"/omits them, but the
+    // server requires strict true). Dynamic so new checkboxes can't be missed.
+    form.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+      if (cb.name && cb.name !== 'accept_all') payload[cb.name] = cb.checked;
     });
     payload._gotcha = fd.get('_gotcha') || '';
 
