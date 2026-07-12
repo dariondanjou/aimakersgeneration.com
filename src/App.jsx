@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { Bot, LogIn, Github, MessageSquare, Terminal, Plus, X, Upload, LogOut, Mail, ChevronDown, User, Settings as GearIcon } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { supabase, supabaseUrl, supabaseAnonKey } from './supabaseClient';
