@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Bot, LogIn, Github, MessageSquare, Terminal, Plus, X, Upload, LogOut, Mail } from 'lucide-react';
+import { Bot, LogIn, Github, MessageSquare, Terminal, Plus, X, Upload, LogOut, Mail, ChevronDown, User, Settings as GearIcon } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { supabase, supabaseUrl, supabaseAnonKey } from './supabaseClient';
 import Dashboard from './Dashboard';
@@ -284,6 +284,57 @@ const WHATSAPP_URL = 'https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5';
 // Carried over from the main marketing site (index.html .nav): the AIMG logo
 // mark + wordmark and the same link set, so the members' area reads as one
 // cohesive site.
+// Logged-in identity: avatar + name at top right, with a Profile / Settings /
+// Sign out menu that opens on hover or click. Name/photo come from the member's
+// community profile if set, otherwise the OAuth metadata (e.g. Google), else email.
+function UserMenu({ session }) {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    supabase.from('profiles').select('username, avatar_url, first_name, last_name').eq('id', session.user.id).maybeSingle()
+      .then(({ data }) => { if (!cancelled) setProfile(data); });
+    return () => { cancelled = true; };
+  }, [session.user.id]);
+
+  useEffect(() => {
+    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, []);
+
+  const m = session.user.user_metadata || {};
+  const name = profile?.username
+    || [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim()
+    || m.full_name || m.name || session.user.email || 'Member';
+  const avatar = profile?.avatar_url || m.avatar_url || m.picture || null;
+  const initial = (name || '?').trim().charAt(0).toUpperCase() || '?';
+  const go = (path) => { setOpen(false); navigate(path); };
+
+  return (
+    <div className="user-menu" ref={ref} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      <button className="user-menu-trigger" onClick={() => setOpen((o) => !o)} aria-haspopup="true" aria-expanded={open}>
+        <span className="user-avatar">
+          {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : initial}
+        </span>
+        <span className="user-name">{name}</span>
+        <ChevronDown size={14} />
+      </button>
+      {open && (
+        <div className="user-menu-dropdown" role="menu">
+          <button role="menuitem" onClick={() => go(`/profile/${session.user.id}`)}><User size={15} /> My profile</button>
+          <button role="menuitem" onClick={() => go('/settings')}><GearIcon size={15} /> Settings</button>
+          <div className="user-menu-divider" />
+          <button role="menuitem" className="danger" onClick={() => supabase.auth.signOut()}><LogOut size={15} /> Sign out</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SiteHeader({ session }) {
   return (
     <header className="site-nav">
@@ -294,15 +345,9 @@ function SiteHeader({ session }) {
         </a>
         <nav className="site-nav-links">
           <a href="/" className="nav-hide-sm">Home</a>
-          <Link to="/">Members</Link>
+          {!session && <Link to="/">Members</Link>}
           <a href="/apply" className="site-cta">Apply to the cohort</a>
-          {session && <Link to="/settings">Settings</Link>}
-          {session && (
-            <button className="linklike" onClick={() => supabase.auth.signOut()} title="Sign out">
-              <LogOut size={16} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 4 }} />
-              Sign out
-            </button>
-          )}
+          {session && <UserMenu session={session} />}
         </nav>
       </div>
     </header>
