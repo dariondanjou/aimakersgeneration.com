@@ -317,9 +317,8 @@ function UserMenu({ session }) {
   }, []);
 
   const m = session.user.user_metadata || {};
-  const name = profile?.username
-    || [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim()
-    || m.full_name || m.name || session.user.email || 'Member';
+  const name = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim()
+    || m.full_name || m.name || profile?.username || session.user.email || 'Member';
   const avatar = profile?.avatar_url || m.avatar_url || m.picture || null;
   const initial = (name || '?').trim().charAt(0).toUpperCase() || '?';
   const go = (path) => { setOpen(false); navigate(path); };
