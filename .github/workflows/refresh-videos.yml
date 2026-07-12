@@ -1,0 +1,21 @@
+name: Refresh AI Videos
+
+# Pulls the latest AI YouTube videos into the community twice a day via the
+# secured endpoint (GitHub's free scheduler; reuses the NEWS_CRON_SECRET).
+on:
+  schedule:
+    - cron: "0 2,14 * * *" # 02:00 and 14:00 UTC — twice daily
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger video refresh
+        run: |
+          echo "Refreshing AI videos…"
+          code=$(curl -sS -o /tmp/out.json -w "%{http_code}" -X POST \
+            "https://aimakersgeneration.com/api/refresh-videos" \
+            -H "Authorization: Bearer ${{ secrets.NEWS_CRON_SECRET }}")
+          echo "HTTP $code"; cat /tmp/out.json; echo
+          test "$code" = "200"
