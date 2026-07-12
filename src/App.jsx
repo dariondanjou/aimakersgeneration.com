@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Bot, LogIn, Github, Twitter, Facebook, MessageSquare, Terminal, Plus, X, Upload, LogOut } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
-import { supabase } from './supabaseClient';
+import { supabase, supabaseUrl, supabaseAnonKey } from './supabaseClient';
 import Dashboard from './Dashboard';
 import ProfilePage from './ProfilePage';
 
@@ -307,14 +307,32 @@ function SiteHeader({ session }) {
   );
 }
 
+// All providers we have buttons for. Which ones are actually usable depends on
+// what's enabled in Supabase Auth — we fetch that at runtime (see below) and
+// only render the working ones, so no member ever clicks a dead login link.
+const ALL_PROVIDERS = [
+  { id: 'google', label: 'Continue with Google', Icon: LogIn },
+  { id: 'twitter', label: 'Continue with X', Icon: Twitter },
+  { id: 'discord', label: 'Continue with Discord', Icon: MessageSquare },
+  { id: 'github', label: 'Continue with GitHub', Icon: Github },
+  { id: 'facebook', label: 'Continue with Facebook', Icon: Facebook },
+];
+
 function CommunityGate() {
-  const providers = [
-    { id: 'google', label: 'Continue with Google', Icon: LogIn },
-    { id: 'twitter', label: 'Continue with X', Icon: Twitter },
-    { id: 'discord', label: 'Continue with Discord', Icon: MessageSquare },
-    { id: 'github', label: 'Continue with GitHub', Icon: Github },
-    { id: 'facebook', label: 'Continue with Facebook', Icon: Facebook },
-  ];
+  // Start with the providers we know are enabled today (google, discord) so the
+  // card renders instantly, then reconcile with Supabase's live settings.
+  const [enabled, setEnabled] = useState({ google: true, discord: true });
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${supabaseUrl}/auth/v1/settings`, { headers: { apikey: supabaseAnonKey } })
+      .then(r => r.json())
+      .then(j => { if (!cancelled && j?.external) setEnabled(j.external); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  const providers = ALL_PROVIDERS.filter(p => enabled[p.id]);
 
   return (
     <div className="flex-1 w-full flex items-start justify-center px-4 sm:px-6 pt-4 sm:pt-6 pb-6">
