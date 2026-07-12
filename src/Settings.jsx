@@ -146,7 +146,7 @@ export default function Settings({ session }) {
 
       {/* Public profile */}
       <Section icon={User} title="Public profile">
-        <p className="text-sm text-[#5C5C5C] mb-3">Your name, photo, title, bio, and links — visible to other members.</p>
+        <p className="text-sm text-[#5C5C5C] mb-3">Your name, photo, title, bio, and links — visible to other makers.</p>
         <button onClick={() => navigate(`/profile/${user.id}`)} className="btn btn-social w-fit">
           <User size={16} /> Edit public profile
         </button>

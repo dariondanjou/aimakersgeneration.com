@@ -431,7 +431,7 @@ export default function Dashboard({ session, refreshKey, activeTab, setActiveTab
                                                 </div>
                                                 <div className="min-w-0">
                                                     <div className="text-sm font-semibold text-[#1A1A1A] truncate">{u.username || 'Anonymous'}</div>
-                                                    <div className="text-[10px] text-[#1A1A1A]/40">{u.updated_at ? `Active ${new Date(u.updated_at).toLocaleDateString()}` : 'Member'}</div>
+                                                    <div className="text-[10px] text-[#1A1A1A]/40">{u.updated_at ? `Active ${new Date(u.updated_at).toLocaleDateString()}` : 'Maker'}</div>
                                                 </div>
                                             </div>
                                         ))}

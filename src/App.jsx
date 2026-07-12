@@ -292,10 +292,10 @@ const COMMUNITY_TABS = [
 ];
 
 // Carried over from the main marketing site (index.html .nav): the AIMG logo
-// mark + wordmark and the same link set, so the members' area reads as one
+// mark + wordmark and the same link set, so the makers' area reads as one
 // cohesive site.
 // Logged-in identity: avatar + name at top right, with a Profile / Settings /
-// Sign out menu that opens on hover or click. Name/photo come from the member's
+// Sign out menu that opens on hover or click. Name/photo come from the maker's
 // community profile if set, otherwise the OAuth metadata (e.g. Google), else email.
 function UserMenu({ session }) {
   const navigate = useNavigate();
@@ -318,7 +318,7 @@ function UserMenu({ session }) {
 
   const m = session.user.user_metadata || {};
   const name = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim()
-    || m.full_name || m.name || profile?.username || session.user.email || 'Member';
+    || m.full_name || m.name || profile?.username || session.user.email || 'Maker';
   const avatar = profile?.avatar_url || m.avatar_url || m.picture || null;
   const initial = (name || '?').trim().charAt(0).toUpperCase() || '?';
   const go = (path) => { setOpen(false); navigate(path); };
@@ -374,7 +374,7 @@ function SiteHeader({ session, activeTab, setActiveTab }) {
           ) : (
             <>
               <a href="/" className="nav-hide-sm">Home</a>
-              <Link to="/">Members</Link>
+              <Link to="/">Makers</Link>
               <a href="/apply" className="site-cta">Apply to the Cohort</a>
             </>
           )}
@@ -386,7 +386,7 @@ function SiteHeader({ session, activeTab, setActiveTab }) {
 
 // All providers we have buttons for. Which ones are actually usable depends on
 // what's enabled in Supabase Auth — we fetch that at runtime (see below) and
-// only render the working ones, so no member ever clicks a dead login link.
+// only render the working ones, so no maker ever clicks a dead login link.
 const ALL_PROVIDERS = [
   { id: 'google', label: 'Continue with Google', Icon: LogIn },
   { id: 'discord', label: 'Continue with Discord', Icon: MessageSquare },
@@ -497,7 +497,7 @@ function CommunityGate() {
         {/* Right: auth card */}
         <div className="glass-panel flex flex-col items-stretch gap-2 w-full max-w-sm mx-auto relative z-10">
           <h3 className="text-xs uppercase tracking-[0.14em] font-semibold text-[#3E9E28] mb-0.5 text-center">Connect to the Network</h3>
-          <p className="text-sm text-[#5C5C5C] mb-2 text-center">Log in to see member profiles.</p>
+          <p className="text-sm text-[#5C5C5C] mb-2 text-center">Log in to see maker profiles.</p>
 
           {providers.map(({ id, label, Icon }) => (
             <button
@@ -558,7 +558,7 @@ function CommunityGate() {
   );
 }
 
-// Shown after a member clicks the password-reset link. Supabase fires a
+// Shown after a maker clicks the password-reset link. Supabase fires a
 // PASSWORD_RECOVERY event and hands us a temporary session; this screen is the
 // only place they can actually set the new password (supabase.auth.updateUser).
 function ResetPassword({ onDone }) {

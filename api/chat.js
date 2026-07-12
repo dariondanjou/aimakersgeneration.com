@@ -7,7 +7,7 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
 // Optional comma-separated allowlist of profile UUIDs permitted to manage the
 // shared event calendar. migration.sql marks events admin-only. If unset, any
-// signed-in member may manage events (the prior behaviour).
+// signed-in maker may manage events (the prior behaviour).
 const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || "")
   .split(",").map(s => s.trim()).filter(Boolean);
 
@@ -568,7 +568,7 @@ export default async function handler(req, res) {
   const authedUser = await getVerifiedUser(req);
   const user_id = authedUser?.id || null;
   const user_email = authedUser?.email || null;
-  // No allowlist configured → every signed-in member may manage events (prior behaviour).
+  // No allowlist configured → every signed-in maker may manage events (prior behaviour).
   const isAdmin = !!user_id && (ADMIN_USER_IDS.length === 0 || ADMIN_USER_IDS.includes(user_id));
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });

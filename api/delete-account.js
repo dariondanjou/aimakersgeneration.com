@@ -5,7 +5,7 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
 // Identity comes ONLY from the verified access token — never the request body.
-// A member can delete their own account and nothing else.
+// A maker can delete their own account and nothing else.
 async function getVerifiedUser(req) {
   const header = req.headers.authorization || "";
   if (!header.startsWith("Bearer ")) return null;
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
 
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  // Remove the member's own rows first so the auth-user delete isn't blocked by
+  // Remove the maker's own rows first so the auth-user delete isn't blocked by
   // foreign keys (profiles.id references auth.users with no cascade).
   await admin.from("comments").delete().eq("user_id", user.id);
   await admin.from("posts").delete().eq("author_id", user.id);
