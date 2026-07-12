@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { supabase, supabaseUrl, supabaseAnonKey } from './supabaseClient';
 import Dashboard from './Dashboard';
 import ProfilePage from './ProfilePage';
+import Settings from './Settings';
 
 function ChatWindow({ session, onDataChange }) {
   const loggedOutWelcome = "Hello! I'm the AI Maker Bot.\n\nI can answer general questions about the AI MAKERS GENERATION community.";
@@ -295,6 +296,7 @@ function SiteHeader({ session }) {
           <a href="/" className="nav-hide-sm">Home</a>
           <Link to="/">Members</Link>
           <a href="/apply" className="site-cta">Apply to the cohort</a>
+          {session && <Link to="/settings">Settings</Link>}
           {session && (
             <button className="linklike" onClick={() => supabase.auth.signOut()} title="Sign out">
               <LogOut size={16} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 4 }} />
@@ -554,6 +556,7 @@ function App() {
             <Routes>
               <Route path="/" element={session ? <Dashboard session={session} refreshKey={refreshKey} /> : <CommunityGate />} />
               <Route path="/profile/:id" element={session ? <ProfilePage session={session} /> : <CommunityGate />} />
+              <Route path="/settings" element={session ? <Settings session={session} /> : <CommunityGate />} />
             </Routes>
           )}
         </main>
