@@ -308,59 +308,70 @@ function SiteHeader({ session }) {
 }
 
 function CommunityGate() {
+  const providers = [
+    { id: 'google', label: 'Continue with Google', Icon: LogIn },
+    { id: 'twitter', label: 'Continue with X', Icon: Twitter },
+    { id: 'discord', label: 'Continue with Discord', Icon: MessageSquare },
+    { id: 'github', label: 'Continue with GitHub', Icon: Github },
+    { id: 'facebook', label: 'Continue with Facebook', Icon: Facebook },
+  ];
+
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 max-w-3xl mx-auto text-center">
-      <img
-        src="/brand/aimg-logo-520.png"
-        width="520"
-        height="432"
-        alt="AI MAKERS GENERATION"
-        className="w-auto h-24 sm:h-28 md:h-32 mb-6"
-      />
+    <div className="flex-1 w-full flex items-center justify-center p-4 sm:p-6">
+      <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 lg:gap-14 items-center">
 
-      <p className="text-xs uppercase tracking-[0.14em] font-semibold text-[#3E9E28] mb-3">The Members' Community</p>
+        {/* Left: brand — logo constrained to the same horizontal span as the slogan */}
+        <div className="flex flex-col items-center md:items-start text-center md:text-left">
+          <div className="w-full max-w-[320px]">
+            <img
+              src="/brand/aimg-logo-520.png"
+              width="520"
+              height="432"
+              alt="AI MAKERS GENERATION"
+              className="w-full h-auto mb-4"
+            />
 
-      <h1 className="text-3xl sm:text-4xl md:text-5xl mb-4 leading-tight uppercase">
-        Build the Future.<br />
-        <span className="text-[#6FCF4B]">Share the Knowledge.</span>
-      </h1>
+            <p className="text-[0.7rem] uppercase tracking-[0.14em] font-semibold text-[#3E9E28] mb-2">The Members' Community</p>
 
-      <p className="text-base md:text-lg text-[#5C5C5C] leading-relaxed max-w-xl mb-8">
-        A community of AI creatives, builders, and makers getting their hands dirty.
-        Share resources, catch up on news, and collaborate on the future.
-      </p>
+            <h1 className="text-2xl sm:text-3xl mb-3 leading-tight uppercase">
+              Build the Future.<br />
+              <span className="text-[#6FCF4B]">Share the Knowledge.</span>
+            </h1>
 
-      {/* Join on WhatsApp — matches the link used on the main page */}
-      <a
-        href={WHATSAPP_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-3 mb-8 px-5 py-3 rounded-full bg-white border border-[#E3E3DF] hover:border-[#3E9E28] transition-colors shrink-0"
-        title="Join our WhatsApp community"
-      >
-        <img src="/logo-whatsapp.png" alt="" className="w-6 h-6" />
-        <span className="text-sm font-semibold text-[#1A1A1A]">Join the WhatsApp community</span>
-      </a>
+            <p className="text-sm sm:text-base text-[#5C5C5C] leading-relaxed mb-5">
+              A community of AI creatives, builders, and makers getting their hands dirty.
+              Share resources, catch up on news, and collaborate on the future.
+            </p>
 
-      {/* Auth card */}
-      <div className="glass-panel flex flex-col items-center gap-2.5 w-full max-w-sm relative z-10">
-        <h3 className="text-xs uppercase tracking-[0.14em] font-semibold text-[#3E9E28] mb-0.5">Connect to the Network</h3>
-        <p className="text-sm text-[#5C5C5C] mb-2">Log in to see member profiles.</p>
-        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: oauthRedirect() } })} className="btn btn-social">
-          <LogIn size={18} /> Continue with Google
-        </button>
-        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'twitter', options: { redirectTo: oauthRedirect() } })} className="btn btn-social">
-          <Twitter size={18} /> Continue with X
-        </button>
-        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'discord', options: { redirectTo: oauthRedirect() } })} className="btn btn-social">
-          <MessageSquare size={18} /> Continue with Discord
-        </button>
-        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: oauthRedirect() } })} className="btn btn-social">
-          <Github size={18} /> Continue with GitHub
-        </button>
-        <button onClick={() => supabase.auth.signInWithOAuth({ provider: 'facebook', options: { redirectTo: oauthRedirect() } })} className="btn btn-social">
-          <Facebook size={18} /> Continue with Facebook
-        </button>
+            {/* Join on WhatsApp — matches the link used on the main page */}
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-4 py-2.5 rounded-full bg-white border border-[#E3E3DF] hover:border-[#3E9E28] transition-colors"
+              title="Join our WhatsApp community"
+            >
+              <img src="/logo-whatsapp.png" alt="" className="w-5 h-5" />
+              <span className="text-sm font-semibold text-[#1A1A1A]">Join the WhatsApp community</span>
+            </a>
+          </div>
+        </div>
+
+        {/* Right: auth card */}
+        <div className="glass-panel flex flex-col items-center gap-2 w-full max-w-sm mx-auto relative z-10">
+          <h3 className="text-xs uppercase tracking-[0.14em] font-semibold text-[#3E9E28] mb-0.5">Connect to the Network</h3>
+          <p className="text-sm text-[#5C5C5C] mb-2">Log in to see member profiles.</p>
+          {providers.map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              onClick={() => supabase.auth.signInWithOAuth({ provider: id, options: { redirectTo: oauthRedirect() } })}
+              className="btn btn-social"
+            >
+              <Icon size={18} /> {label}
+            </button>
+          ))}
+        </div>
+
       </div>
     </div>
   );
