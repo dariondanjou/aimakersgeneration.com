@@ -317,7 +317,7 @@ function CommunityGate() {
   ];
 
   return (
-    <div className="flex-1 w-full flex items-center justify-center p-4 sm:p-6">
+    <div className="flex-1 w-full flex items-start justify-center px-4 sm:px-6 pt-4 sm:pt-6 pb-6">
       <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 lg:gap-14 items-center">
 
         {/* Left: brand — smaller centered logo, centered text */}
