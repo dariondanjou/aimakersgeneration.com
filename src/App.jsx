@@ -333,7 +333,7 @@ function CommunityGate() {
 
             <p className="text-[0.7rem] uppercase tracking-[0.14em] font-semibold text-[#3E9E28] mb-2">The Members' Community</p>
 
-            <h1 className="text-2xl sm:text-3xl mb-3 leading-tight uppercase">
+            <h1 className="text-2xl sm:text-3xl mb-3 leading-tight uppercase whitespace-nowrap">
               Build the Future.<br />
               <span className="text-[#6FCF4B]">Share the Knowledge.</span>
             </h1>
