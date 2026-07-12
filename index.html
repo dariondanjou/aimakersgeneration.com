@@ -2,6 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>
+  // Safety net: auth tokens should return to /community, but if an OAuth or
+  // email link ever lands one on the marketing root, forward it (hash intact)
+  // into the community app, which knows how to consume it.
+  (function () {
+    var h = location.hash || "";
+    if (location.pathname === "/" && (h.indexOf("access_token=") > -1 || h.indexOf("error=") > -1 || h.indexOf("type=recovery") > -1)) {
+      location.replace("/community" + h);
+    }
+  })();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Learn AI in Atlanta — AI MAKERS GENERATION</title>
 <meta name="description" content="A free AI meetup every Tuesday, hands-on workshops twice a month, and an 8-week AI cohort in Atlanta. Beginners welcome. Build the Future. Share the Knowledge.">
