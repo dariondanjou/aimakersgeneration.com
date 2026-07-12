@@ -7,6 +7,8 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Fuse from 'fuse.js';
 
+const NEWS_PAGE = 30; // articles per page in the News archive
+
 export default function Dashboard({ session, refreshKey, activeTab, setActiveTab }) {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
@@ -48,6 +50,8 @@ export default function Dashboard({ session, refreshKey, activeTab, setActiveTab
     const [announcements, setAnnouncements] = useState([]);
     const [events, setEvents] = useState([]);
     const [newsArticles, setNewsArticles] = useState([]);
+    const [newsHasMore, setNewsHasMore] = useState(true);
+    const [loadingMoreNews, setLoadingMoreNews] = useState(false);
     const [youtubeVideos, setYoutubeVideos] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -95,8 +99,8 @@ export default function Dashboard({ session, refreshKey, activeTab, setActiveTab
                 .from('news_articles')
                 .select('id, title, url, source, published_at')
                 .order('published_at', { ascending: false })
-                .limit(20);
-            if (newsData) setNewsArticles(newsData);
+                .limit(NEWS_PAGE);
+            if (newsData) { setNewsArticles(newsData); setNewsHasMore(newsData.length === NEWS_PAGE); }
 
             // Fetch YouTube videos from database
             const { data: videosData } = await supabase
@@ -111,6 +115,22 @@ export default function Dashboard({ session, refreshKey, activeTab, setActiveTab
 
         fetchDashboardData();
     }, [refreshKey]);
+
+    // Page back through the news archive (nothing is ever deleted server-side).
+    const loadMoreNews = async () => {
+        setLoadingMoreNews(true);
+        const from = newsArticles.length;
+        const { data } = await supabase
+            .from('news_articles')
+            .select('id, title, url, source, published_at')
+            .order('published_at', { ascending: false })
+            .range(from, from + NEWS_PAGE - 1);
+        if (data) {
+            setNewsArticles(prev => [...prev, ...data]);
+            if (data.length < NEWS_PAGE) setNewsHasMore(false);
+        }
+        setLoadingMoreNews(false);
+    };
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
@@ -466,6 +486,11 @@ export default function Dashboard({ session, refreshKey, activeTab, setActiveTab
                                             </div>
                                         </div>
                                     ))}
+                                    {newsHasMore && newsArticles.length > 0 && (
+                                        <button onClick={loadMoreNews} disabled={loadingMoreNews} className="btn btn-social self-center mt-2">
+                                            {loadingMoreNews ? 'Loading…' : 'Load older articles'}
+                                        </button>
+                                    )}
                                 </div>
                                 <div className="col-span-1 lg:col-span-4 flex flex-col gap-4">
                                     <h3 className="text-xl font-bold border-b border-[#1A1A1A]/10 pb-2">Latest Videos</h3>

@@ -1,0 +1,21 @@
+name: Refresh AI News
+
+# Pulls the latest AI news into the community 4x/day. Runs on GitHub's free
+# scheduler (avoids Vercel plan cron limits) by calling the secured endpoint.
+on:
+  schedule:
+    - cron: "0 1,7,13,19 * * *" # 01:00, 07:00, 13:00, 19:00 UTC — four times daily
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger news refresh
+        run: |
+          echo "Refreshing AI news…"
+          code=$(curl -sS -o /tmp/out.json -w "%{http_code}" -X POST \
+            "https://aimakersgeneration.com/api/refresh-news" \
+            -H "Authorization: Bearer ${{ secrets.NEWS_CRON_SECRET }}")
+          echo "HTTP $code"; cat /tmp/out.json; echo
+          test "$code" = "200"
