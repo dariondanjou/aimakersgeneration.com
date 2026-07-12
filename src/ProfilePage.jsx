@@ -19,11 +19,11 @@ function InlineField({ value, onSave, placeholder, isOwner, multiline = false, c
   if (!editing) {
     return (
       <span
-        className={`${className} cursor-pointer hover:bg-white/5 rounded px-1 -mx-1 transition-colors border border-transparent hover:border-white/10`}
+        className={`${className} cursor-pointer hover:bg-[#1A1A1A]/5 rounded px-1 -mx-1 transition-colors border border-transparent hover:border-[#1A1A1A]/10`}
         onClick={() => setEditing(true)}
         title="Click to edit"
       >
-        {value || <span className="text-white/30 italic">{placeholder}</span>}
+        {value || <span className="text-[#1A1A1A]/30 italic">{placeholder}</span>}
       </span>
     );
   }
@@ -53,10 +53,10 @@ function InlineField({ value, onSave, placeholder, isOwner, multiline = false, c
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className={`${className} bg-black/40 border border-[#B0E0E6]/50 rounded px-2 py-1 focus:outline-none focus:border-[#B0E0E6] transition-colors w-full ${multiline ? 'h-24 resize-none' : ''}`}
+        className={`${className} bg-[#F4F4F2] border border-[#3E9E28]/50 rounded px-2 py-1 focus:outline-none focus:border-[#3E9E28] transition-colors w-full ${multiline ? 'h-24 resize-none' : ''}`}
       />
-      <button onClick={handleSave} className="text-[#B0E0E6] hover:text-white p-1 shrink-0"><Check size={16} /></button>
-      <button onClick={handleCancel} className="text-white/40 hover:text-white p-1 shrink-0"><X size={16} /></button>
+      <button onClick={handleSave} className="text-[#3E9E28] hover:text-[#1A1A1A] p-1 shrink-0"><Check size={16} /></button>
+      <button onClick={handleCancel} className="text-[#1A1A1A]/40 hover:text-[#1A1A1A] p-1 shrink-0"><X size={16} /></button>
     </div>
   );
 }
@@ -142,7 +142,7 @@ export default function ProfilePage({ session }) {
   if (loading) {
     return (
       <div className="main-content flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-t-[#B0E0E6] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-t-[#3E9E28] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -150,7 +150,7 @@ export default function ProfilePage({ session }) {
   if (!profile) {
     return (
       <div className="main-content flex flex-col items-center justify-center gap-4">
-        <p className="text-white/60">Profile not found.</p>
+        <p className="text-[#1A1A1A]/60">Profile not found.</p>
         <button onClick={() => navigate('/')} className="btn">Back to Home</button>
       </div>
     );
@@ -161,7 +161,7 @@ export default function ProfilePage({ session }) {
 
   return (
     <div className="main-content custom-scrollbar flex flex-col h-full p-6 overflow-y-auto">
-      <button onClick={() => navigate('/')} className="flex items-center gap-2 text-white/50 hover:text-white transition-colors mb-6 w-fit">
+      <button onClick={() => navigate('/')} className="flex items-center gap-2 text-[#1A1A1A]/50 hover:text-[#1A1A1A] transition-colors mb-6 w-fit">
         <ArrowLeft size={18} /> Back
       </button>
 
@@ -169,7 +169,7 @@ export default function ProfilePage({ session }) {
         {/* Avatar */}
         <div className="flex flex-col items-center mb-8">
           <div className="relative group">
-            <div className="w-32 h-32 rounded-full bg-black/40 border-4 border-[#B0E0E6]/40 flex items-center justify-center text-4xl font-bold shadow-lg overflow-hidden">
+            <div className="w-32 h-32 rounded-full bg-[#F4F4F2] border-4 border-[#3E9E28]/40 flex items-center justify-center text-4xl font-bold shadow-lg overflow-hidden">
               {profile.avatar_url
                 ? <img src={profile.avatar_url} alt={profile.username} className="w-full h-full object-cover" />
                 : (profile.username?.[0]?.toUpperCase() || '?')
@@ -182,8 +182,8 @@ export default function ProfilePage({ session }) {
                   className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
                 >
                   {isUploading
-                    ? <div className="w-6 h-6 border-2 border-t-[#B0E0E6] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
-                    : <Camera size={24} className="text-[#B0E0E6]" />
+                    ? <div className="w-6 h-6 border-2 border-t-[#3E9E28] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
+                    : <Camera size={24} className="text-[#3E9E28]" />
                   }
                 </button>
                 <input
@@ -205,7 +205,7 @@ export default function ProfilePage({ session }) {
               onSave={(v) => saveField('title', v)}
               placeholder="AI Creative"
               isOwner={isOwner}
-              className="text-[#B0E0E6] text-sm font-semibold tracking-wide"
+              className="text-[#3E9E28] text-sm font-semibold tracking-wide"
             />
           </div>
         </div>
@@ -213,58 +213,58 @@ export default function ProfilePage({ session }) {
         {/* Profile Info */}
         <div className="glass-panel p-6 space-y-5">
           <div>
-            <label className="text-[10px] uppercase tracking-wider text-white/40 mb-1 block">Username</label>
+            <label className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1 block">Username</label>
             <InlineField
               value={profile.username}
               onSave={(v) => saveField('username', v)}
               placeholder="Set username"
               isOwner={isOwner}
-              className="text-white text-lg font-bold"
+              className="text-[#1A1A1A] text-lg font-bold"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] uppercase tracking-wider text-white/40 mb-1 block">First Name</label>
+              <label className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1 block">First Name</label>
               <InlineField
                 value={profile.first_name}
                 onSave={(v) => saveField('first_name', v)}
                 placeholder="First name"
                 isOwner={isOwner}
-                className="text-white"
+                className="text-[#1A1A1A]"
               />
             </div>
             <div>
-              <label className="text-[10px] uppercase tracking-wider text-white/40 mb-1 block">Last Name</label>
+              <label className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1 block">Last Name</label>
               <InlineField
                 value={profile.last_name}
                 onSave={(v) => saveField('last_name', v)}
                 placeholder="Last name"
                 isOwner={isOwner}
-                className="text-white"
+                className="text-[#1A1A1A]"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-[10px] uppercase tracking-wider text-white/40 mb-1 block">Bio</label>
+            <label className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1 block">Bio</label>
             <InlineField
               value={profile.bio}
               onSave={(v) => saveField('bio', v)}
               placeholder="Tell us about yourself..."
               isOwner={isOwner}
               multiline
-              className="text-white/80 text-sm leading-relaxed"
+              className="text-[#1A1A1A]/80 text-sm leading-relaxed"
             />
           </div>
 
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <label className="text-[10px] uppercase tracking-wider text-white/40">Links</label>
+              <label className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40">Links</label>
               {isOwner && (
                 <button
                   onClick={() => setAddingLink(true)}
-                  className="text-[#B0E0E6] hover:text-white transition-colors"
+                  className="text-[#3E9E28] hover:text-[#1A1A1A] transition-colors"
                   title="Add link"
                 >
                   <Plus size={16} />
@@ -283,17 +283,17 @@ export default function ProfilePage({ session }) {
                       target="_blank"
                       rel="noreferrer"
                       title={tooltip}
-                      className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 hover:border-[#B0E0E6]/50 hover:bg-white/10 flex items-center justify-center transition-all"
+                      className="w-8 h-8 rounded-lg bg-[#1A1A1A]/5 border border-[#1A1A1A]/10 hover:border-[#3E9E28]/50 hover:bg-[#1A1A1A]/10 flex items-center justify-center transition-all"
                     >
                       {platform.logo
                         ? <img src={platform.logo} alt={platform.name} className="w-5 h-5" />
-                        : <ExternalLink size={16} className="text-white/60" />
+                        : <ExternalLink size={16} className="text-[#1A1A1A]/60" />
                       }
                     </a>
                     {isOwner && (
                       <button
                         onClick={() => removeLink(i)}
-                        className="text-white/0 group-hover/link:text-white/40 hover:!text-red-400 transition-colors"
+                        className="text-[#1A1A1A]/0 group-hover/link:text-[#1A1A1A]/40 hover:!text-red-400 transition-colors"
                         title="Remove link"
                       >
                         <X size={14} />
@@ -303,7 +303,7 @@ export default function ProfilePage({ session }) {
                 );
               })}
               {links.length === 0 && !addingLink && (
-                <span className="text-white/30 text-sm italic">No links yet</span>
+                <span className="text-[#1A1A1A]/30 text-sm italic">No links yet</span>
               )}
             </div>
             {addingLink && (
@@ -314,11 +314,11 @@ export default function ProfilePage({ session }) {
                   onChange={(e) => setNewLinkUrl(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') addLink(); if (e.key === 'Escape') { setAddingLink(false); setNewLinkUrl(''); } }}
                   placeholder="https://instagram.com/yourname"
-                  className="flex-1 bg-black/40 border border-[#B0E0E6]/50 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#B0E0E6] transition-colors"
+                  className="flex-1 bg-[#F4F4F2] border border-[#3E9E28]/50 rounded px-3 py-2 text-sm text-[#1A1A1A] focus:outline-none focus:border-[#3E9E28] transition-colors"
                   autoFocus
                 />
-                <button onClick={addLink} className="text-[#B0E0E6] hover:text-white p-1"><Check size={18} /></button>
-                <button onClick={() => { setAddingLink(false); setNewLinkUrl(''); }} className="text-white/40 hover:text-white p-1"><X size={18} /></button>
+                <button onClick={addLink} className="text-[#3E9E28] hover:text-[#1A1A1A] p-1"><Check size={18} /></button>
+                <button onClick={() => { setAddingLink(false); setNewLinkUrl(''); }} className="text-[#1A1A1A]/40 hover:text-[#1A1A1A] p-1"><X size={18} /></button>
               </div>
             )}
           </div>

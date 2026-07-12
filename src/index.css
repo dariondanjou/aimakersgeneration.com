@@ -1,21 +1,37 @@
 /* Match the landing page font families: Poppins (display) + Inter (body) */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&family=Inter:wght@400;500;600;700&display=swap');
-:root {
-  --font-display: "Poppins", "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-}
-h1, h2, h3, h4 { font-family: var(--font-display); }
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────────────────────────
+   Community design system — matched to the main marketing site
+   (index.html) and the cohort site (apply.html). Light theme,
+   green accents, Poppins + Inter. The graph-paper grid carries
+   over from the old /community look but is recolored to the
+   green scheme, and stays as the distinguishing texture of the
+   members' area.
+   ───────────────────────────────────────────────────────────── */
 :root {
-  --bg-blue: #0A192F;
-  --graph-line: rgba(255, 255, 255, 0.05);
-  --chalk-white: rgba(255, 255, 255, 0.9);
-  --chalk-dim: rgba(255, 255, 255, 0.6);
-  --accent-blue: #B0E0E6;
-  --panel-bg: rgba(10, 25, 47, 0.85);
+  --font-display: "Poppins", "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Shared palette (same values as index.html) */
+  --white: #FFFFFF;
+  --warm: #F4F4F2;
+  --near: #1A1A1A;
+  --graphite: #5C5C5C;
+  --green: #6FCF4B;       /* fills + display type */
+  --green-deep: #3E9E28;  /* text on white — 4.6:1 */
+  --forest: #0F7B3F;      /* cohorts accent */
+  --rule: #E3E3DF;
+
+  /* The recolored graph-paper grid (was a white grid on navy) */
+  --paper: #F7F8F5;
+  --graph-line: rgba(63, 158, 40, 0.07);   /* green-deep, faint */
+  --accent: var(--green-deep);
+  --accent-soft: rgba(63, 158, 40, 0.12);
 }
 
 * {
@@ -26,278 +42,281 @@ h1, h2, h3, h4 { font-family: var(--font-display); }
 
 body {
   font-family: var(--font-body);
-  background-color: var(--bg-blue);
-  color: var(--chalk-white);
+  background-color: var(--paper);
+  color: var(--near);
   min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 
-  /* Blue Graph Paper Effect */
+  /* Green graph-paper grid — the distinguishing texture of /community */
   background-image:
     linear-gradient(var(--graph-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--graph-line) 1px, transparent 1px);
-  background-size: 40px 40px;
+  background-size: 32px 32px;
   background-position: center center;
-
-  /* Add Noise/Grain Effect */
   position: relative;
 }
 
+/* A very light paper grain, sketched over the grid */
 body::before {
   content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: fixed;
+  inset: 0;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.025'/%3E%3C/svg%3E");
   z-index: 50;
-  /* ensure it overlays everything slightly */
 }
 
 /* Typography */
-h1,
-h2,
-h3,
-h4 {
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--chalk-white);
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--near);
 }
 
-p,
-span,
-div {
-  font-weight: 300;
-  line-height: 1.6;
-}
+p, span, div { line-height: 1.6; }
 
 a {
-  color: var(--accent-blue);
+  color: var(--green-deep);
   text-decoration: none;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, color 0.2s ease;
 }
+a:hover { color: var(--forest); }
 
-a:hover {
-  opacity: 0.8;
-}
-
-/* Chalk/Architectural Borders */
-.chalk-border {
-  border: 1px solid var(--chalk-dim);
+:focus-visible {
+  outline: 3px solid var(--green-deep);
+  outline-offset: 3px;
   border-radius: 4px;
-  /* Faded edge effect */
-  border-image: linear-gradient(to right, transparent, var(--chalk-dim) 10%, var(--chalk-dim) 90%, transparent) 1;
 }
 
-.chalk-border-bottom {
-  border-bottom: 1px solid var(--chalk-dim);
-  border-image: linear-gradient(to right, transparent, var(--chalk-dim) 10%, var(--chalk-dim) 90%, transparent) 1;
-}
-
-/* Layout Utilities */
-.app-container {
+/* ─────────────────────────────────────────────────────────────
+   Carried-over site header (mirrors the main site .nav)
+   ───────────────────────────────────────────────────────────── */
+.site-shell {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  width: 100vw;
+  width: 100%;
   overflow: hidden;
   position: relative;
   z-index: 1;
-  /* below noise */
 }
 
-@media (min-width: 1024px) {
-  .app-container {
-    flex-direction: row;
-  }
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--rule);
+  flex: none;
+}
+.site-nav-in {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.site-mark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.28rem;
+  letter-spacing: -0.04em;
+  color: var(--near);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.site-mark:hover { color: var(--near); opacity: 0.85; }
+.site-mark img { height: 32px; width: auto; flex: none; display: block; }
+
+.site-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.site-nav-links a,
+.site-nav-links button.linklike {
+  color: var(--graphite);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.94rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.site-nav-links a:hover,
+.site-nav-links button.linklike:hover { color: var(--near); }
+.site-nav-links a.site-cta {
+  background: var(--forest);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 9px 18px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.site-nav-links a.site-cta:hover { background: #0d6b37; color: #fff; }
+@media (max-width: 760px) {
+  .site-nav-links a.nav-hide-sm { display: none; }
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Layout
+   ───────────────────────────────────────────────────────────── */
+.app-container,
 .main-content {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  padding: 1rem;
   scrollbar-width: thin;
-  scrollbar-color: var(--chalk-dim) transparent;
+  scrollbar-color: var(--green-deep) transparent;
 }
 
-@media (min-width: 1024px) {
-  .main-content {
-    padding: 2rem;
-  }
-}
-
-.chat-sidebar {
-  width: 100%;
-  height: 50vh;
-  border-left: none;
-  border-top: 1px solid var(--chalk-dim);
-  border-image: linear-gradient(to right, transparent, var(--chalk-dim) 10%, var(--chalk-dim) 90%, transparent) 1;
-  background-color: var(--bg-blue);
-  /* opaque on mobile */
-  backdrop-filter: none;
-  display: flex;
-  flex-direction: column;
-}
-
-@media (min-width: 1024px) {
-  .chat-sidebar {
-    width: 400px;
-    height: auto;
-    border-top: none;
-    border-left: 1px solid var(--chalk-dim);
-    border-image: linear-gradient(to bottom, transparent, var(--chalk-dim) 10%, var(--chalk-dim) 90%, transparent) 1;
-    background-color: transparent;
-  }
-}
-
-/* Glass Panels */
+/* ─────────────────────────────────────────────────────────────
+   Cards (was .glass-panel on a dark blueprint — now white cards
+   matching the main site's .ev / .leave surfaces)
+   ───────────────────────────────────────────────────────────── */
 .glass-panel {
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 16px;
   padding: 1.5rem;
+  box-shadow: 0 1px 2px rgba(26, 26, 26, 0.04);
 }
 
-/* Buttons */
+/* Light rule dividers (replaces the old chalk borders) */
+.chalk-border {
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+}
+.chalk-border-bottom {
+  border-bottom: 1px solid var(--rule);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Buttons — pill style from the main site
+   ───────────────────────────────────────────────────────────── */
 .btn {
-  background: transparent;
-  color: var(--chalk-white);
-  border: 1px solid var(--chalk-dim);
-  padding: 0.5rem 1rem;
-  font-family: var(--font-body);
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: 0;
-  transition: all 0.2s ease;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.3rem;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  background: #fff;
+  color: var(--near);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
-
-.btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--chalk-white);
-}
+.btn:hover { transform: translateY(-1px); border-color: var(--green-deep); background: #fff; }
 
 .btn-primary {
-  background: var(--chalk-white);
-  color: var(--bg-blue);
-  border-color: var(--chalk-white);
+  background: var(--green);
+  color: #0C1408;
+  border-color: var(--green);
 }
+.btn-primary:hover { background: #7fdc5b; border-color: #7fdc5b; }
 
-.btn-primary:hover {
-  background: var(--chalk-dim);
-  border-color: var(--chalk-dim);
-}
-
-/* Custom React DatePicker Overrides */
-.custom-datepicker-wrapper .react-datepicker-wrapper {
+/* Social login buttons on the gate — cohesive white pills with a
+   subtle brand-tinted left edge on hover */
+.btn-social {
   width: 100%;
+  justify-content: flex-start;
+  gap: 0.7rem;
+  background: #fff;
+  border: 1px solid var(--rule);
+  color: var(--near);
+  font-weight: 600;
+  padding: 0.7rem 1.2rem;
+}
+.btn-social:hover {
+  transform: translateY(-1px);
+  border-color: var(--green-deep);
+  background: var(--warm);
 }
 
+/* ─────────────────────────────────────────────────────────────
+   React DatePicker overrides — light theme
+   ───────────────────────────────────────────────────────────── */
+.custom-datepicker-wrapper .react-datepicker-wrapper { width: 100%; }
 .react-datepicker {
-  background-color: rgba(0, 0, 0, 0.8) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  background-color: #fff !important;
+  border: 1px solid var(--rule) !important;
   font-family: inherit !important;
-  color: white !important;
-  backdrop-filter: blur(10px);
-  border-radius: 8px !important;
+  color: var(--near) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(26, 26, 26, 0.12) !important;
 }
-
 .react-datepicker__header {
-  background-color: transparent !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: var(--warm) !important;
+  border-bottom: 1px solid var(--rule) !important;
 }
-
 .react-datepicker__current-month,
 .react-datepicker-time__header,
-.react-datepicker-year-header {
-  color: white !important;
-}
-
+.react-datepicker-year-header { color: var(--near) !important; }
 .react-datepicker__day-name,
 .react-datepicker__day,
-.react-datepicker__time-name {
-  color: white !important;
-}
-
+.react-datepicker__time-name { color: var(--near) !important; }
 .react-datepicker__day:hover,
 .react-datepicker__month-text:hover,
 .react-datepicker__quarter-text:hover,
 .react-datepicker__year-text:hover {
-  background-color: rgba(176, 224, 230, 0.2) !important;
+  background-color: var(--accent-soft) !important;
   border-radius: 4px;
 }
-
 .react-datepicker__day--selected,
 .react-datepicker__day--in-selecting-range,
 .react-datepicker__day--in-range,
 .react-datepicker__month-text--selected,
-.react-datepicker__month-text--in-selecting-range,
-.react-datepicker__month-text--in-range,
 .react-datepicker__quarter-text--selected,
-.react-datepicker__quarter-text--in-selecting-range,
-.react-datepicker__quarter-text--in-range,
-.react-datepicker__year-text--selected,
-.react-datepicker__year-text--in-selecting-range,
-.react-datepicker__year-text--in-range {
-  background-color: #B0E0E6 !important;
-  color: #0A192F !important;
+.react-datepicker__year-text--selected {
+  background-color: var(--green-deep) !important;
+  color: #fff !important;
   font-weight: bold;
 }
-
-.react-datepicker__day--keyboard-selected,
-.react-datepicker__month-text--keyboard-selected,
-.react-datepicker__quarter-text--keyboard-selected,
-.react-datepicker__year-text--keyboard-selected {
-  background-color: rgba(176, 224, 230, 0.5) !important;
-  color: white !important;
+.react-datepicker__day--keyboard-selected {
+  background-color: var(--accent-soft) !important;
+  color: var(--near) !important;
 }
 
-/* Sketched Custom Scrollbar (Base64 Encoded for Maximum Compatibility) */
+/* ─────────────────────────────────────────────────────────────
+   Sketched scrollbar — recolored to the green scheme (green ring
+   on a paper track), keeping the hand-drawn feel.
+   ───────────────────────────────────────────────────────────── */
 html::-webkit-scrollbar,
 body::-webkit-scrollbar,
 .main-content::-webkit-scrollbar,
 .custom-scrollbar::-webkit-scrollbar {
-  width: 14px !important;
+  width: 12px !important;
   background: transparent !important;
 }
-
 html::-webkit-scrollbar-track,
 body::-webkit-scrollbar-track,
 .main-content::-webkit-scrollbar-track,
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: linear-gradient(to right, transparent 6px, rgba(255, 255, 255, 0.6) 6px, rgba(255, 255, 255, 0.6) 8px, transparent 8px) !important;
+  background: linear-gradient(to right, transparent 5px, var(--rule) 5px, var(--rule) 7px, transparent 7px) !important;
 }
-
 html::-webkit-scrollbar-thumb,
 body::-webkit-scrollbar-thumb,
 .main-content::-webkit-scrollbar-thumb,
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: transparent !important;
-  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNCIgaGVpZ2h0PSIxNCI+PGNpcmNsZSBjeD0iNyIgY3k9IjciIHI9IjQuNSIgZmlsbD0iIzBBMTkyRiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utb3BhY2l0eT0iMC45IiBzdHJva2Utd2lkdGg9IjEuNSIvPjwvc3ZnPg==") !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-}
-
-html::-webkit-scrollbar-button:single-button:vertical:decrement,
-body::-webkit-scrollbar-button:single-button:vertical:decrement,
-.main-content::-webkit-scrollbar-button:single-button:vertical:decrement,
-.custom-scrollbar::-webkit-scrollbar-button:single-button:vertical:decrement {
-  height: 18px !important;
-  width: 14px !important;
-  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNCIgaGVpZ2h0PSIyMCI+PHBhdGggZD0iTTMgMTMgTDcgNyBMMTEgMTMiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLW9wYWNpdHk9IjAuOSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZmlsbD0ibm9uZSIvPjwvc3ZnPg==") !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-}
-
-html::-webkit-scrollbar-button:single-button:vertical:increment,
-body::-webkit-scrollbar-button:single-button:vertical:increment,
-.main-content::-webkit-scrollbar-button:single-button:vertical:increment,
-.custom-scrollbar::-webkit-scrollbar-button:single-button:vertical:increment {
-  height: 18px !important;
-  width: 14px !important;
-  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNCIgaGVpZ2h0PSIyMCI+PHBhdGggZD0iTTMgNyBMNyAxMyBMMTEgNyIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utb3BhY2l0eT0iMC45IiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBmaWxsPSJub25lIi8+PC9zdmc+") !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Ccircle cx='6' cy='6' r='4' fill='%23FFFFFF' stroke='%233E9E28' stroke-width='1.5'/%3E%3C/svg%3E") !important;
   background-repeat: no-repeat !important;
   background-position: center !important;
 }

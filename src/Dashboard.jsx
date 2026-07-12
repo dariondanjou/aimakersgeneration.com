@@ -300,13 +300,13 @@ export default function Dashboard({ session, refreshKey }) {
 
     // Comment inline component
     const CommentButton = ({ targetType, targetId }) => (
-        <button onClick={() => openComments(targetType, targetId)} className="text-white/40 hover:text-[#B0E0E6] transition-colors p-1" title="Comments">
+        <button onClick={() => openComments(targetType, targetId)} className="text-[#1A1A1A]/40 hover:text-[#3E9E28] transition-colors p-1" title="Comments">
             <MessageCircle size={14} />
         </button>
     );
 
     const ShareButton = ({ title, url }) => (
-        <button onClick={() => handleShare(title, url)} className="text-white/40 hover:text-[#B0E0E6] transition-colors p-1" title="Share">
+        <button onClick={() => handleShare(title, url)} className="text-[#1A1A1A]/40 hover:text-[#3E9E28] transition-colors p-1" title="Share">
             <Share2 size={14} />
         </button>
     );
@@ -315,40 +315,40 @@ export default function Dashboard({ session, refreshKey }) {
         <div className="main-content custom-scrollbar flex flex-col h-full p-6 relative overflow-y-auto text-lg w-full">
 
             {/* Top Navigation & Search */}
-            <header className="flex flex-row items-center mb-8 border-b border-white/10 pb-4 relative z-10 w-full flex-nowrap lg:gap-4 xl:gap-6" style={{ marginTop: '-4px' }}>
+            <header className="flex flex-row items-center mb-8 border-b border-[#1A1A1A]/10 pb-4 relative z-10 w-full flex-nowrap lg:gap-4 xl:gap-6" style={{ marginTop: '-4px' }}>
 
                 {/* Top Row: Title, Burger (Mobile), Sign Out (Mobile) */}
                 <div className="flex justify-between items-center shrink-0 w-full lg:w-auto h-10">
                     {/* Site Title */}
                     <div className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity h-10 mr-2 lg:mr-4 shrink-0" onClick={() => { setActiveTab('home'); setIsMobileMenuOpen(false); }}>
-                        <Terminal size={24} className="text-[#B0E0E6] shrink-0" />
-                        <span className="text-lg md:text-xl font-bold text-white whitespace-nowrap shrink-0">AI MAKERS GENERATION</span>
+                        <Terminal size={24} className="text-[#3E9E28] shrink-0" />
+                        <span className="text-lg md:text-xl font-bold text-[#1A1A1A] whitespace-nowrap shrink-0">Community</span>
                     </div>
 
                     <div className="flex items-center gap-1 sm:gap-2 lg:hidden ml-auto shrink-0">
                         {/* Burger Menu Toggle */}
-                        <button className="p-2 text-white hover:bg-white/10 rounded-md transition-colors" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                        <button className="p-2 text-[#1A1A1A] hover:bg-[#1A1A1A]/10 rounded-md transition-colors" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
                             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>
                         {/* Mobile Sign Out (Right aligned) */}
-                        <button onClick={handleSignOut} className="p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors flex justify-center items-center" title="Sign Out">
+                        <button onClick={handleSignOut} className="p-2 text-[#1A1A1A]/60 hover:text-[#1A1A1A] bg-[#1A1A1A]/5 rounded-full hover:bg-[#1A1A1A]/10 transition-colors flex justify-center items-center" title="Sign Out">
                             <LogOut size={18} />
                         </button>
                     </div>
                 </div>
 
                 {/* Nav Links (Desktop Only, Inline) */}
-                <div className={`${isMobileMenuOpen ? 'flex flex-col absolute top-16 left-0 right-0 bg-[#0f1419] p-4 border border-white/10 z-50 rounded-lg shadow-xl' : 'hidden'} lg:flex lg:flex-row items-center gap-2 xl:gap-6 shrink overflow-hidden lg:h-10`}>
-                    <button onClick={() => { setActiveTab('news'); setIsMobileMenuOpen(false); }} title="AI News" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'news' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
+                <div className={`${isMobileMenuOpen ? 'flex flex-col absolute top-16 left-0 right-0 bg-white p-4 border border-[#1A1A1A]/10 z-50 rounded-lg shadow-xl' : 'hidden'} lg:flex lg:flex-row items-center gap-2 xl:gap-6 shrink overflow-hidden lg:h-10`}>
+                    <button onClick={() => { setActiveTab('news'); setIsMobileMenuOpen(false); }} title="AI News" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'news' ? 'border-[#1A1A1A] text-[#1A1A1A]' : 'border-transparent text-[#1A1A1A]/50 hover:text-[#1A1A1A]/80'} whitespace-nowrap`}>
                         <Newspaper size={18} /> <span className="block lg:hidden xl:block">AI News</span>
                     </button>
-                    <button onClick={() => { setActiveTab('resources'); setIsMobileMenuOpen(false); }} title="AI Resources" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'resources' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
+                    <button onClick={() => { setActiveTab('resources'); setIsMobileMenuOpen(false); }} title="AI Resources" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'resources' ? 'border-[#1A1A1A] text-[#1A1A1A]' : 'border-transparent text-[#1A1A1A]/50 hover:text-[#1A1A1A]/80'} whitespace-nowrap`}>
                         <Globe size={18} /> <span className="block lg:hidden xl:block">AI Resources</span>
                     </button>
-                    <button onClick={() => { setActiveTab('calendar'); setIsMobileMenuOpen(false); }} title="Calendar" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'calendar' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
+                    <button onClick={() => { setActiveTab('calendar'); setIsMobileMenuOpen(false); }} title="Calendar" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'calendar' ? 'border-[#1A1A1A] text-[#1A1A1A]' : 'border-transparent text-[#1A1A1A]/50 hover:text-[#1A1A1A]/80'} whitespace-nowrap`}>
                         <Calendar size={18} /> <span className="block lg:hidden">Calendar</span>
                     </button>
-                    <button onClick={() => { setActiveTab('people'); setIsMobileMenuOpen(false); }} title="People" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'people' ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white/80'} whitespace-nowrap`}>
+                    <button onClick={() => { setActiveTab('people'); setIsMobileMenuOpen(false); }} title="People" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'people' ? 'border-[#1A1A1A] text-[#1A1A1A]' : 'border-transparent text-[#1A1A1A]/50 hover:text-[#1A1A1A]/80'} whitespace-nowrap`}>
                         <Users size={18} /> <span className="block lg:hidden">People</span>
                     </button>
                 </div>
@@ -356,7 +356,7 @@ export default function Dashboard({ session, refreshKey }) {
                 {/* Desktop Search & Sign Out */}
                 <div className="hidden lg:flex items-center shrink-0 h-10 ml-auto">
                     <div className="relative mr-2 lg:mr-4 shrink w-[120px] lg:w-40 xl:w-56">
-                        <Search className="absolute left-2 lg:left-3 top-1/2 -translate-y-1/2 text-white/50" size={16} />
+                        <Search className="absolute left-2 lg:left-3 top-1/2 -translate-y-1/2 text-[#1A1A1A]/50" size={16} />
                         <input
                             type="text"
                             placeholder="Search this site..."
@@ -364,20 +364,20 @@ export default function Dashboard({ session, refreshKey }) {
                             onChange={(e) => { setSearchQuery(e.target.value); setShowSearchResults(true); }}
                             onFocus={() => setShowSearchResults(true)}
                             onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
-                            className="bg-transparent border-b border-white/20 py-2 pl-8 lg:pl-10 pr-2 lg:pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-full"
+                            className="bg-transparent border-b border-[#1A1A1A]/20 py-2 pl-8 lg:pl-10 pr-2 lg:pr-4 text-sm text-[#1A1A1A] placeholder-black/40 focus:outline-none focus:border-[#3E9E28] transition-colors w-full"
                         />
                         {showSearchResults && searchResults.length > 0 && (
-                            <div className="absolute top-full left-0 right-0 bg-[#0f1419] border border-white/20 rounded-b-lg shadow-xl z-50 max-h-80 overflow-y-auto">
+                            <div className="absolute top-full left-0 right-0 bg-white border border-[#1A1A1A]/20 rounded-b-lg shadow-xl z-50 max-h-80 overflow-y-auto">
                                 {searchResults.map((r, i) => (
-                                    <button key={i} onClick={() => handleSearchSelect(r)} className="w-full text-left px-3 py-2 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0">
-                                        <div className="text-sm font-semibold text-white truncate">{r.item.title}</div>
-                                        <div className="text-[10px] text-white/40 uppercase">{r.item.type} • {r.item.tab}</div>
+                                    <button key={i} onClick={() => handleSearchSelect(r)} className="w-full text-left px-3 py-2 hover:bg-[#1A1A1A]/10 transition-colors border-b border-[#1A1A1A]/5 last:border-0">
+                                        <div className="text-sm font-semibold text-[#1A1A1A] truncate">{r.item.title}</div>
+                                        <div className="text-[10px] text-[#1A1A1A]/40 uppercase">{r.item.type} • {r.item.tab}</div>
                                     </button>
                                 ))}
                             </div>
                         )}
                     </div>
-                    <button onClick={handleSignOut} className="p-2 text-white/60 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors flex justify-center items-center shrink-0" title="Sign Out">
+                    <button onClick={handleSignOut} className="p-2 text-[#1A1A1A]/60 hover:text-[#1A1A1A] bg-[#1A1A1A]/5 rounded-full hover:bg-[#1A1A1A]/10 transition-colors flex justify-center items-center shrink-0" title="Sign Out">
                         <LogOut size={18} />
                     </button>
                 </div>
@@ -385,7 +385,7 @@ export default function Dashboard({ session, refreshKey }) {
                 {/* Mobile Search (Inside Burger Menu Flow or Below Title) */}
                 <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:hidden w-full mt-4`}>
                     <div className="relative w-full">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" size={16} />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#1A1A1A]/50" size={16} />
                         <input
                             type="text"
                             placeholder="Search this site..."
@@ -393,14 +393,14 @@ export default function Dashboard({ session, refreshKey }) {
                             onChange={(e) => { setSearchQuery(e.target.value); setShowSearchResults(true); }}
                             onFocus={() => setShowSearchResults(true)}
                             onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
-                            className="bg-transparent border-b border-white/20 py-2 pl-10 pr-4 text-sm text-white placeholder-white/50 focus:outline-none focus:border-[#B0E0E6] transition-colors w-full"
+                            className="bg-transparent border-b border-[#1A1A1A]/20 py-2 pl-10 pr-4 text-sm text-[#1A1A1A] placeholder-black/40 focus:outline-none focus:border-[#3E9E28] transition-colors w-full"
                         />
                         {showSearchResults && searchResults.length > 0 && (
-                            <div className="absolute top-full left-0 right-0 bg-[#0f1419] border border-white/20 rounded-b-lg shadow-xl z-50 max-h-80 overflow-y-auto">
+                            <div className="absolute top-full left-0 right-0 bg-white border border-[#1A1A1A]/20 rounded-b-lg shadow-xl z-50 max-h-80 overflow-y-auto">
                                 {searchResults.map((r, i) => (
-                                    <button key={i} onClick={() => { handleSearchSelect(r); setIsMobileMenuOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0">
-                                        <div className="text-sm font-semibold text-white truncate">{r.item.title}</div>
-                                        <div className="text-[10px] text-white/40 uppercase">{r.item.type} • {r.item.tab}</div>
+                                    <button key={i} onClick={() => { handleSearchSelect(r); setIsMobileMenuOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-[#1A1A1A]/10 transition-colors border-b border-[#1A1A1A]/5 last:border-0">
+                                        <div className="text-sm font-semibold text-[#1A1A1A] truncate">{r.item.title}</div>
+                                        <div className="text-[10px] text-[#1A1A1A]/40 uppercase">{r.item.type} • {r.item.tab}</div>
                                     </button>
                                 ))}
                             </div>
@@ -418,16 +418,16 @@ export default function Dashboard({ session, refreshKey }) {
                             <div className="glass-panel relative overflow-hidden min-h-[200px]">
                                 <div className="absolute top-0 right-0 p-4 opacity-10"><Newspaper size={64} /></div>
                                 <div className="flex justify-between items-center mb-4 relative z-10">
-                                    <h2 className="text-lg font-bold text-white">Latest AI News</h2>
-                                    <button onClick={() => setActiveTab('news')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors cursor-pointer">view more</button>
+                                    <h2 className="text-lg font-bold text-[#1A1A1A]">Latest AI News</h2>
+                                    <button onClick={() => setActiveTab('news')} className="text-sm text-[#1A1A1A] hover:text-[#3E9E28] transition-colors cursor-pointer">view more</button>
                                 </div>
 
                                 <div className="space-y-2 relative z-10">
                                     {newsArticles.slice(0, 3).map(item => (
-                                        <div key={item.id} className="border-b border-white/10 pb-2 last:border-0">
-                                            <a href={item.url} target="_blank" rel="noreferrer" className="font-bold text-lg text-[#B0E0E6] hover:text-white transition-colors leading-tight">{item.title}</a>
+                                        <div key={item.id} className="border-b border-[#1A1A1A]/10 pb-2 last:border-0">
+                                            <a href={item.url} target="_blank" rel="noreferrer" className="font-bold text-lg text-[#3E9E28] hover:text-[#1A1A1A] transition-colors leading-tight">{item.title}</a>
                                             <div className="flex items-center justify-between mt-1">
-                                                <div className="text-xs text-white/40">{new Date(item.published_at).toLocaleDateString()} • {item.source}</div>
+                                                <div className="text-xs text-[#1A1A1A]/40">{new Date(item.published_at).toLocaleDateString()} • {item.source}</div>
                                                 <div className="flex items-center gap-1">
                                                     <ShareButton title={item.title} url={item.url} />
                                                 </div>
@@ -435,17 +435,17 @@ export default function Dashboard({ session, refreshKey }) {
                                         </div>
                                     ))}
                                     {youtubeVideos.length > 0 && (
-                                        <a href={`https://www.youtube.com/watch?v=${youtubeVideos[0].video_id}`} target="_blank" rel="noreferrer" className="block group border-b border-white/10 pb-3">
-                                            <div className="relative rounded-lg overflow-hidden border border-white/10 group-hover:border-[#B0E0E6]/50 transition-colors">
+                                        <a href={`https://www.youtube.com/watch?v=${youtubeVideos[0].video_id}`} target="_blank" rel="noreferrer" className="block group border-b border-[#1A1A1A]/10 pb-3">
+                                            <div className="relative rounded-lg overflow-hidden border border-[#1A1A1A]/10 group-hover:border-[#3E9E28]/50 transition-colors">
                                                 <img src={`https://img.youtube.com/vi/${youtubeVideos[0].video_id}/mqdefault.jpg`} alt={youtubeVideos[0].title} className="w-full aspect-video object-cover" />
-                                                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                                <div className="absolute inset-0 bg-black/15 group-hover:bg-black/5 transition-colors flex items-center justify-center">
                                                     <div className="w-10 h-10 rounded-full bg-red-600/90 flex items-center justify-center">
                                                         <div className="w-0 h-0 border-l-[14px] border-l-white border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent ml-1" />
                                                     </div>
                                                 </div>
                                             </div>
-                                            <h4 className="font-bold text-lg text-white group-hover:text-[#B0E0E6] transition-colors mt-2">{youtubeVideos[0].title}</h4>
-                                            <div className="text-xs text-white/40 mt-1">{youtubeVideos[0].channel_name} • {new Date(youtubeVideos[0].published_at).toLocaleDateString()}</div>
+                                            <h4 className="font-bold text-lg text-[#1A1A1A] group-hover:text-[#3E9E28] transition-colors mt-2">{youtubeVideos[0].title}</h4>
+                                            <div className="text-xs text-[#1A1A1A]/40 mt-1">{youtubeVideos[0].channel_name} • {new Date(youtubeVideos[0].published_at).toLocaleDateString()}</div>
                                         </a>
                                     )}
                                 </div>
@@ -453,15 +453,15 @@ export default function Dashboard({ session, refreshKey }) {
                             <div className="glass-panel p-6">
                                 <div className="flex justify-between items-center mb-4 relative z-10">
                                     <h2 className="text-lg font-bold">Active AI Resources</h2>
-                                    <button onClick={() => setActiveTab('resources')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors cursor-pointer">view more</button>
+                                    <button onClick={() => setActiveTab('resources')} className="text-sm text-[#1A1A1A] hover:text-[#3E9E28] transition-colors cursor-pointer">view more</button>
                                 </div>
-                                {loading ? <p className="text-white/50">Loading resources...</p> :
-                                    resources.length === 0 ? <p className="text-white/50 italic">No resources added to the wiki yet.</p> :
+                                {loading ? <p className="text-[#1A1A1A]/50">Loading resources...</p> :
+                                    resources.length === 0 ? <p className="text-[#1A1A1A]/50 italic">No resources added to the wiki yet.</p> :
                                         <ul className="space-y-3" style={{ marginLeft: '-10px' }}>
                                             {resources.slice(0, 5).map(res => (
-                                                <li key={res.id} className="flex flex-col p-3 border-b border-white/10 last:border-0">
-                                                    <a href={res.url} target="_blank" rel="noreferrer" className="font-semibold text-[#B0E0E6] hover:text-white transition-colors">{res.title}</a>
-                                                    {res.description && <span className="text-xs text-white/60 mt-1 line-clamp-2">{res.description}</span>}
+                                                <li key={res.id} className="flex flex-col p-3 border-b border-[#1A1A1A]/10 last:border-0">
+                                                    <a href={res.url} target="_blank" rel="noreferrer" className="font-semibold text-[#3E9E28] hover:text-[#1A1A1A] transition-colors">{res.title}</a>
+                                                    {res.description && <span className="text-xs text-[#1A1A1A]/60 mt-1 line-clamp-2">{res.description}</span>}
                                                 </li>
                                             ))}
                                         </ul>
@@ -471,17 +471,17 @@ export default function Dashboard({ session, refreshKey }) {
 
                         <div className="col-span-1 lg:col-span-4 flex flex-col gap-6">
                             <div className="glass-panel p-6">
-                                <div className="flex justify-between items-center border-b border-white/10 pb-2" style={{ marginBottom: '1px' }}>
+                                <div className="flex justify-between items-center border-b border-[#1A1A1A]/10 pb-2" style={{ marginBottom: '1px' }}>
                                     <h2 className="text-lg font-bold">Upcoming Events</h2>
-                                    <button onClick={() => setActiveTab('calendar')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors">full calendar</button>
+                                    <button onClick={() => setActiveTab('calendar')} className="text-sm text-[#1A1A1A] hover:text-[#3E9E28] transition-colors">full calendar</button>
                                 </div>
-                                {loading ? <p className="text-white/50 text-sm">Loading events...</p> :
-                                    events.length === 0 ? <p className="text-white/50 italic text-sm">No upcoming events scheduled.</p> :
+                                {loading ? <p className="text-[#1A1A1A]/50 text-sm">Loading events...</p> :
+                                    events.length === 0 ? <p className="text-[#1A1A1A]/50 italic text-sm">No upcoming events scheduled.</p> :
                                         <ul className="space-y-1">
                                             {events.slice(0, 4).map(ev => (
-                                                <li key={ev.id} onClick={() => setSelectedEvent(ev)} className="cursor-pointer hover:bg-white/5 p-2 rounded transition-colors -mx-2">
+                                                <li key={ev.id} onClick={() => setSelectedEvent(ev)} className="cursor-pointer hover:bg-[#1A1A1A]/5 p-2 rounded transition-colors -mx-2">
                                                     <div className="font-bold text-sm">{ev.title}</div>
-                                                    <div className="text-sm text-white/60">{new Date(ev.event_date + 'T00:00:00').toLocaleDateString()}</div>
+                                                    <div className="text-sm text-[#1A1A1A]/60">{new Date(ev.event_date + 'T00:00:00').toLocaleDateString()}</div>
                                                 </li>
                                             ))}
                                         </ul>
@@ -489,21 +489,21 @@ export default function Dashboard({ session, refreshKey }) {
                             </div>
 
                             <div className="glass-panel p-6">
-                                <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
-                                    <h2 className="text-lg font-bold text-white">Recently Active</h2>
-                                    <button onClick={() => setActiveTab('people')} className="text-sm text-white hover:text-[#B0E0E6] transition-colors">all creatives</button>
+                                <div className="flex justify-between items-center mb-4 border-b border-[#1A1A1A]/10 pb-2">
+                                    <h2 className="text-lg font-bold text-[#1A1A1A]">Recently Active</h2>
+                                    <button onClick={() => setActiveTab('people')} className="text-sm text-[#1A1A1A] hover:text-[#3E9E28] transition-colors">all creatives</button>
                                 </div>
-                                {loading ? <p className="text-white/50 text-sm">Loading network...</p> :
-                                    users.length === 0 ? <p className="text-white/50 italic text-sm">No users yet.</p> :
+                                {loading ? <p className="text-[#1A1A1A]/50 text-sm">Loading network...</p> :
+                                    users.length === 0 ? <p className="text-[#1A1A1A]/50 italic text-sm">No users yet.</p> :
                                     <div className="space-y-3">
                                         {users.slice(0, 3).map(u => (
-                                            <div key={u.id} className="flex items-center gap-3 p-2 rounded hover:bg-white/5 transition-colors cursor-pointer" onClick={() => setActiveTab('people')}>
-                                                <div className="w-10 h-10 rounded-full bg-black/40 border border-[#B0E0E6]/40 flex items-center justify-center text-sm font-bold shadow-lg overflow-hidden shrink-0">
+                                            <div key={u.id} className="flex items-center gap-3 p-2 rounded hover:bg-[#1A1A1A]/5 transition-colors cursor-pointer" onClick={() => setActiveTab('people')}>
+                                                <div className="w-10 h-10 rounded-full bg-[#F4F4F2] border border-[#3E9E28]/40 flex items-center justify-center text-sm font-bold shadow-lg overflow-hidden shrink-0">
                                                     {u.avatar_url ? <img src={u.avatar_url} alt={u.username} className="w-full h-full object-cover" /> : (u.username?.[0]?.toUpperCase() || '?')}
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <div className="text-sm font-semibold text-white truncate">{u.username || 'Anonymous'}</div>
-                                                    <div className="text-[10px] text-white/40">{u.updated_at ? `Active ${new Date(u.updated_at).toLocaleDateString()}` : 'Member'}</div>
+                                                    <div className="text-sm font-semibold text-[#1A1A1A] truncate">{u.username || 'Anonymous'}</div>
+                                                    <div className="text-[10px] text-[#1A1A1A]/40">{u.updated_at ? `Active ${new Date(u.updated_at).toLocaleDateString()}` : 'Member'}</div>
                                                 </div>
                                             </div>
                                         ))}
@@ -518,18 +518,18 @@ export default function Dashboard({ session, refreshKey }) {
                     activeTab === 'news' && (
                         <div className="space-y-6">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-3xl font-bold text-white">AI News</h2>
+                                <h2 className="text-3xl font-bold text-[#1A1A1A]">AI News</h2>
                                 <button className="btn btn-primary text-sm">Submit News</button>
                             </div>
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                                 <div className="col-span-1 lg:col-span-8 flex flex-col gap-4">
-                                    {newsArticles.length === 0 && !loading && <p className="text-white/50 italic glass-panel p-6">No news articles yet. Content updates automatically.</p>}
+                                    {newsArticles.length === 0 && !loading && <p className="text-[#1A1A1A]/50 italic glass-panel p-6">No news articles yet. Content updates automatically.</p>}
                                     {newsArticles.map(article => (
-                                        <div key={article.id} className="glass-panel p-6 border-l-4 border-[#B0E0E6]">
-                                            <a href={article.url} target="_blank" rel="noreferrer" className="block text-xl font-bold mb-2 text-[#B0E0E6] hover:text-white transition-colors">
+                                        <div key={article.id} className="glass-panel p-6 border-l-4 border-[#3E9E28]">
+                                            <a href={article.url} target="_blank" rel="noreferrer" className="block text-xl font-bold mb-2 text-[#3E9E28] hover:text-[#1A1A1A] transition-colors">
                                                 {article.title}
                                             </a>
-                                            <div className="flex justify-between items-center text-xs text-white/40 border-t border-white/10 pt-3">
+                                            <div className="flex justify-between items-center text-xs text-[#1A1A1A]/40 border-t border-[#1A1A1A]/10 pt-3">
                                                 <span>{article.source} • {new Date(article.published_at).toLocaleDateString()}</span>
                                                 <div className="flex items-center gap-1">
                                                     <CommentButton targetType="post" targetId={`news-${article.id}`} />
@@ -540,24 +540,24 @@ export default function Dashboard({ session, refreshKey }) {
                                     ))}
                                 </div>
                                 <div className="col-span-1 lg:col-span-4 flex flex-col gap-4">
-                                    <h3 className="text-xl font-bold border-b border-white/10 pb-2">Latest Videos</h3>
-                                    {youtubeVideos.length === 0 && !loading && <p className="text-white/50 italic text-sm">No videos yet. Content updates automatically.</p>}
+                                    <h3 className="text-xl font-bold border-b border-[#1A1A1A]/10 pb-2">Latest Videos</h3>
+                                    {youtubeVideos.length === 0 && !loading && <p className="text-[#1A1A1A]/50 italic text-sm">No videos yet. Content updates automatically.</p>}
                                     {youtubeVideos.map(video => (
                                         <a key={video.video_id} href={`https://www.youtube.com/watch?v=${video.video_id}`} target="_blank" rel="noreferrer" className="block group">
-                                            <div className="relative rounded-lg overflow-hidden border border-white/10 group-hover:border-[#B0E0E6]/50 transition-colors">
+                                            <div className="relative rounded-lg overflow-hidden border border-[#1A1A1A]/10 group-hover:border-[#3E9E28]/50 transition-colors">
                                                 <img
                                                     src={video.thumbnail_url || `https://img.youtube.com/vi/${video.video_id}/mqdefault.jpg`}
                                                     alt={video.title}
                                                     className="w-full aspect-video object-cover"
                                                 />
-                                                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                                <div className="absolute inset-0 bg-black/15 group-hover:bg-black/5 transition-colors flex items-center justify-center">
                                                     <div className="w-10 h-10 rounded-full bg-red-600/90 flex items-center justify-center">
                                                         <div className="w-0 h-0 border-l-[14px] border-l-white border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent ml-1" />
                                                     </div>
                                                 </div>
                                             </div>
-                                            <h4 className="text-sm font-semibold text-white group-hover:text-[#B0E0E6] transition-colors mt-2 line-clamp-2">{video.title}</h4>
-                                            <span className="text-[10px] text-white/40 uppercase tracking-wider">{video.channel_name} • {new Date(video.published_at).toLocaleDateString()}</span>
+                                            <h4 className="text-sm font-semibold text-[#1A1A1A] group-hover:text-[#3E9E28] transition-colors mt-2 line-clamp-2">{video.title}</h4>
+                                            <span className="text-[10px] text-[#1A1A1A]/40 uppercase tracking-wider">{video.channel_name} • {new Date(video.published_at).toLocaleDateString()}</span>
                                         </a>
                                     ))}
                                 </div>
@@ -570,7 +570,7 @@ export default function Dashboard({ session, refreshKey }) {
                     activeTab === 'resources' && (
                         <div className="space-y-6">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-3xl font-bold text-white">Resources Wiki</h2>
+                                <h2 className="text-3xl font-bold text-[#1A1A1A]">Resources Wiki</h2>
                                 <button className="btn btn-primary text-sm">+ Add Resource</button>
                             </div>
 
@@ -578,7 +578,7 @@ export default function Dashboard({ session, refreshKey }) {
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left border-collapse">
                                         <thead>
-                                            <tr className="border-b border-white/20 text-white/50 text-sm">
+                                            <tr className="border-b border-[#1A1A1A]/20 text-[#1A1A1A]/50 text-sm">
                                                 <th className="pb-3 pt-2 px-4 font-normal">Resource Title</th>
                                                 <th className="pb-3 pt-2 px-4 font-normal">Description</th>
                                                 <th className="pb-3 pt-2 px-4 font-normal">Link</th>
@@ -586,14 +586,14 @@ export default function Dashboard({ session, refreshKey }) {
                                         </thead>
                                         <tbody>
                                             {loading ? <tr><td colSpan="3" className="text-center py-4">Loading...</td></tr> :
-                                                resources.length === 0 ? <tr><td colSpan="3" className="text-center py-8 italic text-white/50">Wiki contains no entries yet.</td></tr> :
+                                                resources.length === 0 ? <tr><td colSpan="3" className="text-center py-8 italic text-[#1A1A1A]/50">Wiki contains no entries yet.</td></tr> :
                                                     resources.map(res => (
-                                                        <tr key={res.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                                                        <tr key={res.id} className="border-b border-[#1A1A1A]/5 hover:bg-[#1A1A1A]/5 transition-colors">
                                                             <td className="py-3 px-4 font-semibold">{res.title}</td>
-                                                            <td className="py-3 px-4 text-white/60 text-sm max-w-[300px]">{res.description || ''}</td>
+                                                            <td className="py-3 px-4 text-[#1A1A1A]/60 text-sm max-w-[300px]">{res.description || ''}</td>
                                                             <td className="py-3 px-4">
                                                                 <div className="flex items-center gap-2">
-                                                                    <a href={res.url} className="text-[#B0E0E6] hover:underline truncate inline-block max-w-[150px]" target="_blank" rel="noreferrer">Visit</a>
+                                                                    <a href={res.url} className="text-[#3E9E28] hover:underline truncate inline-block max-w-[150px]" target="_blank" rel="noreferrer">Visit</a>
                                                                     <CommentButton targetType="resource" targetId={res.id} />
                                                                     <ShareButton title={res.title} url={res.url} />
                                                                 </div>
@@ -612,7 +612,7 @@ export default function Dashboard({ session, refreshKey }) {
                     activeTab === 'calendar' && (
                         <div className="space-y-6">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-3xl font-bold text-white">Events</h2>
+                                <h2 className="text-3xl font-bold text-[#1A1A1A]">Events</h2>
                                 {!isAddingEvent && (
                                     <button onClick={() => setIsAddingEvent(true)} className="btn btn-primary text-sm">
                                         <Plus size={16} className="inline mr-2" /> Add Event
@@ -621,27 +621,27 @@ export default function Dashboard({ session, refreshKey }) {
                             </div>
 
                             {isAddingEvent && (
-                                <div className="glass-panel p-6 border border-[#B0E0E6]/50 mb-6">
+                                <div className="glass-panel p-6 border border-[#3E9E28]/50 mb-6">
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="text-xl font-bold">Create New Event</h3>
-                                        <button onClick={() => setIsAddingEvent(false)} className="text-white/50 hover:text-white"><X size={20} /></button>
+                                        <button onClick={() => setIsAddingEvent(false)} className="text-[#1A1A1A]/50 hover:text-[#1A1A1A]"><X size={20} /></button>
                                     </div>
                                     <form onSubmit={handleAddEventSave} className="flex flex-col gap-4 max-w-md">
                                         <div>
-                                            <label className="block text-sm text-white/70 mb-1">Event Title</label>
-                                            <input type="text" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Hackathon Kickoff" required />
+                                            <label className="block text-sm text-[#1A1A1A]/70 mb-1">Event Title</label>
+                                            <input type="text" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} className="w-full bg-[#F4F4F2] border border-[#1A1A1A]/20 rounded py-2 px-3 text-[#1A1A1A] focus:outline-none focus:border-[#3E9E28] transition-colors" placeholder="e.g. Hackathon Kickoff" required />
                                         </div>
                                         <div>
-                                            <label className="block text-sm text-white/70 mb-1">Description (Optional)</label>
-                                            <textarea value={eventDescription} onChange={(e) => setEventDescription(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors h-24" placeholder="Event details..." />
+                                            <label className="block text-sm text-[#1A1A1A]/70 mb-1">Description (Optional)</label>
+                                            <textarea value={eventDescription} onChange={(e) => setEventDescription(e.target.value)} className="w-full bg-[#F4F4F2] border border-[#1A1A1A]/20 rounded py-2 px-3 text-[#1A1A1A] focus:outline-none focus:border-[#3E9E28] transition-colors h-24" placeholder="Event details..." />
                                         </div>
                                         <div>
-                                            <label className="block text-sm text-white/70 mb-1">Date</label>
+                                            <label className="block text-sm text-[#1A1A1A]/70 mb-1">Date</label>
                                             <div className="custom-datepicker-wrapper">
                                                 <DatePicker
                                                     selected={eventDate}
                                                     onChange={(date) => setEventDate(date)}
-                                                    className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors"
+                                                    className="w-full bg-[#F4F4F2] border border-[#1A1A1A]/20 rounded py-2 px-3 text-[#1A1A1A] focus:outline-none focus:border-[#3E9E28] transition-colors"
                                                     dateFormat="MMMM d, yyyy"
                                                     required
                                                 />
@@ -656,14 +656,14 @@ export default function Dashboard({ session, refreshKey }) {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {loading ? <p>Loading calendar...</p> :
-                                    events.length === 0 ? <div className="col-span-full glass-panel py-12 text-center text-white/50 italic">No events mapped.</div> :
+                                    events.length === 0 ? <div className="col-span-full glass-panel py-12 text-center text-[#1A1A1A]/50 italic">No events mapped.</div> :
                                         events.map(ev => (
-                                            <div key={ev.id} className="glass-panel border-[#FFFFFF]/30 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden group hover:border-[#FFFFFF] transition-colors">
-                                                <Calendar size={48} className="text-white/10 absolute -right-4 -bottom-4 group-hover:text-white/20 transition-colors" />
+                                            <div key={ev.id} className="glass-panel border-[#1A1A1A]/30 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden group hover:border-[#1A1A1A] transition-colors">
+                                                <Calendar size={48} className="text-[#1A1A1A]/10 absolute -right-4 -bottom-4 group-hover:text-[#1A1A1A]/20 transition-colors" />
                                                 <div className="cursor-pointer" onClick={() => setSelectedEvent(ev)}>
-                                                    <div className="text-[#FFFFFF] text-2xl font-bold mb-2">{new Date(ev.event_date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
+                                                    <div className="text-[#1A1A1A] text-2xl font-bold mb-2">{new Date(ev.event_date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
                                                     <h3 className="text-lg font-bold z-10">{ev.title}</h3>
-                                                    {ev.description && <p className="text-sm text-white/60 mt-2 z-10 line-clamp-2">{ev.description}</p>}
+                                                    {ev.description && <p className="text-sm text-[#1A1A1A]/60 mt-2 z-10 line-clamp-2">{ev.description}</p>}
                                                 </div>
                                                 <div className="flex items-center gap-2 mt-3 z-10">
                                                     <CommentButton targetType="event" targetId={ev.id} />
@@ -681,7 +681,7 @@ export default function Dashboard({ session, refreshKey }) {
                     activeTab === 'people' && (
                         <div className="space-y-6">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-3xl font-bold text-white">AI Creatives</h2>
+                                <h2 className="text-3xl font-bold text-[#1A1A1A]">AI Creatives</h2>
                                 {!isEditingProfile && (
                                     <button onClick={() => {
                                         const myProfile = users.find(u => u.id === session.user.id);
@@ -702,33 +702,33 @@ export default function Dashboard({ session, refreshKey }) {
                             </div>
 
                             {isEditingProfile && (
-                                <div className="glass-panel p-6 border border-[#B0E0E6]/50 mb-6">
+                                <div className="glass-panel p-6 border border-[#3E9E28]/50 mb-6">
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="text-xl font-bold">Edit Your Profile</h3>
-                                        <button onClick={() => setIsEditingProfile(false)} className="text-white/50 hover:text-white"><X size={20} /></button>
+                                        <button onClick={() => setIsEditingProfile(false)} className="text-[#1A1A1A]/50 hover:text-[#1A1A1A]"><X size={20} /></button>
                                     </div>
                                     <form onSubmit={handleEditProfileSave} className="flex flex-col gap-4 max-w-md">
                                         <div>
-                                            <label className="block text-sm text-white/70 mb-1">Avatar Image</label>
+                                            <label className="block text-sm text-[#1A1A1A]/70 mb-1">Avatar Image</label>
                                             <div
-                                                className={`w-full border-2 border-dashed ${isUploadingAvatar ? 'border-[#B0E0E6] scale-95' : 'border-white/30 hover:border-white/60'} rounded-lg p-6 text-center transition-all cursor-pointer relative overflow-hidden`}
+                                                className={`w-full border-2 border-dashed ${isUploadingAvatar ? 'border-[#3E9E28] scale-95' : 'border-[#1A1A1A]/30 hover:border-[#1A1A1A]/60'} rounded-lg p-6 text-center transition-all cursor-pointer relative overflow-hidden`}
                                                 onDragOver={(e) => e.preventDefault()}
                                                 onDrop={handleAvatarUpload}
                                             >
                                                 {isUploadingAvatar ? (
                                                     <div className="flex flex-col items-center justify-center">
-                                                        <div className="w-8 h-8 border-4 border-t-[#B0E0E6] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mb-2" />
-                                                        <span className="text-sm text-white/70">Uploading...</span>
+                                                        <div className="w-8 h-8 border-4 border-t-[#3E9E28] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mb-2" />
+                                                        <span className="text-sm text-[#1A1A1A]/70">Uploading...</span>
                                                     </div>
                                                 ) : editAvatarUrl ? (
                                                     <div className="flex flex-col items-center gap-2">
-                                                        <img src={editAvatarUrl} alt="Avatar Preview" className="w-16 h-16 rounded-full object-cover border border-white/20 shadow-lg" />
-                                                        <span className="text-xs text-[#B0E0E6]">Click or Drop to Re-Upload</span>
+                                                        <img src={editAvatarUrl} alt="Avatar Preview" className="w-16 h-16 rounded-full object-cover border border-[#1A1A1A]/20 shadow-lg" />
+                                                        <span className="text-xs text-[#3E9E28]">Click or Drop to Re-Upload</span>
                                                     </div>
                                                 ) : (
                                                     <div className="flex flex-col items-center gap-1">
-                                                        <span className="text-white/70 text-sm font-bold">Drag & Drop Image Here</span>
-                                                        <span className="text-white/40 text-xs">or click to browse local files (Max 5MB)</span>
+                                                        <span className="text-[#1A1A1A]/70 text-sm font-bold">Drag & Drop Image Here</span>
+                                                        <span className="text-[#1A1A1A]/40 text-xs">or click to browse local files (Max 5MB)</span>
                                                     </div>
                                                 )}
 
@@ -741,37 +741,37 @@ export default function Dashboard({ session, refreshKey }) {
                                                 />
                                             </div>
                                             {editAvatarUrl && (
-                                                <div className="mt-2 text-xs flex justify-between items-center text-white/40">
+                                                <div className="mt-2 text-xs flex justify-between items-center text-[#1A1A1A]/40">
                                                     <span className="truncate max-w-[250px]">{editAvatarUrl}</span>
                                                     <button type="button" onClick={() => setEditAvatarUrl('')} className="hover:text-red-400">Remove</button>
                                                 </div>
                                             )}
                                         </div>
                                         <div>
-                                            <label className="block text-sm text-white/70 mb-1">Title</label>
-                                            <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. AI Creative" />
+                                            <label className="block text-sm text-[#1A1A1A]/70 mb-1">Title</label>
+                                            <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full bg-[#F4F4F2] border border-[#1A1A1A]/20 rounded py-2 px-3 text-[#1A1A1A] focus:outline-none focus:border-[#3E9E28] transition-colors" placeholder="e.g. AI Creative" />
                                         </div>
                                         <div>
-                                            <label className="block text-sm text-white/70 mb-1">Username</label>
-                                            <input type="text" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. AI Architect" required />
+                                            <label className="block text-sm text-[#1A1A1A]/70 mb-1">Username</label>
+                                            <input type="text" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} className="w-full bg-[#F4F4F2] border border-[#1A1A1A]/20 rounded py-2 px-3 text-[#1A1A1A] focus:outline-none focus:border-[#3E9E28] transition-colors" placeholder="e.g. AI Architect" required />
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-sm text-white/70 mb-1">First Name (Optional)</label>
-                                                <input type="text" value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Satoshi" />
+                                                <label className="block text-sm text-[#1A1A1A]/70 mb-1">First Name (Optional)</label>
+                                                <input type="text" value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="w-full bg-[#F4F4F2] border border-[#1A1A1A]/20 rounded py-2 px-3 text-[#1A1A1A] focus:outline-none focus:border-[#3E9E28] transition-colors" placeholder="e.g. Satoshi" />
                                             </div>
                                             <div>
-                                                <label className="block text-sm text-white/70 mb-1">Last Name (Optional)</label>
-                                                <input type="text" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors" placeholder="e.g. Nakamoto" />
+                                                <label className="block text-sm text-[#1A1A1A]/70 mb-1">Last Name (Optional)</label>
+                                                <input type="text" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="w-full bg-[#F4F4F2] border border-[#1A1A1A]/20 rounded py-2 px-3 text-[#1A1A1A] focus:outline-none focus:border-[#3E9E28] transition-colors" placeholder="e.g. Nakamoto" />
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-sm text-white/70 mb-1">Bio</label>
-                                            <textarea value={editBio} onChange={(e) => setEditBio(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors h-20 text-sm" placeholder="Tell us about yourself..." />
+                                            <label className="block text-sm text-[#1A1A1A]/70 mb-1">Bio</label>
+                                            <textarea value={editBio} onChange={(e) => setEditBio(e.target.value)} className="w-full bg-[#F4F4F2] border border-[#1A1A1A]/20 rounded py-2 px-3 text-[#1A1A1A] focus:outline-none focus:border-[#3E9E28] transition-colors h-20 text-sm" placeholder="Tell us about yourself..." />
                                         </div>
                                         <div>
-                                            <label className="block text-sm text-white/70 mb-1">Links (comma-separated URLs)</label>
-                                            <input type="text" value={editLinks} onChange={(e) => setEditLinks(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded py-2 px-3 text-white focus:outline-none focus:border-[#B0E0E6] transition-colors text-sm" placeholder="https://portfolio.com, https://github.com/you" />
+                                            <label className="block text-sm text-[#1A1A1A]/70 mb-1">Links (comma-separated URLs)</label>
+                                            <input type="text" value={editLinks} onChange={(e) => setEditLinks(e.target.value)} className="w-full bg-[#F4F4F2] border border-[#1A1A1A]/20 rounded py-2 px-3 text-[#1A1A1A] focus:outline-none focus:border-[#3E9E28] transition-colors text-sm" placeholder="https://portfolio.com, https://github.com/you" />
                                         </div>
                                         <button type="submit" disabled={isSavingProfile} className="btn btn-primary w-fit mt-2">
                                             {isSavingProfile ? 'Saving...' : <><Check size={16} className="inline mr-2" /> Save Profile</>}
@@ -786,11 +786,11 @@ export default function Dashboard({ session, refreshKey }) {
                                         users.map(u => {
                                             const firstName = u.first_name || u.username || 'User';
                                             return (
-                                            <div key={u.id} onClick={() => navigate(`/profile/${u.id}`)} className="glass-panel flex flex-col items-center p-6 hover:bg-white/10 transition-colors cursor-pointer text-center">
-                                                <div className="w-20 h-20 rounded-full bg-black/40 border-2 border-[#B0E0E6]/40 flex items-center justify-center text-xl font-bold shadow-lg overflow-hidden mb-2">
+                                            <div key={u.id} onClick={() => navigate(`/profile/${u.id}`)} className="glass-panel flex flex-col items-center p-6 hover:bg-[#1A1A1A]/10 transition-colors cursor-pointer text-center">
+                                                <div className="w-20 h-20 rounded-full bg-[#F4F4F2] border-2 border-[#3E9E28]/40 flex items-center justify-center text-xl font-bold shadow-lg overflow-hidden mb-2">
                                                     {u.avatar_url ? <img src={u.avatar_url} alt={u.username} className="w-full h-full object-cover" /> : (u.username?.[0]?.toUpperCase() || '?')}
                                                 </div>
-                                                <p className="text-xs text-[#B0E0E6] mb-2">{u.title || 'AI Creative'}</p>
+                                                <p className="text-xs text-[#3E9E28] mb-2">{u.title || 'AI Creative'}</p>
                                                 <h3 className="font-bold text-lg truncate w-full">
                                                     {(u.first_name || u.last_name) ? `${u.first_name || ''} ${u.last_name || ''}`.trim() : (u.username || 'Anonymous')}
                                                 </h3>
@@ -802,8 +802,8 @@ export default function Dashboard({ session, refreshKey }) {
                                                             const platform = getSocialPlatform(url);
                                                             const tooltip = getSocialTooltip(url, firstName);
                                                             return (
-                                                                <a key={i} href={url.startsWith('http') ? url : `https://${url}`} target="_blank" rel="noreferrer" title={tooltip} className="w-7 h-7 rounded bg-white/5 border border-white/10 hover:border-[#B0E0E6]/50 flex items-center justify-center transition-all" onClick={e => e.stopPropagation()}>
-                                                                    {platform.logo ? <img src={platform.logo} alt={platform.name} className="w-4 h-4" /> : <ExternalLink size={12} className="text-white/60" />}
+                                                                <a key={i} href={url.startsWith('http') ? url : `https://${url}`} target="_blank" rel="noreferrer" title={tooltip} className="w-7 h-7 rounded bg-[#1A1A1A]/5 border border-[#1A1A1A]/10 hover:border-[#3E9E28]/50 flex items-center justify-center transition-all" onClick={e => e.stopPropagation()}>
+                                                                    {platform.logo ? <img src={platform.logo} alt={platform.name} className="w-4 h-4" /> : <ExternalLink size={12} className="text-[#1A1A1A]/60" />}
                                                                 </a>
                                                             );
                                                         })}
@@ -822,27 +822,27 @@ export default function Dashboard({ session, refreshKey }) {
                     selectedEvent && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedEvent(null)}>
                             <div className="glass-panel max-w-lg w-full relative" onClick={e => e.stopPropagation()}>
-                                <button onClick={() => setSelectedEvent(null)} className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors">
+                                <button onClick={() => setSelectedEvent(null)} className="absolute top-4 right-4 text-[#1A1A1A]/50 hover:text-[#1A1A1A] transition-colors">
                                     <X size={24} />
                                 </button>
                                 <div className="mb-6 flex flex-col items-center">
-                                    <Calendar size={48} className="text-[#B0E0E6] opacity-50 mb-4" />
+                                    <Calendar size={48} className="text-[#3E9E28] opacity-50 mb-4" />
                                     <h2 className="text-3xl font-bold text-center mb-2">{selectedEvent.title}</h2>
-                                    <div className="text-lg font-semibold text-[#B0E0E6]">
+                                    <div className="text-lg font-semibold text-[#3E9E28]">
                                         {new Date(selectedEvent.event_date + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                                     </div>
                                 </div>
                                 {selectedEvent.description ? (
-                                    <div className="bg-black/30 p-4 rounded text-white/80 leading-relaxed max-h-[40vh] overflow-y-auto custom-scrollbar">
+                                    <div className="bg-[#F4F4F2] p-4 rounded text-[#1A1A1A]/80 leading-relaxed max-h-[40vh] overflow-y-auto custom-scrollbar">
                                         {selectedEvent.description}
                                     </div>
                                 ) : (
-                                    <div className="text-center text-white/50 italic py-4">
+                                    <div className="text-center text-[#1A1A1A]/50 italic py-4">
                                         No additional description provided.
                                     </div>
                                 )}
                                 <div className="mt-8 flex justify-center">
-                                    <button onClick={() => setSelectedEvent(null)} className="btn border-white/20 hover:bg-white/10">Close Details</button>
+                                    <button onClick={() => setSelectedEvent(null)} className="btn border-[#1A1A1A]/20 hover:bg-[#1A1A1A]/10">Close Details</button>
                                 </div>
                             </div>
                         </div>
@@ -852,44 +852,44 @@ export default function Dashboard({ session, refreshKey }) {
                 {commentTarget && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={closeComments}>
                         <div className="glass-panel max-w-lg w-full relative max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                            <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
+                            <div className="flex justify-between items-center mb-4 border-b border-[#1A1A1A]/10 pb-3">
                                 <h3 className="text-lg font-bold flex items-center gap-2"><MessageCircle size={18} /> Comments</h3>
-                                <button onClick={closeComments} className="text-white/50 hover:text-white"><X size={20} /></button>
+                                <button onClick={closeComments} className="text-[#1A1A1A]/50 hover:text-[#1A1A1A]"><X size={20} /></button>
                             </div>
                             <div className="flex-1 overflow-y-auto space-y-3 mb-4 custom-scrollbar min-h-[100px]">
                                 {comments.length === 0 ? (
-                                    <p className="text-white/50 text-sm italic text-center py-4">No comments yet. Be the first!</p>
+                                    <p className="text-[#1A1A1A]/50 text-sm italic text-center py-4">No comments yet. Be the first!</p>
                                 ) : comments.map(c => (
-                                    <div key={c.id} className="bg-black/30 rounded-lg p-3">
+                                    <div key={c.id} className="bg-[#F4F4F2] rounded-lg p-3">
                                         <div className="flex items-center justify-between mb-1">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 rounded-full bg-black/40 border border-[#B0E0E6]/30 flex items-center justify-center text-[10px] font-bold overflow-hidden">
+                                                <div className="w-6 h-6 rounded-full bg-[#F4F4F2] border border-[#3E9E28]/30 flex items-center justify-center text-[10px] font-bold overflow-hidden">
                                                     {c.profiles?.avatar_url ? <img src={c.profiles.avatar_url} alt="" className="w-full h-full object-cover" /> : (c.profiles?.username?.[0]?.toUpperCase() || '?')}
                                                 </div>
-                                                <span className="text-xs font-semibold text-white">{c.profiles?.username || 'Anonymous'}</span>
-                                                <span className="text-[10px] text-white/30">{new Date(c.created_at).toLocaleDateString()}</span>
+                                                <span className="text-xs font-semibold text-[#1A1A1A]">{c.profiles?.username || 'Anonymous'}</span>
+                                                <span className="text-[10px] text-[#1A1A1A]/30">{new Date(c.created_at).toLocaleDateString()}</span>
                                             </div>
                                             {c.user_id === session.user.id && (
                                                 <div className="flex items-center gap-1">
-                                                    <button onClick={() => { setEditingCommentId(c.id); setEditCommentText(c.content); }} className="text-white/30 hover:text-[#B0E0E6] p-1"><Edit size={12} /></button>
-                                                    <button onClick={() => handleDeleteComment(c.id)} className="text-white/30 hover:text-red-400 p-1"><Trash2 size={12} /></button>
+                                                    <button onClick={() => { setEditingCommentId(c.id); setEditCommentText(c.content); }} className="text-[#1A1A1A]/30 hover:text-[#3E9E28] p-1"><Edit size={12} /></button>
+                                                    <button onClick={() => handleDeleteComment(c.id)} className="text-[#1A1A1A]/30 hover:text-red-400 p-1"><Trash2 size={12} /></button>
                                                 </div>
                                             )}
                                         </div>
                                         {editingCommentId === c.id ? (
                                             <div className="flex gap-2 mt-1">
-                                                <input type="text" value={editCommentText} onChange={e => setEditCommentText(e.target.value)} className="flex-1 bg-black/40 border border-white/20 rounded py-1 px-2 text-sm text-white focus:outline-none focus:border-[#B0E0E6]" onKeyDown={e => e.key === 'Enter' && handleEditComment(c.id)} />
-                                                <button onClick={() => handleEditComment(c.id)} className="text-[#B0E0E6] text-xs font-bold">Save</button>
-                                                <button onClick={() => setEditingCommentId(null)} className="text-white/40 text-xs">Cancel</button>
+                                                <input type="text" value={editCommentText} onChange={e => setEditCommentText(e.target.value)} className="flex-1 bg-[#F4F4F2] border border-[#1A1A1A]/20 rounded py-1 px-2 text-sm text-[#1A1A1A] focus:outline-none focus:border-[#3E9E28]" onKeyDown={e => e.key === 'Enter' && handleEditComment(c.id)} />
+                                                <button onClick={() => handleEditComment(c.id)} className="text-[#3E9E28] text-xs font-bold">Save</button>
+                                                <button onClick={() => setEditingCommentId(null)} className="text-[#1A1A1A]/40 text-xs">Cancel</button>
                                             </div>
                                         ) : (
-                                            <p className="text-sm text-white/80">{c.content}</p>
+                                            <p className="text-sm text-[#1A1A1A]/80">{c.content}</p>
                                         )}
                                     </div>
                                 ))}
                             </div>
-                            <div className="flex gap-2 border-t border-white/10 pt-3">
-                                <input type="text" value={commentText} onChange={e => setCommentText(e.target.value)} placeholder="Write a comment..." className="flex-1 bg-black/40 border border-white/20 rounded py-2 px-3 text-sm text-white focus:outline-none focus:border-[#B0E0E6]" onKeyDown={e => e.key === 'Enter' && handleAddComment()} disabled={isSavingComment} />
+                            <div className="flex gap-2 border-t border-[#1A1A1A]/10 pt-3">
+                                <input type="text" value={commentText} onChange={e => setCommentText(e.target.value)} placeholder="Write a comment..." className="flex-1 bg-[#F4F4F2] border border-[#1A1A1A]/20 rounded py-2 px-3 text-sm text-[#1A1A1A] focus:outline-none focus:border-[#3E9E28]" onKeyDown={e => e.key === 'Enter' && handleAddComment()} disabled={isSavingComment} />
                                 <button onClick={handleAddComment} disabled={isSavingComment || !commentText.trim()} className="btn btn-primary text-sm px-4">{isSavingComment ? '...' : 'Post'}</button>
                             </div>
                         </div>
