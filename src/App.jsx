@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Bot, LogIn, Github, Twitter, Facebook, MessageSquare, Terminal, Plus, X, Upload, LogOut } from 'lucide-react';
+import { Bot, LogIn, Github, MessageSquare, Terminal, Plus, X, Upload, LogOut, Mail } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { supabase, supabaseUrl, supabaseAnonKey } from './supabaseClient';
 import Dashboard from './Dashboard';
@@ -312,10 +312,8 @@ function SiteHeader({ session }) {
 // only render the working ones, so no member ever clicks a dead login link.
 const ALL_PROVIDERS = [
   { id: 'google', label: 'Continue with Google', Icon: LogIn },
-  { id: 'twitter', label: 'Continue with X', Icon: Twitter },
   { id: 'discord', label: 'Continue with Discord', Icon: MessageSquare },
   { id: 'github', label: 'Continue with GitHub', Icon: Github },
-  { id: 'facebook', label: 'Continue with Facebook', Icon: Facebook },
 ];
 
 function CommunityGate() {
@@ -333,6 +331,52 @@ function CommunityGate() {
   }, []);
 
   const providers = ALL_PROVIDERS.filter(p => enabled[p.id]);
+
+  // Email + password login (Supabase email provider — no extra tables; users
+  // land in auth.users and reuse the existing profiles table like OAuth users).
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [mode, setMode] = useState('signin'); // 'signin' | 'signup'
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState(null);        // { type: 'error' | 'ok', text }
+
+  const handleEmailAuth = async (e) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    setBusy(true); setMsg(null);
+    try {
+      if (mode === 'signup') {
+        const { data, error } = await supabase.auth.signUp({
+          email, password, options: { emailRedirectTo: oauthRedirect() },
+        });
+        if (error) throw error;
+        setMsg(data.session
+          ? { type: 'ok', text: 'Account created — signing you in…' }
+          : { type: 'ok', text: 'Check your email to confirm your account, then sign in.' });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        // <App>'s onAuthStateChange takes over and swaps in the dashboard.
+      }
+    } catch (err) {
+      const m = err?.message || 'Something went wrong. Please try again.';
+      setMsg({ type: 'error', text: /rate limit/i.test(m) ? 'Too many attempts — please wait a minute and try again.' : m });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleForgot = async () => {
+    if (!email) { setMsg({ type: 'error', text: 'Enter your email above first, then tap “Forgot password”.' }); return; }
+    setBusy(true); setMsg(null);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: oauthRedirect() });
+    setMsg(error
+      ? { type: 'error', text: error.message }
+      : { type: 'ok', text: 'Password reset link sent — check your email.' });
+    setBusy(false);
+  };
+
+  const emailInputClass = "w-full rounded-full border border-[#E3E3DF] bg-white px-4 py-2.5 text-sm text-[#1A1A1A] placeholder-black/40 focus:outline-none focus:border-[#3E9E28] transition-colors";
 
   return (
     <div className="flex-1 w-full flex items-start justify-center px-4 sm:px-6 pt-4 sm:pt-6 pb-6">
@@ -374,9 +418,10 @@ function CommunityGate() {
         </div>
 
         {/* Right: auth card */}
-        <div className="glass-panel flex flex-col items-center gap-2 w-full max-w-sm mx-auto relative z-10">
-          <h3 className="text-xs uppercase tracking-[0.14em] font-semibold text-[#3E9E28] mb-0.5">Connect to the Network</h3>
-          <p className="text-sm text-[#5C5C5C] mb-2">Log in to see member profiles.</p>
+        <div className="glass-panel flex flex-col items-stretch gap-2 w-full max-w-sm mx-auto relative z-10">
+          <h3 className="text-xs uppercase tracking-[0.14em] font-semibold text-[#3E9E28] mb-0.5 text-center">Connect to the Network</h3>
+          <p className="text-sm text-[#5C5C5C] mb-2 text-center">Log in to see member profiles.</p>
+
           {providers.map(({ id, label, Icon }) => (
             <button
               key={id}
@@ -386,6 +431,49 @@ function CommunityGate() {
               <Icon size={18} /> {label}
             </button>
           ))}
+
+          {/* divider */}
+          <div className="flex items-center gap-3 my-1 text-[#5C5C5C]">
+            <span className="h-px flex-1 bg-[#E3E3DF]" />
+            <span className="text-[0.7rem] uppercase tracking-wider">or</span>
+            <span className="h-px flex-1 bg-[#E3E3DF]" />
+          </div>
+
+          {/* email + password */}
+          <form onSubmit={handleEmailAuth} className="flex flex-col gap-2">
+            <input
+              type="email" required autoComplete="email" placeholder="you@email.com"
+              value={email} onChange={(e) => setEmail(e.target.value)} className={emailInputClass}
+            />
+            <input
+              type="password" required minLength={6}
+              autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+              placeholder={mode === 'signup' ? 'Create a password (6+ chars)' : 'Password'}
+              value={password} onChange={(e) => setPassword(e.target.value)} className={emailInputClass}
+            />
+            <button type="submit" disabled={busy} className="btn btn-primary w-full">
+              <Mail size={18} /> {busy ? 'Please wait…' : (mode === 'signup' ? 'Create account' : 'Sign in with email')}
+            </button>
+          </form>
+
+          {msg && (
+            <p className={`text-xs text-center ${msg.type === 'error' ? 'text-red-600' : 'text-[#3E9E28]'}`}>{msg.text}</p>
+          )}
+
+          <div className="flex items-center justify-between text-xs text-[#5C5C5C] mt-0.5">
+            <button
+              type="button"
+              onClick={() => { setMode(mode === 'signup' ? 'signin' : 'signup'); setMsg(null); }}
+              className="hover:text-[#1A1A1A] underline-offset-2 hover:underline"
+            >
+              {mode === 'signup' ? 'Have an account? Sign in' : 'Create an account'}
+            </button>
+            {mode === 'signin' && (
+              <button type="button" onClick={handleForgot} className="hover:text-[#1A1A1A] underline-offset-2 hover:underline">
+                Forgot password?
+              </button>
+            )}
+          </div>
         </div>
 
       </div>
