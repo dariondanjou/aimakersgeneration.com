@@ -281,6 +281,16 @@ const COMMUNITY_BASE = '/community';
 const oauthRedirect = () => `${window.location.origin}${COMMUNITY_BASE}`;
 const WHATSAPP_URL = 'https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5';
 
+// The community navigation — shown in the shared header when signed in. Home
+// first, then the sections. These drive the Dashboard's active tab.
+const COMMUNITY_TABS = [
+  { key: 'home', label: 'Home' },
+  { key: 'news', label: 'AI News' },
+  { key: 'resources', label: 'AI Resources' },
+  { key: 'calendar', label: 'Calendar' },
+  { key: 'people', label: 'People' },
+];
+
 // Carried over from the main marketing site (index.html .nav): the AIMG logo
 // mark + wordmark and the same link set, so the members' area reads as one
 // cohesive site.
@@ -335,7 +345,9 @@ function UserMenu({ session }) {
   );
 }
 
-function SiteHeader({ session }) {
+function SiteHeader({ session, activeTab, setActiveTab }) {
+  const navigate = useNavigate();
+  const goTab = (key) => { setActiveTab(key); navigate('/'); };
   return (
     <header className="site-nav">
       <div className="site-nav-in">
@@ -344,10 +356,29 @@ function SiteHeader({ session }) {
           AIMG
         </a>
         <nav className="site-nav-links">
-          <a href="/" className="nav-hide-sm">Home</a>
-          {!session && <Link to="/">Members</Link>}
-          <a href="/apply" className="site-cta">Apply to the cohort</a>
-          {session && <UserMenu session={session} />}
+          {session ? (
+            <>
+              <div className="community-tabs">
+                {COMMUNITY_TABS.map((t) => (
+                  <button
+                    key={t.key}
+                    className={`linklike community-tab${activeTab === t.key ? ' active' : ''}`}
+                    onClick={() => goTab(t.key)}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+              <a href="/apply" className="site-cta nav-hide-sm">Apply</a>
+              <UserMenu session={session} />
+            </>
+          ) : (
+            <>
+              <a href="/" className="nav-hide-sm">Home</a>
+              <Link to="/">Members</Link>
+              <a href="/apply" className="site-cta">Apply to the cohort</a>
+            </>
+          )}
         </nav>
       </div>
     </header>
@@ -571,6 +602,7 @@ function App() {
   const [session, setSession] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [recovering, setRecovering] = useState(false);
+  const [activeTab, setActiveTab] = useState('home');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -593,13 +625,13 @@ function App() {
   return (
     <Router basename={COMMUNITY_BASE}>
       <div className="site-shell">
-        <SiteHeader session={session} />
+        <SiteHeader session={session} activeTab={activeTab} setActiveTab={setActiveTab} />
         <main className="main-content">
           {recovering ? (
             <ResetPassword onDone={() => setRecovering(false)} />
           ) : (
             <Routes>
-              <Route path="/" element={session ? <Dashboard session={session} refreshKey={refreshKey} /> : <CommunityGate />} />
+              <Route path="/" element={session ? <Dashboard session={session} refreshKey={refreshKey} activeTab={activeTab} setActiveTab={setActiveTab} /> : <CommunityGate />} />
               <Route path="/profile/:id" element={session ? <ProfilePage session={session} /> : <CommunityGate />} />
               <Route path="/settings" element={session ? <Settings session={session} /> : <CommunityGate />} />
             </Routes>

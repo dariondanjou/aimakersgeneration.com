@@ -169,6 +169,25 @@ a:hover { color: var(--forest); }
   .site-nav-links a.nav-hide-sm { display: none; }
 }
 
+/* Community section tabs in the header */
+.community-tabs {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.community-tabs::-webkit-scrollbar { display: none; }
+.site-nav-links button.community-tab {
+  white-space: nowrap;
+  padding: 0;
+}
+.site-nav-links button.community-tab.active {
+  color: var(--green-deep);
+  font-weight: 700;
+}
+
 /* Logged-in user menu (avatar + name + dropdown) */
 .user-menu { position: relative; }
 .user-menu-trigger {

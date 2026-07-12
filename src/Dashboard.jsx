@@ -7,11 +7,9 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Fuse from 'fuse.js';
 
-export default function Dashboard({ session, refreshKey }) {
+export default function Dashboard({ session, refreshKey, activeTab, setActiveTab }) {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('home');
     const [searchQuery, setSearchQuery] = useState('');
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Profile Edit State
     const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -314,101 +312,31 @@ export default function Dashboard({ session, refreshKey }) {
     return (
         <div className="main-content custom-scrollbar flex flex-col h-full p-6 relative overflow-y-auto text-lg w-full">
 
-            {/* Top Navigation & Search */}
-            <header className="flex flex-row items-center mb-8 border-b border-[#1A1A1A]/10 pb-4 relative z-10 w-full flex-nowrap lg:gap-4 xl:gap-6" style={{ marginTop: '-4px' }}>
-
-                {/* Top Row: Title, Burger (Mobile), Sign Out (Mobile) */}
-                <div className="flex justify-between items-center shrink-0 w-full lg:w-auto h-10">
-                    {/* Site Title */}
-                    <div className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity h-10 mr-2 lg:mr-4 shrink-0" onClick={() => { setActiveTab('home'); setIsMobileMenuOpen(false); }}>
-                        <Terminal size={24} className="text-[#3E9E28] shrink-0" />
-                        <span className="text-lg md:text-xl font-bold text-[#1A1A1A] whitespace-nowrap shrink-0">Community</span>
-                    </div>
-
-                    <div className="flex items-center gap-1 sm:gap-2 lg:hidden ml-auto shrink-0">
-                        {/* Burger Menu Toggle */}
-                        <button className="p-2 text-[#1A1A1A] hover:bg-[#1A1A1A]/10 rounded-md transition-colors" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                        </button>
-                        {/* Mobile Sign Out (Right aligned) */}
-                        <button onClick={handleSignOut} className="p-2 text-[#1A1A1A]/60 hover:text-[#1A1A1A] bg-[#1A1A1A]/5 rounded-full hover:bg-[#1A1A1A]/10 transition-colors flex justify-center items-center" title="Sign Out">
-                            <LogOut size={18} />
-                        </button>
-                    </div>
+            {/* Search bar — the section navigation now lives in the shared site header */}
+            <div className="flex justify-end mb-6 relative z-10">
+                <div className="relative w-full max-w-xs">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#1A1A1A]/40" size={16} />
+                    <input
+                        type="text"
+                        placeholder="Search this site..."
+                        value={searchQuery}
+                        onChange={(e) => { setSearchQuery(e.target.value); setShowSearchResults(true); }}
+                        onFocus={() => setShowSearchResults(true)}
+                        onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
+                        className="w-full bg-white border border-[#E3E3DF] rounded-full py-2 pl-9 pr-4 text-sm text-[#1A1A1A] placeholder-black/40 focus:outline-none focus:border-[#3E9E28] transition-colors"
+                    />
+                    {showSearchResults && searchResults.length > 0 && (
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#E3E3DF] rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto">
+                            {searchResults.map((r, i) => (
+                                <button key={i} onClick={() => handleSearchSelect(r)} className="w-full text-left px-3 py-2 hover:bg-[#F4F4F2] transition-colors border-b border-[#1A1A1A]/5 last:border-0">
+                                    <div className="text-sm font-semibold text-[#1A1A1A] truncate">{r.item.title}</div>
+                                    <div className="text-[10px] text-[#1A1A1A]/40 uppercase">{r.item.type} • {r.item.tab}</div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
-
-                {/* Nav Links (Desktop Only, Inline) */}
-                <div className={`${isMobileMenuOpen ? 'flex flex-col absolute top-16 left-0 right-0 bg-white p-4 border border-[#1A1A1A]/10 z-50 rounded-lg shadow-xl' : 'hidden'} lg:flex lg:flex-row items-center gap-2 xl:gap-6 shrink overflow-hidden lg:h-10`}>
-                    <button onClick={() => { setActiveTab('news'); setIsMobileMenuOpen(false); }} title="AI News" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'news' ? 'border-[#1A1A1A] text-[#1A1A1A]' : 'border-transparent text-[#1A1A1A]/50 hover:text-[#1A1A1A]/80'} whitespace-nowrap`}>
-                        <Newspaper size={18} /> <span className="block lg:hidden xl:block">AI News</span>
-                    </button>
-                    <button onClick={() => { setActiveTab('resources'); setIsMobileMenuOpen(false); }} title="AI Resources" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'resources' ? 'border-[#1A1A1A] text-[#1A1A1A]' : 'border-transparent text-[#1A1A1A]/50 hover:text-[#1A1A1A]/80'} whitespace-nowrap`}>
-                        <Globe size={18} /> <span className="block lg:hidden xl:block">AI Resources</span>
-                    </button>
-                    <button onClick={() => { setActiveTab('calendar'); setIsMobileMenuOpen(false); }} title="Calendar" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'calendar' ? 'border-[#1A1A1A] text-[#1A1A1A]' : 'border-transparent text-[#1A1A1A]/50 hover:text-[#1A1A1A]/80'} whitespace-nowrap`}>
-                        <Calendar size={18} /> <span className="block lg:hidden">Calendar</span>
-                    </button>
-                    <button onClick={() => { setActiveTab('people'); setIsMobileMenuOpen(false); }} title="People" className={`h-10 flex items-center gap-2 px-1 lg:px-3 text-sm font-semibold transition-all border-l-2 lg:border-l-0 lg:border-b-2 text-left shrink-0 ${activeTab === 'people' ? 'border-[#1A1A1A] text-[#1A1A1A]' : 'border-transparent text-[#1A1A1A]/50 hover:text-[#1A1A1A]/80'} whitespace-nowrap`}>
-                        <Users size={18} /> <span className="block lg:hidden">People</span>
-                    </button>
-                </div>
-
-                {/* Desktop Search & Sign Out */}
-                <div className="hidden lg:flex items-center shrink-0 h-10 ml-auto">
-                    <div className="relative mr-2 lg:mr-4 shrink w-[120px] lg:w-40 xl:w-56">
-                        <Search className="absolute left-2 lg:left-3 top-1/2 -translate-y-1/2 text-[#1A1A1A]/50" size={16} />
-                        <input
-                            type="text"
-                            placeholder="Search this site..."
-                            value={searchQuery}
-                            onChange={(e) => { setSearchQuery(e.target.value); setShowSearchResults(true); }}
-                            onFocus={() => setShowSearchResults(true)}
-                            onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
-                            className="bg-transparent border-b border-[#1A1A1A]/20 py-2 pl-8 lg:pl-10 pr-2 lg:pr-4 text-sm text-[#1A1A1A] placeholder-black/40 focus:outline-none focus:border-[#3E9E28] transition-colors w-full"
-                        />
-                        {showSearchResults && searchResults.length > 0 && (
-                            <div className="absolute top-full left-0 right-0 bg-white border border-[#1A1A1A]/20 rounded-b-lg shadow-xl z-50 max-h-80 overflow-y-auto">
-                                {searchResults.map((r, i) => (
-                                    <button key={i} onClick={() => handleSearchSelect(r)} className="w-full text-left px-3 py-2 hover:bg-[#1A1A1A]/10 transition-colors border-b border-[#1A1A1A]/5 last:border-0">
-                                        <div className="text-sm font-semibold text-[#1A1A1A] truncate">{r.item.title}</div>
-                                        <div className="text-[10px] text-[#1A1A1A]/40 uppercase">{r.item.type} • {r.item.tab}</div>
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                    <button onClick={handleSignOut} className="p-2 text-[#1A1A1A]/60 hover:text-[#1A1A1A] bg-[#1A1A1A]/5 rounded-full hover:bg-[#1A1A1A]/10 transition-colors flex justify-center items-center shrink-0" title="Sign Out">
-                        <LogOut size={18} />
-                    </button>
-                </div>
-
-                {/* Mobile Search (Inside Burger Menu Flow or Below Title) */}
-                <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:hidden w-full mt-4`}>
-                    <div className="relative w-full">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#1A1A1A]/50" size={16} />
-                        <input
-                            type="text"
-                            placeholder="Search this site..."
-                            value={searchQuery}
-                            onChange={(e) => { setSearchQuery(e.target.value); setShowSearchResults(true); }}
-                            onFocus={() => setShowSearchResults(true)}
-                            onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
-                            className="bg-transparent border-b border-[#1A1A1A]/20 py-2 pl-10 pr-4 text-sm text-[#1A1A1A] placeholder-black/40 focus:outline-none focus:border-[#3E9E28] transition-colors w-full"
-                        />
-                        {showSearchResults && searchResults.length > 0 && (
-                            <div className="absolute top-full left-0 right-0 bg-white border border-[#1A1A1A]/20 rounded-b-lg shadow-xl z-50 max-h-80 overflow-y-auto">
-                                {searchResults.map((r, i) => (
-                                    <button key={i} onClick={() => { handleSearchSelect(r); setIsMobileMenuOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-[#1A1A1A]/10 transition-colors border-b border-[#1A1A1A]/5 last:border-0">
-                                        <div className="text-sm font-semibold text-[#1A1A1A] truncate">{r.item.title}</div>
-                                        <div className="text-[10px] text-[#1A1A1A]/40 uppercase">{r.item.type} • {r.item.tab}</div>
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-            </header>
+            </div>
 
             {/* Main Content Area Based on Tab */}
             <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar relative z-10">
