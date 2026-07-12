@@ -369,14 +369,14 @@ function SiteHeader({ session, activeTab, setActiveTab }) {
                   </button>
                 ))}
               </div>
-              <a href="/apply" className="site-cta nav-hide-sm">Apply</a>
+              <a href="/apply" className="site-cta nav-hide-sm">Apply to the Cohort</a>
               <UserMenu session={session} />
             </>
           ) : (
             <>
               <a href="/" className="nav-hide-sm">Home</a>
               <Link to="/">Members</Link>
-              <a href="/apply" className="site-cta">Apply to the cohort</a>
+              <a href="/apply" className="site-cta">Apply to the Cohort</a>
             </>
           )}
         </nav>
