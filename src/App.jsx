@@ -320,15 +320,15 @@ function CommunityGate() {
     <div className="flex-1 w-full flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 lg:gap-14 items-center">
 
-        {/* Left: brand — logo constrained to the same horizontal span as the slogan */}
-        <div className="flex flex-col items-center md:items-start text-center md:text-left">
-          <div className="w-full max-w-[320px]">
+        {/* Left: brand — smaller centered logo, centered text */}
+        <div className="flex flex-col items-center text-center">
+          <div className="w-full max-w-[340px] flex flex-col items-center">
             <img
               src="/brand/aimg-logo-520.png"
               width="520"
               height="432"
               alt="AI MAKERS GENERATION"
-              className="w-full h-auto mb-4"
+              className="w-36 sm:w-40 h-auto mb-4"
             />
 
             <p className="text-[0.7rem] uppercase tracking-[0.14em] font-semibold text-[#3E9E28] mb-2">The Members' Community</p>
