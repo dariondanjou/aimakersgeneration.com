@@ -481,9 +481,49 @@ function CommunityGate() {
   );
 }
 
+// Shown after a member clicks the password-reset link. Supabase fires a
+// PASSWORD_RECOVERY event and hands us a temporary session; this screen is the
+// only place they can actually set the new password (supabase.auth.updateUser).
+function ResetPassword({ onDone }) {
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (password.length < 6) { setMsg({ type: 'error', text: 'Password must be at least 6 characters.' }); return; }
+    setBusy(true); setMsg(null);
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) { setMsg({ type: 'error', text: error.message }); setBusy(false); return; }
+    setMsg({ type: 'ok', text: 'Password updated — you’re all set.' });
+    setTimeout(onDone, 1200);
+  };
+
+  return (
+    <div className="flex-1 w-full flex items-start justify-center px-4 sm:px-6 pt-10 pb-6">
+      <div className="glass-panel w-full max-w-sm flex flex-col gap-3">
+        <h1 className="text-xl uppercase text-center">Set a new password</h1>
+        <p className="text-sm text-[#5C5C5C] text-center mb-1">Choose a new password for your account.</p>
+        <form onSubmit={submit} className="flex flex-col gap-2">
+          <input
+            type="password" required minLength={6} autoFocus autoComplete="new-password"
+            placeholder="New password (6+ chars)" value={password} onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-full border border-[#E3E3DF] bg-white px-4 py-2.5 text-sm text-[#1A1A1A] placeholder-black/40 focus:outline-none focus:border-[#3E9E28] transition-colors"
+          />
+          <button type="submit" disabled={busy} className="btn btn-primary w-full">
+            {busy ? 'Saving…' : 'Update password'}
+          </button>
+        </form>
+        {msg && <p className={`text-xs text-center ${msg.type === 'error' ? 'text-red-600' : 'text-[#3E9E28]'}`}>{msg.text}</p>}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [session, setSession] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [recovering, setRecovering] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -492,8 +532,10 @@ function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
+      // Arriving via a password-reset link: show the set-new-password screen.
+      if (event === 'PASSWORD_RECOVERY') setRecovering(true);
     });
 
     return () => subscription.unsubscribe();
@@ -506,10 +548,14 @@ function App() {
       <div className="site-shell">
         <SiteHeader session={session} />
         <main className="main-content">
-          <Routes>
-            <Route path="/" element={session ? <Dashboard session={session} refreshKey={refreshKey} /> : <CommunityGate />} />
-            <Route path="/profile/:id" element={session ? <ProfilePage session={session} /> : <CommunityGate />} />
-          </Routes>
+          {recovering ? (
+            <ResetPassword onDone={() => setRecovering(false)} />
+          ) : (
+            <Routes>
+              <Route path="/" element={session ? <Dashboard session={session} refreshKey={refreshKey} /> : <CommunityGate />} />
+              <Route path="/profile/:id" element={session ? <ProfilePage session={session} /> : <CommunityGate />} />
+            </Routes>
+          )}
         </main>
 
         {/* Chat is now the shared floating AI MAKERS BOT widget (see app.html /aimg-bot.js),
