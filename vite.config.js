@@ -18,8 +18,8 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         apply: resolve(__dirname, 'apply.html'),
         // Private, unadvertised 10%-discount copy of the application page. Nothing links
-        // to it; reachable only by direct URL (/apply-cohort-offer).
-        applyOffer: resolve(__dirname, 'apply-cohort-offer.html'),
+        // to it; reachable only by direct URL (/discount).
+        discount: resolve(__dirname, 'discount.html'),
         app: resolve(__dirname, 'app.html'),
       },
     },

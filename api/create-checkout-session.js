@@ -9,14 +9,14 @@ const COHORT = "summer-2026";
 const TUITION_CENTS = 80000; // $800.00, paid in full. No deposits, no installments.
 const TOTAL_SEATS = 20;
 
-// A private, unadvertised discount page (apply-cohort-offer.html) posts this exact code.
+// A private, unadvertised discount page (discount.html, served at /discount) posts this code.
 // Nothing on the site links to that page — you only reach it via a direct URL. The code
 // maps to a FIXED discounted amount here; the browser never sends a dollar figure, so the
 // price stays as authoritative as the full-price path. Anyone who guessed the code would
 // still only ever get this one sanctioned 10% price, never an arbitrary amount.
 const DISCOUNT_CODE = "COHORT10";
 const DISCOUNT_RATE = 0.10; // 10% off
-const DISCOUNT_RETURN_PATH = "/apply-cohort-offer"; // send discount buyers back to their page
+const DISCOUNT_RETURN_PATH = "/discount"; // send discount buyers back to their page
 
 // A checkout that was started but never paid still reserves a seat for this long,
 // so two people can't both take seat 20 while Stripe is processing.
