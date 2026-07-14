@@ -9,6 +9,15 @@ const COHORT = "summer-2026";
 const TUITION_CENTS = 80000; // $800.00, paid in full. No deposits, no installments.
 const TOTAL_SEATS = 20;
 
+// A private, unadvertised discount page (apply-cohort-offer.html) posts this exact code.
+// Nothing on the site links to that page — you only reach it via a direct URL. The code
+// maps to a FIXED discounted amount here; the browser never sends a dollar figure, so the
+// price stays as authoritative as the full-price path. Anyone who guessed the code would
+// still only ever get this one sanctioned 10% price, never an arbitrary amount.
+const DISCOUNT_CODE = "COHORT10";
+const DISCOUNT_RATE = 0.10; // 10% off
+const DISCOUNT_RETURN_PATH = "/apply-cohort-offer"; // send discount buyers back to their page
+
 // A checkout that was started but never paid still reserves a seat for this long,
 // so two people can't both take seat 20 while Stripe is processing.
 const PENDING_HOLD_MINUTES = 30;
@@ -93,6 +102,13 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Every acknowledgement must be checked." });
   }
 
+  // Price is decided here, never by the browser. A valid discount code yields the one
+  // sanctioned discounted amount; anything else pays full tuition.
+  const isDiscount = body.discount_code === DISCOUNT_CODE;
+  const amountCents = isDiscount
+    ? Math.round(TUITION_CENTS * (1 - DISCOUNT_RATE)) // $720.00
+    : TUITION_CENTS;
+
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -133,7 +149,7 @@ export default async function handler(req, res) {
       consent_privacy: true,
       consent_conduct: true,
       consent_confidentiality: true,
-      amount_cents: TUITION_CENTS,
+      amount_cents: amountCents,
     };
 
     const { data: inserted, error: insertError } = await supabase
@@ -149,7 +165,10 @@ export default async function handler(req, res) {
     const host = req.headers["x-forwarded-host"] || req.headers.host;
     const proto = req.headers["x-forwarded-proto"] || (host?.startsWith("localhost") ? "http" : "https");
     const origin = `${proto}://${host}`;
-    const returnPath = host?.startsWith("cohorts.") ? "/" : "/apply";
+    // Discount buyers return to their own (unadvertised) page; everyone else to /apply or /.
+    const returnPath = isDiscount
+      ? DISCOUNT_RETURN_PATH
+      : (host?.startsWith("cohorts.") ? "/" : "/apply");
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -163,9 +182,11 @@ export default async function handler(req, res) {
         quantity: 1,
         price_data: {
           currency: "usd",
-          unit_amount: TUITION_CENTS,
+          unit_amount: amountCents,
           product_data: {
-            name: "AIMG Summer 2026 Cohort — Tuition",
+            name: isDiscount
+              ? "AIMG Summer 2026 Cohort — Tuition (10% discount)"
+              : "AIMG Summer 2026 Cohort — Tuition",
             description: "Eight Saturdays, 1–4 PM, July 18 – September 5, 2026. RICE Center, Atlanta. Paid in full; no deposits or installments.",
           },
         },
