@@ -103,6 +103,11 @@
     margin-top:30px;padding:18px 22px;border:1px solid #33372F;border-radius:12px;
     background:#171A16;color:#fff;font-weight:600;display:inline-block
   }
+  /* original price struck out, discounted price called out beside it */
+  .top .tuition .was{color:#818A7C;text-decoration:line-through;-webkit-text-decoration:line-through;
+    text-decoration-thickness:2px;font-weight:600;margin:0 6px 0 2px}
+  .top .tuition .now{font-family:var(--display);font-weight:800;font-size:1.28rem;
+    color:var(--green);letter-spacing:-.02em;vertical-align:-1px}
   .top .seats{margin:26px 0 0;color:#818A7C;font-size:.94rem}
 
   main{padding:64px 0 100px}
@@ -283,7 +288,7 @@
       There's homework every week. You bring it to class, and the room critiques it — your peers and
       working professionals both. That part is not optional, and it's the part that works.
     </p>
-    <p class="tuition">Tuition is $720 — a 10% discount off the regular $800, paid in full. Your payment is your seat.</p>
+    <p class="tuition">Tuition is <span class="was">$800</span><span class="now">$720</span> — a 10% discount, paid in full. Your payment is your seat.</p>
     <p class="seats">
       There is no waiting list and no acceptance step — the twenty seats go to the first twenty
       people who enroll. When they're gone, the next cohort is Winter.<br>
