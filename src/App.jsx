@@ -636,8 +636,9 @@ function App() {
               <Route path="/" element={session ? <Dashboard session={session} refreshKey={refreshKey} activeTab={activeTab} setActiveTab={setActiveTab} /> : <CommunityGate />} />
               <Route path="/profile/:id" element={session ? <ProfilePage session={session} /> : <CommunityGate />} />
               <Route path="/settings" element={session ? <Settings session={session} /> : <CommunityGate />} />
-              {/* Admin-gated server-side: /api/admin-roster 403s for non-admins. */}
-              <Route path="/admin" element={session ? <Admin session={session} /> : <CommunityGate />} />
+              {/* No sign-in wall: the page itself asks for the shared admin
+                  password, verified server-side by /api/admin-roster. */}
+              <Route path="/admin" element={<Admin session={session} />} />
             </Routes>
           )}
         </main>

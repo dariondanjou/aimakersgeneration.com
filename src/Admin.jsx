@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ShieldCheck, ExternalLink, CheckCircle2, GraduationCap } from 'lucide-react';
+import { ShieldCheck, ExternalLink, CheckCircle2, GraduationCap, KeyRound } from 'lucide-react';
 
 // Cohort admin: the full roster (every application + every students row),
 // served by /api/admin-roster, which allows only the user IDs in the
@@ -15,33 +15,89 @@ const STATUS_STYLES = {
 const fmtDate = (d) =>
   d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 
+// Anyone with the shared admin password gets in (checked server-side against
+// the ADMIN_KEY env var); allowlisted signed-in admins skip the prompt. The
+// accepted password is kept for the tab's lifetime so refreshes don't re-ask.
+const KEY_STORAGE = 'aimg-admin-key';
+
 export default function Admin({ session }) {
   const [roster, setRoster] = useState(null);
   const [error, setError] = useState(null);
+  const [needsKey, setNeedsKey] = useState(false);
+  const [keyInput, setKeyInput] = useState('');
+  const [keyError, setKeyError] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = async (adminKey) => {
+    try {
+      const headers = {};
+      if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
+      if (adminKey) headers['x-admin-key'] = adminKey;
+      const res = await fetch('/api/admin-roster', { headers });
+      const data = await res.json();
+      if (res.ok) {
+        if (adminKey) sessionStorage.setItem(KEY_STORAGE, adminKey);
+        setRoster(data.roster);
+        setNeedsKey(false);
+        return true;
+      }
+      if (res.status === 401 || res.status === 403) {
+        setNeedsKey(true);
+        return false;
+      }
+      setError(data.error || 'Something went wrong.');
+      return false;
+    } catch {
+      setError("Couldn't reach the server. Please try again.");
+      return false;
+    }
+  };
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch('/api/admin-roster', {
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        });
-        const data = await res.json();
-        if (cancelled) return;
-        if (!res.ok) setError(data.error || 'Something went wrong.');
-        else setRoster(data.roster);
-      } catch {
-        if (!cancelled) setError("Couldn't reach the server. Please try again.");
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [session.access_token]);
+    load(sessionStorage.getItem(KEY_STORAGE) || undefined);
+  }, [session?.access_token]);
+
+  const submitKey = async (e) => {
+    e.preventDefault();
+    const key = keyInput.trim();
+    if (!key || busy) return;
+    setBusy(true);
+    setKeyError(null);
+    const ok = await load(key);
+    if (!ok) setKeyError('Wrong password — try again.');
+    setBusy(false);
+  };
 
   if (error) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-3 p-6">
         <ShieldCheck size={32} className="text-[#1A1A1A]/30" />
         <p className="text-[#5C5C5C]">{error}</p>
+      </div>
+    );
+  }
+
+  if (needsKey) {
+    return (
+      <div className="flex-1 flex items-start justify-center p-6 pt-16">
+        <div className="glass-panel w-full max-w-sm flex flex-col gap-3">
+          <h1 className="text-xl uppercase text-center flex items-center justify-center gap-2">
+            <KeyRound size={20} className="text-[#3E9E28]" /> Cohort Admin
+          </h1>
+          <p className="text-sm text-[#5C5C5C] text-center">Enter the admin password to see the roster.</p>
+          <form onSubmit={submitKey} className="flex flex-col gap-2">
+            <input
+              type="password" required autoFocus autoComplete="current-password"
+              placeholder="Admin password"
+              value={keyInput} onChange={(e) => setKeyInput(e.target.value)}
+              className="w-full rounded-full border border-[#E3E3DF] bg-white px-4 py-2.5 text-sm text-[#1A1A1A] placeholder-black/40 focus:outline-none focus:border-[#3E9E28] transition-colors"
+            />
+            <button type="submit" disabled={busy} className="btn btn-primary w-full">
+              {busy ? 'Checking…' : 'Open the roster'}
+            </button>
+          </form>
+          {keyError && <p className="text-xs text-center text-red-600">{keyError}</p>}
+        </div>
       </div>
     );
   }

@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://xnejbxdvqmzlaljkgwaf.supabase.co";
@@ -6,6 +7,17 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
 const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || "")
   .split(",").map(s => s.trim()).filter(Boolean);
+
+// Shared admin password (the x-admin-key header). Anyone who knows it gets
+// the roster — no account needed. Unset disables password access entirely.
+const ADMIN_KEY = process.env.ADMIN_KEY || "";
+
+function adminKeyMatches(provided) {
+  if (!ADMIN_KEY || typeof provided !== "string" || !provided) return false;
+  const a = Buffer.from(provided);
+  const b = Buffer.from(ADMIN_KEY);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
 
 // Same verified-token identity resolution as api/chat.js: the Authorization
 // header is the only source of identity.
@@ -29,10 +41,16 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const user = await getVerifiedUser(req);
-  if (!user) return res.status(401).json({ error: "Sign in required." });
-  if (!ADMIN_USER_IDS.includes(user.id)) {
-    return res.status(403).json({ error: "Admins only." });
+  // Two ways in: the shared admin password, or a signed-in allowlisted admin.
+  const providedKey = req.headers["x-admin-key"];
+  let authorized = adminKeyMatches(providedKey);
+  if (!authorized) {
+    const user = await getVerifiedUser(req);
+    authorized = !!user && ADMIN_USER_IDS.includes(user.id);
+  }
+  if (!authorized) {
+    if (providedKey) return res.status(403).json({ error: "Wrong password." });
+    return res.status(401).json({ error: "Enter the admin password." });
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
