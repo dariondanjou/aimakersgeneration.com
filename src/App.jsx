@@ -1,10 +1,11 @@
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import { Bot, LogIn, Github, MessageSquare, Terminal, Plus, X, Upload, LogOut, Mail, ChevronDown, User, Settings as GearIcon } from 'lucide-react';
+import { Bot, LogIn, Github, MessageSquare, Terminal, Plus, X, Upload, LogOut, Mail, ChevronDown, User, Settings as GearIcon, ShieldCheck } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { supabase, supabaseUrl, supabaseAnonKey } from './supabaseClient';
 import Dashboard from './Dashboard';
 import ProfilePage from './ProfilePage';
 import Settings from './Settings';
+import Admin from './Admin';
 
 function ChatWindow({ session, onDataChange }) {
   const loggedOutWelcome = "Hello! I'm the AI Maker Bot.\n\nI can answer general questions about the AI MAKERS GENERATION community.";
@@ -336,6 +337,8 @@ function UserMenu({ session }) {
         <div className="user-menu-dropdown" role="menu">
           <button role="menuitem" onClick={() => go(`/profile/${session.user.id}`)}><User size={15} /> My profile</button>
           <button role="menuitem" onClick={() => go('/settings')}><GearIcon size={15} /> Settings</button>
+          {/* Visible to everyone; the roster API rejects non-admins. */}
+          <button role="menuitem" onClick={() => go('/admin')}><ShieldCheck size={15} /> Admin</button>
           <div className="user-menu-divider" />
           <button role="menuitem" className="danger" onClick={() => supabase.auth.signOut()}><LogOut size={15} /> Sign out</button>
         </div>
@@ -633,6 +636,8 @@ function App() {
               <Route path="/" element={session ? <Dashboard session={session} refreshKey={refreshKey} activeTab={activeTab} setActiveTab={setActiveTab} /> : <CommunityGate />} />
               <Route path="/profile/:id" element={session ? <ProfilePage session={session} /> : <CommunityGate />} />
               <Route path="/settings" element={session ? <Settings session={session} /> : <CommunityGate />} />
+              {/* Admin-gated server-side: /api/admin-roster 403s for non-admins. */}
+              <Route path="/admin" element={session ? <Admin session={session} /> : <CommunityGate />} />
             </Routes>
           )}
         </main>
