@@ -232,13 +232,14 @@ export default function StudentProfile({ session }) {
   const avatarInputRef = useRef(null);
   const mediaInputRef = useRef(null);
 
-  const isOwner = !!(session && student && (
-    student.user_id === session.user.id ||
-    (student.email && session.user.email && student.email.toLowerCase() === session.user.email.toLowerCase())
-  ));
+  // Ownership is user_id only — the email column is not client-readable
+  // (see 20260716_students_email_privacy.sql); email matching happens inside
+  // the claim_student_profile() RPC below.
+  const isOwner = !!(session && student && student.user_id === session.user.id);
 
+  const STUDENT_COLUMNS = 'id, slug, full_name, headline, bio, goal, final_project_goal, avatar_url, links, user_id';
   const loadStudent = async () => {
-    const { data } = await supabase.from('students').select('*').eq('slug', slug).maybeSingle();
+    const { data } = await supabase.from('students').select(STUDENT_COLUMNS).eq('slug', slug).maybeSingle();
     setStudent(data);
     return data;
   };
@@ -277,17 +278,17 @@ export default function StudentProfile({ session }) {
     return () => { cancelled = true; };
   }, [slug]);
 
-  // First sign-in with the email on the roster row: claim it, so ownership
-  // survives even if the email later changes.
+  // First sign-in with the email on the roster row: claim it (the RPC matches
+  // emails server-side and stamps user_id), so ownership survives even if the
+  // email later changes.
   useEffect(() => {
-    if (session && student && !student.user_id && student.email &&
-        session.user.email?.toLowerCase() === student.email.toLowerCase()) {
-      supabase.from('students').update({ user_id: session.user.id }).eq('id', student.id)
-        .then(({ error }) => {
-          if (!error) setStudent((prev) => ({ ...prev, user_id: session.user.id }));
+    if (session && student && !student.user_id) {
+      supabase.rpc('claim_student_profile', { profile_slug: slug })
+        .then(({ data: claimed }) => {
+          if (claimed === true) setStudent((prev) => ({ ...prev, user_id: session.user.id }));
         });
     }
-  }, [session, student]);
+  }, [session, student?.id, student?.user_id]);
 
   const saveField = async (field, value) => {
     const { error } = await supabase.from('students').update({ [field]: value || null }).eq('id', student.id);
@@ -505,9 +506,9 @@ export default function StudentProfile({ session }) {
               )}
             </div>
 
-            {session && !isOwner && student.email == null && !student.user_id && (
+            {session && !isOwner && !student.user_id && (
               <p className="text-xs text-[#1A1A1A]/40 mt-4">
-                Is this you? Ask an organizer to add your sign-in email to your profile so you can edit it.
+                Is this you? Sign in with the email you applied with, or ask an organizer to link your account.
               </p>
             )}
             {!session && (
