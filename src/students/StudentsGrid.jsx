@@ -9,7 +9,7 @@ export default function StudentsGrid() {
   useEffect(() => {
     supabase
       .from('students')
-      .select('id, slug, full_name, headline, goal, avatar_url')
+      .select('id, slug, full_name, headline, goal, avatar_url, city')
       .order('sort_order', { ascending: true })
       .order('full_name', { ascending: true })
       .then(({ data }) => setStudents(data || []));
@@ -56,6 +56,7 @@ export default function StudentsGrid() {
                 <p className="text-sm text-[#3E9E28] font-semibold mt-1">
                   {s.headline || 'AI Maker — Summer 2026 Cohort'}
                 </p>
+                {s.city && <p className="text-xs text-[#1A1A1A]/40 mt-0.5">{s.city}</p>}
                 {s.goal && (
                   <p className="text-sm text-[#5C5C5C] mt-3 line-clamp-3">{s.goal}</p>
                 )}

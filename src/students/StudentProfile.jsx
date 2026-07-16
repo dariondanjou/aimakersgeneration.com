@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
   ArrowLeft, Camera, Check, X, Plus, ExternalLink, Target, Flag,
   Image as ImageIcon, Link as LinkIcon, Upload, FileText, Clock, CheckCircle2, Trash2,
+  MapPin, Briefcase, CalendarClock,
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { getSocialPlatform, getSocialTooltip } from '../socialPlatforms';
@@ -55,6 +56,24 @@ function InlineField({ value, onSave, placeholder, isOwner, multiline = false, c
       />
       <button onClick={handleSave} className="text-[#3E9E28] hover:text-[#1A1A1A] p-1 shrink-0"><Check size={16} /></button>
       <button onClick={handleCancel} className="text-[#1A1A1A]/40 hover:text-[#1A1A1A] p-1 shrink-0"><X size={16} /></button>
+    </div>
+  );
+}
+
+// Labeled intake-form row: hidden from visitors when empty, editable by the owner.
+function IntakeRow({ label, value, onSave, isOwner, placeholder, multiline = false, span2 = false }) {
+  if (!isOwner && !value) return null;
+  return (
+    <div className={span2 ? 'sm:col-span-2' : ''}>
+      <label className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1 block">{label}</label>
+      <InlineField
+        value={value}
+        onSave={onSave}
+        placeholder={placeholder}
+        isOwner={isOwner}
+        multiline={multiline}
+        className="text-sm text-[#1A1A1A]/80 leading-relaxed"
+      />
     </div>
   );
 }
@@ -239,7 +258,7 @@ export default function StudentProfile({ session }) {
   // the claim_student_profile() RPC below.
   const isOwner = !!(session && student && student.user_id === session.user.id);
 
-  const STUDENT_COLUMNS = 'id, slug, full_name, headline, bio, goal, final_project_goal, avatar_url, links, user_id';
+  const STUDENT_COLUMNS = 'id, slug, full_name, headline, bio, goal, final_project_goal, avatar_url, links, user_id, city, current_work, ai_experience, coding_experience, something_made, eight_week_goal';
   const loadStudent = async () => {
     const { data } = await supabase.from('students').select(STUDENT_COLUMNS).eq('slug', slug).maybeSingle();
     setStudent(data);
@@ -468,6 +487,18 @@ export default function StudentProfile({ session }) {
                 className="text-[#3E9E28] font-semibold"
               />
             </div>
+            {(isOwner || student.city) && (
+              <div className="mt-1 flex items-center gap-1.5 text-sm text-[#5C5C5C]">
+                <MapPin size={14} className="text-[#3E9E28] shrink-0" />
+                <InlineField
+                  value={student.city}
+                  onSave={(v) => saveField('city', v)}
+                  placeholder="Your city"
+                  isOwner={isOwner}
+                  className="text-sm text-[#5C5C5C]"
+                />
+              </div>
+            )}
             <div className="mt-2">
               <InlineField
                 value={student.bio}
@@ -545,7 +576,7 @@ export default function StudentProfile({ session }) {
         </div>
 
         {/* ── Goals ── */}
-        <div className="grid sm:grid-cols-2 gap-5 mb-5">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-5">
           <div className="glass-panel">
             <h2 className="text-sm uppercase tracking-wider flex items-center gap-2 mb-3">
               <Target size={16} className="text-[#3E9E28]" /> My Goal
@@ -554,6 +585,19 @@ export default function StudentProfile({ session }) {
               value={student.goal}
               onSave={(v) => saveField('goal', v)}
               placeholder={isOwner ? 'What do you want to get out of the cohort?' : 'Not set yet'}
+              isOwner={isOwner}
+              multiline
+              className="text-sm text-[#1A1A1A]/80 leading-relaxed"
+            />
+          </div>
+          <div className="glass-panel">
+            <h2 className="text-sm uppercase tracking-wider flex items-center gap-2 mb-3">
+              <CalendarClock size={16} className="text-[#3E9E28]" /> 8-Week Goal
+            </h2>
+            <InlineField
+              value={student.eight_week_goal}
+              onSave={(v) => saveField('eight_week_goal', v)}
+              placeholder={isOwner ? 'Where do you want to be after eight weeks?' : 'Not set yet'}
               isOwner={isOwner}
               multiline
               className="text-sm text-[#1A1A1A]/80 leading-relaxed"
@@ -573,6 +617,47 @@ export default function StudentProfile({ session }) {
             />
           </div>
         </div>
+
+        {/* ── Background (intake-form answers) ── */}
+        {(isOwner || student.current_work || student.ai_experience || student.coding_experience || student.something_made) && (
+          <div className="glass-panel mb-5">
+            <h2 className="text-sm uppercase tracking-wider flex items-center gap-2 mb-4">
+              <Briefcase size={16} className="text-[#3E9E28]" /> Background
+            </h2>
+            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4">
+              <IntakeRow
+                label="What I'm doing now"
+                value={student.current_work}
+                onSave={(v) => saveField('current_work', v)}
+                placeholder="Job, freelance, studying, between things…"
+                isOwner={isOwner}
+              />
+              <IntakeRow
+                label="AI experience"
+                value={student.ai_experience}
+                onSave={(v) => saveField('ai_experience', v)}
+                placeholder="How much have you used AI tools?"
+                isOwner={isOwner}
+              />
+              <IntakeRow
+                label="Coding experience"
+                value={student.coding_experience}
+                onSave={(v) => saveField('coding_experience', v)}
+                placeholder="Never / a little / comfortable"
+                isOwner={isOwner}
+              />
+              <IntakeRow
+                label="Something I've made"
+                value={student.something_made}
+                onSave={(v) => saveField('something_made', v)}
+                placeholder="Anything you're proud of — any medium"
+                isOwner={isOwner}
+                multiline
+                span2
+              />
+            </div>
+          </div>
+        )}
 
         {/* ── Work / media gallery ── */}
         <div
