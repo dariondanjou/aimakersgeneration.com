@@ -18,6 +18,11 @@
       "has": [{ "type": "host", "value": "cohorts.aimakersgeneration.com" }],
       "destination": "/apply",
       "permanent": false
+    },
+    {
+      "source": "/admin",
+      "destination": "/community/admin",
+      "permanent": false
     }
   ],
   "rewrites": [
