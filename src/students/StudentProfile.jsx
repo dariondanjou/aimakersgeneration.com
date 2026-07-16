@@ -253,10 +253,21 @@ export default function StudentProfile({ session }) {
   const avatarInputRef = useRef(null);
   const mediaInputRef = useRef(null);
 
+  // Admins (admin_users table) get the same edit controls as the owner, so
+  // organizers can populate profiles before students claim them.
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    if (!session) { setIsAdmin(false); return; }
+    let cancelled = false;
+    supabase.from('admin_users').select('user_id').eq('user_id', session.user.id).maybeSingle()
+      .then(({ data }) => { if (!cancelled) setIsAdmin(!!data); });
+    return () => { cancelled = true; };
+  }, [session?.user?.id]);
+
   // Ownership is user_id only — the email column is not client-readable
   // (see 20260716_students_email_privacy.sql); email matching happens inside
   // the claim_student_profile() RPC below.
-  const isOwner = !!(session && student && student.user_id === session.user.id);
+  const isOwner = !!(session && student && (student.user_id === session.user.id || isAdmin));
 
   const STUDENT_COLUMNS = 'id, slug, full_name, headline, bio, goal, final_project_goal, avatar_url, links, user_id, city, current_work, ai_experience, coding_experience, something_made, eight_week_goal';
   const loadStudent = async () => {
