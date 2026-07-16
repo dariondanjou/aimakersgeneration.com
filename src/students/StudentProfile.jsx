@@ -229,6 +229,8 @@ export default function StudentProfile({ session }) {
   const [addingMediaLink, setAddingMediaLink] = useState(false);
   const [newMediaUrl, setNewMediaUrl] = useState('');
   const [mediaBusy, setMediaBusy] = useState(false);
+  const [avatarDrag, setAvatarDrag] = useState(false);
+  const [mediaDrag, setMediaDrag] = useState(false);
   const avatarInputRef = useRef(null);
   const mediaInputRef = useRef(null);
 
@@ -295,8 +297,7 @@ export default function StudentProfile({ session }) {
     if (!error) setStudent((prev) => ({ ...prev, [field]: value || null }));
   };
 
-  const handleAvatarUpload = async (e) => {
-    const file = e.target.files?.[0];
+  const uploadAvatarFile = async (file) => {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { alert('Max file size is 5MB'); return; }
     if (!file.type.startsWith('image/')) { alert('Only images are supported'); return; }
@@ -311,31 +312,40 @@ export default function StudentProfile({ session }) {
     if (avatarInputRef.current) avatarInputRef.current.value = '';
   };
 
-  const handleMediaUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 25 * 1024 * 1024) { alert('Max file size is 25MB'); return; }
-    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
-      alert('Only images and videos are supported here — use "Add link" for everything else.');
-      return;
+  const handleAvatarUpload = (e) => uploadAvatarFile(e.target.files?.[0]);
+
+  const uploadMediaFiles = async (files) => {
+    const accepted = [];
+    for (const file of files) {
+      if (file.size > 25 * 1024 * 1024) { alert(`${file.name}: max file size is 25MB`); continue; }
+      if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+        alert(`${file.name}: only images and videos are supported here — use "Add link" for everything else.`);
+        continue;
+      }
+      accepted.push(file);
     }
+    if (accepted.length === 0) return;
     setMediaBusy(true);
-    const ext = file.name.split('.').pop();
-    const path = `${session.user.id}/media/${Date.now()}.${ext}`;
-    const { error: upErr } = await supabase.storage.from('student-uploads').upload(path, file);
-    if (upErr) { alert('Upload failed: ' + upErr.message); setMediaBusy(false); return; }
-    const { data } = supabase.storage.from('student-uploads').getPublicUrl(path);
-    const { error: insErr } = await supabase.from('student_media').insert({
-      student_id: student.id,
-      kind: file.type.startsWith('video/') ? 'video' : 'image',
-      url: data.publicUrl,
-      title: file.name,
-    });
-    if (insErr) alert('Could not save the upload: ' + insErr.message);
+    for (const file of accepted) {
+      const ext = file.name.split('.').pop();
+      const path = `${session.user.id}/media/${Date.now()}-${Math.floor(Math.random() * 1e6)}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('student-uploads').upload(path, file);
+      if (upErr) { alert(`${file.name}: upload failed — ${upErr.message}`); continue; }
+      const { data } = supabase.storage.from('student-uploads').getPublicUrl(path);
+      const { error: insErr } = await supabase.from('student_media').insert({
+        student_id: student.id,
+        kind: file.type.startsWith('video/') ? 'video' : 'image',
+        url: data.publicUrl,
+        title: file.name,
+      });
+      if (insErr) alert(`${file.name}: could not save the upload — ${insErr.message}`);
+    }
     setMediaBusy(false);
     if (mediaInputRef.current) mediaInputRef.current.value = '';
     loadMedia(student.id);
   };
+
+  const handleMediaUpload = (e) => uploadMediaFiles(Array.from(e.target.files || []));
 
   const addMediaLink = async () => {
     const url = newMediaUrl.trim();
@@ -356,6 +366,13 @@ export default function StudentProfile({ session }) {
     if (error) alert('Could not remove it: ' + error.message);
     loadMedia(student.id);
   };
+
+  // Drag-and-drop plumbing for the owner's drop zones (avatar + media gallery).
+  const dragHandlers = (setDragging, onFiles) => (isOwner ? {
+    onDragOver: (e) => { e.preventDefault(); setDragging(true); },
+    onDragLeave: (e) => { e.preventDefault(); if (!e.currentTarget.contains(e.relatedTarget)) setDragging(false); },
+    onDrop: (e) => { e.preventDefault(); setDragging(false); onFiles(Array.from(e.dataTransfer.files || [])); },
+  } : {});
 
   const addProfileLink = async () => {
     if (!newLinkUrl.trim()) return;
@@ -407,8 +424,8 @@ export default function StudentProfile({ session }) {
           <div className="h-28 sm:h-36 bg-gradient-to-r from-[#6FCF4B] via-[#3E9E28] to-[#0F7B3F]" />
           <div className="px-6 pb-6">
             <div className="flex items-end justify-between -mt-14 sm:-mt-16 mb-3">
-              <div className="relative group">
-                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-[#F4F4F2] border-4 border-white shadow-lg overflow-hidden flex items-center justify-center text-4xl font-bold text-[#3E9E28]">
+              <div className="relative group" {...dragHandlers(setAvatarDrag, (files) => uploadAvatarFile(files[0]))}>
+                <div className={`w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-[#F4F4F2] border-4 shadow-lg overflow-hidden flex items-center justify-center text-4xl font-bold text-[#3E9E28] transition-colors ${avatarDrag ? 'border-[#3E9E28] border-dashed' : 'border-white'}`}>
                   {student.avatar_url
                     ? <img src={student.avatar_url} alt={student.full_name} className="w-full h-full object-cover" />
                     : (student.full_name?.[0]?.toUpperCase() || '?')}
@@ -417,8 +434,8 @@ export default function StudentProfile({ session }) {
                   <>
                     <button
                       onClick={() => avatarInputRef.current?.click()}
-                      className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
-                      title="Upload profile picture"
+                      className={`absolute inset-0 rounded-full bg-black/50 flex items-center justify-center transition-opacity cursor-pointer ${avatarDrag ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                      title="Upload profile picture (or drag & drop an image)"
                     >
                       {isUploading
                         ? <div className="w-6 h-6 border-2 border-t-[#6FCF4B] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
@@ -433,7 +450,15 @@ export default function StudentProfile({ session }) {
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl">{student.full_name}</h1>
+            <h1 className="text-2xl sm:text-3xl">
+              <InlineField
+                value={student.full_name}
+                onSave={(v) => { if (v) saveField('full_name', v); }}
+                placeholder="Your name"
+                isOwner={isOwner}
+                className="text-2xl sm:text-3xl"
+              />
+            </h1>
             <div className="mt-1">
               <InlineField
                 value={student.headline}
@@ -550,14 +575,24 @@ export default function StudentProfile({ session }) {
         </div>
 
         {/* ── Work / media gallery ── */}
-        <div className="glass-panel mb-5">
+        <div
+          className={`glass-panel mb-5 relative transition-colors ${mediaDrag ? 'border-[#3E9E28] border-dashed bg-[#3E9E28]/5' : ''}`}
+          {...dragHandlers(setMediaDrag, uploadMediaFiles)}
+        >
+          {mediaDrag && (
+            <div className="absolute inset-0 z-10 rounded-2xl flex items-center justify-center pointer-events-none">
+              <span className="flex items-center gap-2 text-sm font-bold text-[#0F7B3F] bg-white/90 border border-[#3E9E28]/40 rounded-full px-4 py-2 shadow">
+                <Upload size={16} /> Drop images or videos to add them
+              </span>
+            </div>
+          )}
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm uppercase tracking-wider flex items-center gap-2">
               <ImageIcon size={16} className="text-[#3E9E28]" /> Work &amp; Media
             </h2>
             {isOwner && (
               <div className="flex items-center gap-2">
-                <input ref={mediaInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleMediaUpload} disabled={mediaBusy} />
+                <input ref={mediaInputRef} type="file" accept="image/*,video/*" multiple className="hidden" onChange={handleMediaUpload} disabled={mediaBusy} />
                 <button onClick={() => mediaInputRef.current?.click()} disabled={mediaBusy} className="btn !py-1.5 !px-3.5 !text-xs">
                   {mediaBusy
                     ? <span className="w-3.5 h-3.5 border-2 border-t-[#3E9E28] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
@@ -587,7 +622,7 @@ export default function StudentProfile({ session }) {
 
           {media.length === 0 ? (
             <p className="text-sm text-[#1A1A1A]/30 italic">
-              {isOwner ? 'Nothing here yet — show off your work with images, videos, and links.' : 'Nothing here yet.'}
+              {isOwner ? 'Nothing here yet — upload or drag & drop images and videos, or add links to your work.' : 'Nothing here yet.'}
             </p>
           ) : (
             <>
