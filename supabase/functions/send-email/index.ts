@@ -50,10 +50,12 @@ async function sendEmail(options: {
 
 function buildFeedbackEmailHtml(category: string, message: string, userEmail: string) {
   const categoryLabels: Record<string, string> = {
+    bug: "Bug Report",
     feature_request: "Feature Request",
     suggestion: "Suggestion",
     feedback: "General Feedback",
     critique: "Critique",
+    praise: "Praise",
     query: "Question / Query",
   };
 
@@ -115,47 +117,29 @@ Deno.serve(async (req) => {
     const { action, ...payload } = await req.json();
 
     if (action === "feedback") {
-      const { category, message, user_email, user_id } = payload;
+      // NOTE: the caller (api/chat.js) is the authoritative writer to
+      // feedback_messages — it inserts the row before invoking this function, so
+      // the feedback is stored even if email delivery fails. This function's job
+      // is only the admin notification. It does NOT write to the table.
+      const { category, message, user_email } = payload;
 
-      if (!message || !user_email || !category) {
+      if (!message || !category) {
         return new Response(
-          JSON.stringify({ error: "Missing required fields: message, user_email, category" }),
+          JSON.stringify({ error: "Missing required fields: message, category" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      // Persist to feedback_messages table
-      const { error: dbError } = await supabase.from("feedback_messages").insert([{
-        user_id: user_id || null,
-        user_email,
-        category,
-        message,
-        email_sent: false,
-      }]);
+      const hasEmail = typeof user_email === "string" && user_email.includes("@");
+      const fromLabel = hasEmail ? user_email : "a site visitor";
 
-      if (dbError) {
-        console.error("Error saving feedback:", dbError);
-      }
-
-      // Send email to admins, CC the user
       try {
         await sendEmail({
           to: ADMIN_EMAILS,
-          cc: user_email,
-          subject: `[AI Makers Generation] New ${category.replace(/_/g, " ")} from ${user_email}`,
-          html: buildFeedbackEmailHtml(category, message, user_email),
+          cc: hasEmail ? user_email : undefined,
+          subject: `[AI Makers Generation] New ${category.replace(/_/g, " ")} from ${fromLabel}`,
+          html: buildFeedbackEmailHtml(category, message, fromLabel),
         });
-
-        // Mark email as sent
-        if (!dbError) {
-          await supabase
-            .from("feedback_messages")
-            .update({ email_sent: true })
-            .eq("user_email", user_email)
-            .eq("message", message)
-            .order("created_at", { ascending: false })
-            .limit(1);
-        }
       } catch (emailErr) {
         console.error("Error sending feedback email:", emailErr);
       }

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
   ArrowLeft, Camera, Check, X, Plus, ExternalLink, Target, Flag,
   Image as ImageIcon, Link as LinkIcon, Upload, FileText, Clock, CheckCircle2, Trash2,
-  MapPin, Briefcase, CalendarClock,
+  MapPin, Briefcase, CalendarClock, Linkedin, TrendingUp, Users, Sparkles,
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { getSocialPlatform, getSocialTooltip } from '../socialPlatforms';
@@ -231,6 +231,281 @@ function AssignmentRow({ assignment, submissions, isOwner, studentSlug, studentI
   );
 }
 
+// ── LinkedIn connections growth chart (weeks 1–8) ───────────────────────────
+// Single-series line: forest green on white, recessive grid, dots on recorded
+// weeks, a direct end-label with the latest count. Fixed 1–8 week domain so the
+// timeline reads the same even before every week is filled in.
+function LinkedInGrowthChart({ points }) {
+  const W = 500, H = 230;
+  const padL = 40, padR = 52, padT = 18, padB = 30;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  const recorded = points.filter((p) => p.connections != null).sort((a, b) => a.week - b.week);
+  const maxConn = Math.max(10, ...recorded.map((p) => p.connections));
+  // A "nice" upper bound so the y-axis lands on round numbers.
+  const step = Math.max(1, Math.ceil(maxConn / 4 / 10) * 10);
+  const yMax = step * 4;
+
+  const xFor = (week) => padL + ((week - 1) / 7) * plotW;
+  const yFor = (conn) => padT + (1 - conn / yMax) * plotH;
+
+  const linePath = recorded
+    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${xFor(p.week).toFixed(1)} ${yFor(p.connections).toFixed(1)}`)
+    .join(' ');
+  const areaPath = recorded.length > 1
+    ? `${linePath} L ${xFor(recorded[recorded.length - 1].week).toFixed(1)} ${(padT + plotH).toFixed(1)} L ${xFor(recorded[0].week).toFixed(1)} ${(padT + plotH).toFixed(1)} Z`
+    : '';
+  const last = recorded[recorded.length - 1];
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img"
+      aria-label="LinkedIn connections by cohort week"
+      style={{ maxWidth: '100%', height: 'auto', display: 'block' }}>
+      <defs>
+        <linearGradient id="li-area" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#3E9E28" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#3E9E28" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+
+      {/* Recessive horizontal grid + y labels */}
+      {[0, 1, 2, 3, 4].map((i) => {
+        const v = (yMax / 4) * i;
+        const y = yFor(v);
+        return (
+          <g key={i}>
+            <line x1={padL} y1={y} x2={padL + plotW} y2={y} stroke="#E3E3DF" strokeWidth="1" />
+            <text x={padL - 8} y={y + 3.5} textAnchor="end" fontSize="10" fill="#5C5C5C"
+              fontFamily="Inter, sans-serif">{Math.round(v)}</text>
+          </g>
+        );
+      })}
+
+      {/* X axis: weeks 1–8 */}
+      {[1, 2, 3, 4, 5, 6, 7, 8].map((w) => (
+        <text key={w} x={xFor(w)} y={padT + plotH + 18} textAnchor="middle" fontSize="10"
+          fill="#5C5C5C" fontFamily="Inter, sans-serif">W{w}</text>
+      ))}
+
+      {areaPath && <path d={areaPath} fill="url(#li-area)" />}
+      {linePath && <path d={linePath} fill="none" stroke="#0F7B3F" strokeWidth="2"
+        strokeLinecap="round" strokeLinejoin="round" />}
+
+      {/* Data points */}
+      {recorded.map((p) => (
+        <circle key={p.week} cx={xFor(p.week)} cy={yFor(p.connections)} r="4"
+          fill="#0F7B3F" stroke="#FFFFFF" strokeWidth="2" />
+      ))}
+
+      {/* Direct end-label with the latest count */}
+      {last && (
+        <text x={xFor(last.week) + 8} y={yFor(last.connections) + 3.5} fontSize="12"
+          fontWeight="800" fill="#0F7B3F" fontFamily="Inter, sans-serif">
+          {last.connections.toLocaleString()}
+        </text>
+      )}
+    </svg>
+  );
+}
+
+// One editable week cell in the "log your connections" strip.
+function WeekCell({ week, value, isOwner, onSave }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value ?? '');
+  useEffect(() => { setDraft(value ?? ''); }, [value]);
+
+  const commit = () => {
+    setEditing(false);
+    const trimmed = String(draft).trim();
+    const next = trimmed === '' ? null : Math.max(0, parseInt(trimmed, 10) || 0);
+    if (next !== (value ?? null)) onSave(next);
+  };
+
+  if (editing && isOwner) {
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <input
+          type="number" min="0" value={draft} autoFocus
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setEditing(false); setDraft(value ?? ''); } }}
+          className="w-14 text-center bg-[#F4F4F2] border border-[#3E9E28]/60 rounded px-1 py-1 text-sm focus:outline-none focus:border-[#3E9E28]"
+        />
+        <span className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40">W{week}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <button
+        onClick={() => isOwner && setEditing(true)}
+        disabled={!isOwner}
+        title={isOwner ? `Log your connection count for week ${week}` : undefined}
+        className={`w-14 h-9 rounded-lg border text-sm font-semibold tabular-nums flex items-center justify-center transition-colors ${
+          value != null
+            ? 'bg-[#3E9E28]/10 border-[#3E9E28]/30 text-[#0F7B3F]'
+            : 'bg-[#F4F4F2] border-[#E3E3DF] text-[#1A1A1A]/30'
+        } ${isOwner ? 'hover:border-[#3E9E28]/60 cursor-pointer' : 'cursor-default'}`}
+      >
+        {value != null ? value.toLocaleString() : (isOwner ? '+' : '—')}
+      </button>
+      <span className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40">W{week}</span>
+    </div>
+  );
+}
+
+// A single headline stat tile.
+function StatTile({ icon, label, value, accent = '#3E9E28' }) {
+  return (
+    <div className="rounded-xl border border-[#E3E3DF] bg-white px-4 py-3 flex-1 min-w-[120px]">
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1">
+        {icon} {label}
+      </div>
+      <div className="text-2xl font-extrabold tabular-nums" style={{ color: accent, fontFamily: 'Poppins, sans-serif' }}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
+// ── LinkedIn section on the profile ─────────────────────────────────────────
+function LinkedInSection({ student, stats, isOwner, onSaveField, onSaveWeek }) {
+  const [addingUrl, setAddingUrl] = useState(false);
+  const [urlDraft, setUrlDraft] = useState('');
+  const [editingPct, setEditingPct] = useState(false);
+  const [pctDraft, setPctDraft] = useState(student.linkedin_ai_pct ?? '');
+
+  const url = student.linkedin_url;
+  const byWeek = new Map(stats.map((s) => [s.week, s.connections]));
+  const points = [1, 2, 3, 4, 5, 6, 7, 8].map((w) => ({ week: w, connections: byWeek.has(w) ? byWeek.get(w) : null }));
+  const recorded = points.filter((p) => p.connections != null);
+  const latest = recorded.length ? recorded[recorded.length - 1].connections : null;
+  const first = recorded.length ? recorded[0].connections : null;
+  const growth = recorded.length > 1 ? latest - first : null;
+
+  const saveUrl = () => {
+    const v = urlDraft.trim();
+    onSaveField('linkedin_url', v ? (v.startsWith('http') ? v : `https://${v}`) : null);
+    setAddingUrl(false);
+    setUrlDraft('');
+  };
+  const savePct = () => {
+    setEditingPct(false);
+    const t = String(pctDraft).trim();
+    const next = t === '' ? null : Math.min(100, Math.max(0, parseInt(t, 10) || 0));
+    onSaveField('linkedin_ai_pct', next);
+  };
+
+  return (
+    <div className="glass-panel mb-5">
+      <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+        <h2 className="text-sm uppercase tracking-wider flex items-center gap-2">
+          <Linkedin size={16} className="text-[#0A66C2]" /> LinkedIn
+        </h2>
+        {url ? (
+          <div className="flex items-center gap-2">
+            <a href={url} target="_blank" rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0A66C2] hover:underline">
+              <ExternalLink size={13} /> View profile
+            </a>
+            {isOwner && (
+              <button onClick={() => { setAddingUrl(true); setUrlDraft(url); }}
+                className="text-[#1A1A1A]/40 hover:text-[#1A1A1A] text-xs">Edit</button>
+            )}
+          </div>
+        ) : isOwner && !addingUrl ? (
+          <button onClick={() => setAddingUrl(true)} className="btn !py-1.5 !px-3.5 !text-xs">
+            <Plus size={13} /> Add your LinkedIn
+          </button>
+        ) : null}
+      </div>
+
+      {addingUrl && (
+        <div className="flex items-center gap-2 mb-3 mt-2">
+          <input
+            type="text" value={urlDraft} autoFocus
+            onChange={(e) => setUrlDraft(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') saveUrl(); if (e.key === 'Escape') { setAddingUrl(false); setUrlDraft(''); } }}
+            placeholder="https://www.linkedin.com/in/your-name"
+            className="flex-1 bg-[#F4F4F2] border border-[#3E9E28]/50 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#3E9E28]"
+          />
+          <button onClick={saveUrl} className="text-[#3E9E28] hover:text-[#1A1A1A] p-1"><Check size={18} /></button>
+          <button onClick={() => { setAddingUrl(false); setUrlDraft(''); }} className="text-[#1A1A1A]/40 hover:text-[#1A1A1A] p-1"><X size={18} /></button>
+        </div>
+      )}
+
+      {!url && !isOwner && (
+        <p className="text-sm text-[#1A1A1A]/30 italic mt-1">No LinkedIn added yet.</p>
+      )}
+
+      {url && (
+        <>
+          <p className="text-xs text-[#5C5C5C] mt-1 mb-4">
+            Your connection growth across the eight weeks. Log your current connection count each
+            week{isOwner ? ' by tapping a week below' : ''} — watch the line climb.
+          </p>
+
+          {/* Headline stats */}
+          <div className="flex flex-wrap gap-3 mb-5">
+            <StatTile icon={<Users size={12} />} label="Connections"
+              value={latest != null ? latest.toLocaleString() : '—'} accent="#0F7B3F" />
+            <StatTile icon={<TrendingUp size={12} />} label="Growth this cohort"
+              value={growth != null ? `${growth >= 0 ? '+' : ''}${growth.toLocaleString()}` : '—'} accent="#3E9E28" />
+            <div className="rounded-xl border border-[#E3E3DF] bg-white px-4 py-3 flex-1 min-w-[120px]">
+              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1">
+                <Sparkles size={12} /> % working in AI
+              </div>
+              {editingPct && isOwner ? (
+                <div className="flex items-center gap-1">
+                  <input type="number" min="0" max="100" value={pctDraft} autoFocus
+                    onChange={(e) => setPctDraft(e.target.value)}
+                    onBlur={savePct}
+                    onKeyDown={(e) => { if (e.key === 'Enter') savePct(); if (e.key === 'Escape') { setEditingPct(false); setPctDraft(student.linkedin_ai_pct ?? ''); } }}
+                    className="w-16 bg-[#F4F4F2] border border-[#3E9E28]/60 rounded px-1 py-0.5 text-xl font-extrabold focus:outline-none focus:border-[#3E9E28]" />
+                  <span className="text-xl font-extrabold text-[#6FCF4B]">%</span>
+                </div>
+              ) : (
+                <button onClick={() => isOwner && setEditingPct(true)} disabled={!isOwner}
+                  title={isOwner ? 'Estimate what share of your connections work in AI' : undefined}
+                  className={`text-2xl font-extrabold tabular-nums ${isOwner ? 'cursor-pointer hover:opacity-70' : 'cursor-default'}`}
+                  style={{ color: '#6FCF4B', fontFamily: 'Poppins, sans-serif' }}>
+                  {student.linkedin_ai_pct != null ? `${student.linkedin_ai_pct}%` : (isOwner ? 'Set %' : '—')}
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Growth chart */}
+          {recorded.length > 0 ? (
+            <LinkedInGrowthChart points={points} />
+          ) : (
+            <div className="rounded-xl border border-dashed border-[#E3E3DF] bg-[#F4F4F2]/50 py-8 text-center text-sm text-[#1A1A1A]/40">
+              {isOwner
+                ? 'Log your first week below and your growth chart appears here.'
+                : 'No connection data logged yet.'}
+            </div>
+          )}
+
+          {/* Weekly logging strip */}
+          <div className="mt-5">
+            <label className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-2 block">
+              Weekly connections
+            </label>
+            <div className="flex flex-wrap gap-2.5">
+              {points.map((p) => (
+                <WeekCell key={p.week} week={p.week} value={p.connections}
+                  isOwner={isOwner} onSave={(v) => onSaveWeek(p.week, v)} />
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── The student profile page ────────────────────────────────────────────────
 export default function StudentProfile() {
   const { slug } = useParams();
@@ -242,6 +517,7 @@ export default function StudentProfile() {
   const [assignments, setAssignments] = useState([]);
   const [submissions, setSubmissions] = useState([]);
   const [media, setMedia] = useState([]);
+  const [linkedinStats, setLinkedinStats] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [addingLink, setAddingLink] = useState(false);
   const [newLinkUrl, setNewLinkUrl] = useState('');
@@ -257,9 +533,16 @@ export default function StudentProfile() {
   // (see 20260719_students_public_editing.sql for what stays protected).
   const isOwner = true;
 
-  const STUDENT_COLUMNS = 'id, slug, full_name, headline, bio, goal, final_project_goal, avatar_url, links, user_id, city, current_work, ai_experience, coding_experience, something_made, eight_week_goal';
+  const BASE_COLUMNS = 'id, slug, full_name, headline, bio, goal, final_project_goal, avatar_url, links, user_id, city, current_work, ai_experience, coding_experience, something_made, eight_week_goal';
+  const STUDENT_COLUMNS = `${BASE_COLUMNS}, linkedin_url, linkedin_ai_pct`;
   const loadStudent = async () => {
-    const { data } = await supabase.from('students').select(STUDENT_COLUMNS).eq('slug', slug).maybeSingle();
+    // Prefer the full column set. If the LinkedIn columns aren't in the DB yet
+    // (migration 20260722 not applied), fall back to the base set so the page
+    // still loads rather than showing "Student not found".
+    let { data, error } = await supabase.from('students').select(STUDENT_COLUMNS).eq('slug', slug).maybeSingle();
+    if (error) {
+      ({ data } = await supabase.from('students').select(BASE_COLUMNS).eq('slug', slug).maybeSingle());
+    }
     setStudent(data);
     return data;
   };
@@ -282,6 +565,33 @@ export default function StudentProfile() {
     setMedia(data || []);
   };
 
+  const loadLinkedinStats = async (studentId) => {
+    const { data } = await supabase
+      .from('student_linkedin_stats')
+      .select('week, connections')
+      .eq('student_id', studentId)
+      .order('week', { ascending: true });
+    setLinkedinStats(data || []);
+  };
+
+  // Upsert (or clear) one week's connection count.
+  const saveLinkedinWeek = async (week, value) => {
+    if (value == null) {
+      const { error } = await supabase
+        .from('student_linkedin_stats')
+        .delete()
+        .eq('student_id', student.id)
+        .eq('week', week);
+      if (error) { alert('Could not clear that week: ' + error.message); return; }
+    } else {
+      const { error } = await supabase
+        .from('student_linkedin_stats')
+        .upsert({ student_id: student.id, week, connections: value }, { onConflict: 'student_id,week' });
+      if (error) { alert('Could not save: ' + error.message); return; }
+    }
+    loadLinkedinStats(student.id);
+  };
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -292,7 +602,7 @@ export default function StudentProfile() {
       ]);
       if (cancelled) return;
       setAssignments(a || []);
-      if (s) await Promise.all([loadSubmissions(s.id), loadMedia(s.id)]);
+      if (s) await Promise.all([loadSubmissions(s.id), loadMedia(s.id), loadLinkedinStats(s.id)]);
       if (!cancelled) setLoading(false);
     })();
     return () => { cancelled = true; };
@@ -551,6 +861,17 @@ export default function StudentProfile() {
 
           </div>
         </div>
+
+        {/* ── LinkedIn ── */}
+        {(isOwner || student.linkedin_url) && (
+          <LinkedInSection
+            student={student}
+            stats={linkedinStats}
+            isOwner={isOwner}
+            onSaveField={saveField}
+            onSaveWeek={saveLinkedinWeek}
+          />
+        )}
 
         {/* ── Goals ── */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-5">

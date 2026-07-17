@@ -70,12 +70,22 @@ NEVER promise a job, a placement, an interview, a hire, or any salary or income.
 
 To stay updated on topics and announcements, join the WhatsApp group: https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5
 
+THIS SITE IS A LIVING BETA:
+The entire AI Makers Generation site was custom-built by the AIMG team using "vibe coding" with Claude Code, and it is a constant, living beta. Feedback is genuinely wanted and is how the app keeps improving for the cohort. You are the front door for that feedback.
+
+CAPTURING FEEDBACK (IMPORTANT):
+- Whenever someone shares ANY feedback about the site or the cohort — a bug, something broken or confusing, a feature request, a suggestion, a critique, praise, or a question about how something works — treat it as feedback to be captured.
+- Confirm the wording with them ("Want me to log this as feedback for the team?"), then call submit_feedback so it is categorized and stored in the feedback database, where it's retrievable and addressable by the team.
+- Choose the single best category: bug, feature_request, suggestion, feedback, critique, praise, or query.
+- ANYONE can leave feedback — signed in or not. If they aren't signed in and want a reply, offer to include their email (optional, never required).
+- After logging it, thank them warmly and, when it fits, note that this is exactly how the living-beta gets better.
+
 WHAT YOU CAN DO:
 - Answer questions about AI Makers Generation, Film Bar AI, the founders, and the community
+- Capture and categorize feedback about the site or cohort into the feedback database (open to everyone)
 - Help logged-in users manage content: create, edit, and delete events, posts (articles/news/announcements/videos), and resources
 - Create recurring events (e.g., "every Tuesday through December 2026")
 - Update user profiles
-- Collect and submit feedback
 
 PERSONALITY & TONE:
 - You are direct, authentic, and real. You speak like a knowledgeable friend, not a corporate chatbot.
@@ -289,14 +299,15 @@ const TOOLS = [
   },
   {
     name: "submit_feedback",
-    description: "Submit feedback, suggestions, or questions to the admin team. Always confirm the message with the user before calling this.",
+    description: "Store a piece of feedback about the AI Makers Generation site or cohort in the feedback database so the team can review and act on it. Use this whenever a user expresses feedback, a bug report, a feature request, a suggestion, a critique, praise, or a question about the site/cohort — anyone can submit, signed in or not. Confirm the wording with the user first, then call this. Always choose the single best-fitting category.",
     input_schema: {
       type: "object",
       properties: {
-        message: { type: "string", description: "The feedback message" },
-        category: { type: "string", enum: ["feature_request", "suggestion", "feedback", "critique", "query"], description: "Category of feedback" },
+        message: { type: "string", description: "The feedback, in the user's own words as closely as possible" },
+        category: { type: "string", enum: ["bug", "feature_request", "suggestion", "feedback", "critique", "praise", "query"], description: "The category that best fits this feedback" },
+        email: { type: "string", description: "Optional contact email if the user wants a reply. Leave empty if they don't provide one." },
       },
-      required: ["message"],
+      required: ["message", "category"],
     },
   },
 ];
@@ -339,9 +350,11 @@ function generateRecurringDates(dayOfWeek, endDateStr) {
 }
 
 async function executeTool(supabase, toolName, input, userId, userEmail, isAdmin) {
-  // Belt and braces: tools are never offered to anonymous callers, but the
-  // executor runs with the service-role key, so re-check before any write.
-  if (WRITE_TOOLS.has(toolName) && !userId) {
+  // Belt and braces: content-management tools are never offered to anonymous
+  // callers, but the executor runs with the service-role key, so re-check
+  // before any write. submit_feedback is the deliberate exception — anyone,
+  // signed in or not, may leave feedback (see below).
+  if (WRITE_TOOLS.has(toolName) && !userId && toolName !== "submit_feedback") {
     return { success: false, error: "You must be signed in to do that." };
   }
   // migration.sql: "Only admins can manage events."
@@ -512,33 +525,39 @@ async function executeTool(supabase, toolName, input, userId, userEmail, isAdmin
     }
 
     case "submit_feedback": {
-      if (!userId) return { success: false, error: "User not logged in." };
-      // Save to database
+      // Open to everyone — this is how the "living beta" collects feedback from
+      // students and visitors alike. The contact email is whatever we know:
+      // the signed-in user's email, or one the user typed into the chat.
+      const contactEmail = userEmail || input.email || null;
+      const category = input.category || "feedback";
+
+      // The must-have: persist to the feedback table so it is retrievable and
+      // addressable by the team, regardless of whether an email goes out.
       const { error: dbError } = await supabase.from("feedback_messages").insert([{
-        user_id: userId,
-        user_email: userEmail || null,
-        category: input.category || "feedback",
+        user_id: userId || null,
+        user_email: contactEmail || "anonymous",
+        category,
         message: input.message,
         email_sent: false,
       }]);
       if (dbError) return { success: false, error: dbError.message };
 
-      // Send email notification via existing Edge Function
+      // Best-effort admin notification via the existing Edge Function.
       try {
         await supabase.functions.invoke("send-email", {
           body: {
             action: "feedback",
-            category: input.category || "feedback",
+            category,
             message: input.message,
-            user_email: userEmail || "",
-            user_id: userId,
+            user_email: contactEmail || "",
+            user_id: userId || null,
           },
         });
       } catch (emailErr) {
         console.error("Feedback email error:", emailErr);
       }
 
-      return { success: true, message: `Feedback submitted. The admin team will review it.` };
+      return { success: true, message: `Feedback stored. The team will review it — thank you.` };
     }
 
     default:
@@ -574,8 +593,10 @@ export default async function handler(req, res) {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  // Anonymous callers can ask questions but get no tools at all.
-  const toolsForRequest = user_id ? TOOLS : [];
+  // Anonymous callers can ask questions and leave feedback, but get none of the
+  // content-management tools. Signed-in makers get the full set.
+  const FEEDBACK_TOOL = TOOLS.filter(t => t.name === "submit_feedback");
+  const toolsForRequest = user_id ? TOOLS : FEEDBACK_TOOL;
 
   try {
     let currentMessages = [...messages];
