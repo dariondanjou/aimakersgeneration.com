@@ -4,7 +4,10 @@ import { SMTPClient } from "https://deno.land/x/denomailer/mod.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const EMAIL_HOST = Deno.env.get("EMAIL_HOST") || "smtp.gmail.com";
-const EMAIL_PORT = parseInt(Deno.env.get("EMAIL_PORT") || "587");
+// 465 = implicit TLS; 587 = STARTTLS. denomailer wants `tls: true` only for the
+// implicit-TLS port — setting it on 587 causes "received corrupt message of
+// type InvalidContentType". Default to 465 so a single, reliable path works.
+const EMAIL_PORT = parseInt(Deno.env.get("EMAIL_PORT") || "465");
 const EMAIL_USER = Deno.env.get("EMAIL_USER") || "";
 const EMAIL_PASS = Deno.env.get("EMAIL_PASS") || "";
 
@@ -25,7 +28,7 @@ async function sendEmail(options: {
     connection: {
       hostname: EMAIL_HOST,
       port: EMAIL_PORT,
-      tls: true,
+      tls: EMAIL_PORT === 465, // implicit TLS on 465; STARTTLS (tls:false) on 587
       auth: {
         username: EMAIL_USER,
         password: EMAIL_PASS,
@@ -46,6 +49,16 @@ async function sendEmail(options: {
   } finally {
     await client.close();
   }
+}
+
+// Decode the caller's Supabase JWT role from the Authorization header. The
+// platform (verify_jwt) already rejects invalid/forged tokens, so a valid
+// "service_role" claim proves the caller holds the secret service key — i.e.
+// it's our own backend/script, not a random visitor.
+function callerRole(req: Request): string | null {
+  const h = req.headers.get("authorization") || "";
+  const t = h.startsWith("Bearer ") ? h.slice(7).trim() : "";
+  try { return JSON.parse(atob(t.split(".")[1] || "")).role ?? null; } catch { return null; }
 }
 
 function buildFeedbackEmailHtml(category: string, message: string, userEmail: string) {
@@ -146,6 +159,31 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (action === "cohort_welcome") {
+      // Server-only: send a personalized welcome email to a cohort student.
+      // Gated to the service role — only a caller holding the secret service
+      // key (our own backend/scripts) may trigger a send to an arbitrary
+      // recipient. Sends from EMAIL_USER (the site's Gmail sender).
+      if (callerRole(req) !== "service_role") {
+        return new Response(
+          JSON.stringify({ error: "Forbidden" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const { to, subject, html } = payload;
+      if (!to || !subject || !html) {
+        return new Response(
+          JSON.stringify({ error: "Missing required fields: to, subject, html" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      await sendEmail({ to, subject, html });
+      return new Response(
+        JSON.stringify({ success: true, to }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
