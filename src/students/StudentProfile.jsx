@@ -130,7 +130,7 @@ const formatAssigned = (d) =>
   new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
 // ── One homework assignment row ─────────────────────────────────────────────
-function AssignmentRow({ assignment, submissions, isOwner, session, studentId, now, onChanged }) {
+function AssignmentRow({ assignment, submissions, isOwner, studentSlug, studentId, now, onChanged }) {
   const fileRef = useRef(null);
   const [busy, setBusy] = useState(false);
   const closed = new Date(assignment.due_at).getTime() <= now;
@@ -142,7 +142,7 @@ function AssignmentRow({ assignment, submissions, isOwner, session, studentId, n
     if (file.size > 25 * 1024 * 1024) { alert('Max file size is 25MB'); return; }
     setBusy(true);
     const ext = file.name.split('.').pop();
-    const path = `${session.user.id}/homework/hw${assignment.number}-${Date.now()}.${ext}`;
+    const path = `public/${studentSlug}/homework/hw${assignment.number}-${Date.now()}.${ext}`;
     const { error: upErr } = await supabase.storage.from('student-uploads').upload(path, file);
     if (upErr) { alert('Upload failed: ' + upErr.message); setBusy(false); return; }
     const { data } = supabase.storage.from('student-uploads').getPublicUrl(path);
@@ -232,7 +232,7 @@ function AssignmentRow({ assignment, submissions, isOwner, session, studentId, n
 }
 
 // ── The student profile page ────────────────────────────────────────────────
-export default function StudentProfile({ session }) {
+export default function StudentProfile() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const now = useNow();
@@ -253,21 +253,9 @@ export default function StudentProfile({ session }) {
   const avatarInputRef = useRef(null);
   const mediaInputRef = useRef(null);
 
-  // Admins (admin_users table) get the same edit controls as the owner, so
-  // organizers can populate profiles before students claim them.
-  const [isAdmin, setIsAdmin] = useState(false);
-  useEffect(() => {
-    if (!session) { setIsAdmin(false); return; }
-    let cancelled = false;
-    supabase.from('admin_users').select('user_id').eq('user_id', session.user.id).maybeSingle()
-      .then(({ data }) => { if (!cancelled) setIsAdmin(!!data); });
-    return () => { cancelled = true; };
-  }, [session?.user?.id]);
-
-  // Ownership is user_id only — the email column is not client-readable
-  // (see 20260716_students_email_privacy.sql); email matching happens inside
-  // the claim_student_profile() RPC below.
-  const isOwner = !!(session && student && (student.user_id === session.user.id || isAdmin));
+  // This page is deliberately auth-free: everyone gets the edit controls
+  // (see 20260719_students_public_editing.sql for what stays protected).
+  const isOwner = true;
 
   const STUDENT_COLUMNS = 'id, slug, full_name, headline, bio, goal, final_project_goal, avatar_url, links, user_id, city, current_work, ai_experience, coding_experience, something_made, eight_week_goal';
   const loadStudent = async () => {
@@ -310,18 +298,6 @@ export default function StudentProfile({ session }) {
     return () => { cancelled = true; };
   }, [slug]);
 
-  // First sign-in with the email on the roster row: claim it (the RPC matches
-  // emails server-side and stamps user_id), so ownership survives even if the
-  // email later changes.
-  useEffect(() => {
-    if (session && student && !student.user_id) {
-      supabase.rpc('claim_student_profile', { profile_slug: slug })
-        .then(({ data: claimed }) => {
-          if (claimed === true) setStudent((prev) => ({ ...prev, user_id: session.user.id }));
-        });
-    }
-  }, [session, student?.id, student?.user_id]);
-
   const saveField = async (field, value) => {
     const { error } = await supabase.from('students').update({ [field]: value || null }).eq('id', student.id);
     if (!error) setStudent((prev) => ({ ...prev, [field]: value || null }));
@@ -333,7 +309,7 @@ export default function StudentProfile({ session }) {
     if (!file.type.startsWith('image/')) { alert('Only images are supported'); return; }
     setIsUploading(true);
     const ext = file.name.split('.').pop();
-    const path = `${session.user.id}/avatar-${Date.now()}.${ext}`;
+    const path = `public/${student.slug}/avatar-${Date.now()}.${ext}`;
     const { error: upErr } = await supabase.storage.from('student-uploads').upload(path, file, { upsert: true });
     if (upErr) { alert('Upload failed: ' + upErr.message); setIsUploading(false); return; }
     const { data } = supabase.storage.from('student-uploads').getPublicUrl(path);
@@ -358,7 +334,7 @@ export default function StudentProfile({ session }) {
     setMediaBusy(true);
     for (const file of accepted) {
       const ext = file.name.split('.').pop();
-      const path = `${session.user.id}/media/${Date.now()}-${Math.floor(Math.random() * 1e6)}.${ext}`;
+      const path = `public/${student.slug}/media/${Date.now()}-${Math.floor(Math.random() * 1e6)}.${ext}`;
       const { error: upErr } = await supabase.storage.from('student-uploads').upload(path, file);
       if (upErr) { alert(`${file.name}: upload failed — ${upErr.message}`); continue; }
       const { data } = supabase.storage.from('student-uploads').getPublicUrl(path);
@@ -573,16 +549,6 @@ export default function StudentProfile({ session }) {
               )}
             </div>
 
-            {session && !isOwner && !student.user_id && (
-              <p className="text-xs text-[#1A1A1A]/40 mt-4">
-                Is this you? Sign in with the email you applied with, or ask an organizer to link your account.
-              </p>
-            )}
-            {!session && (
-              <p className="text-xs text-[#1A1A1A]/40 mt-4">
-                Is this you? <a href="/community">Sign in</a> with your cohort email to edit your profile and submit homework.
-              </p>
-            )}
           </div>
         </div>
 
@@ -784,7 +750,7 @@ export default function StudentProfile({ session }) {
                 assignment={a}
                 submissions={submissions}
                 isOwner={isOwner}
-                session={session}
+                studentSlug={student.slug}
                 studentId={student.id}
                 now={now}
                 onChanged={() => loadSubmissions(student.id)}

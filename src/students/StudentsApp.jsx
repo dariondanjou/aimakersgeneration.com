@@ -1,17 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { LogOut, LogIn } from 'lucide-react';
-import { supabase } from '../supabaseClient';
 import StudentsGrid from './StudentsGrid.jsx';
 import StudentProfile from './StudentProfile.jsx';
 
 // Public student showcase, served at /students (see vercel.json + vite.config).
-// Anyone can browse; a student signs in at /community with the email on their
-// roster row, and this app then lets them edit their own profile, upload media,
-// and submit homework.
+// Deliberately auth-free: anyone who visits can browse AND edit profiles —
+// there is no sign-in anywhere on this page (per the program's choice; the
+// database still protects email/user_id/slug and homework deadlines).
 const STUDENTS_BASE = '/students';
 
-function SiteHeader({ session }) {
+function SiteHeader() {
   return (
     <header className="site-nav">
       <div className="site-nav-in">
@@ -24,19 +21,6 @@ function SiteHeader({ session }) {
           <Link to="/" className="community-tab active" style={{ color: 'var(--green-deep)', fontWeight: 700 }}>Students</Link>
           <a href="/community" className="nav-hide-sm">Community</a>
           <a href="/apply" className="site-cta">Apply to the Cohort</a>
-          {session ? (
-            <button
-              className="linklike"
-              onClick={() => supabase.auth.signOut()}
-              title={`Signed in as ${session.user.email} — sign out`}
-            >
-              <LogOut size={15} style={{ display: 'inline', verticalAlign: '-2px' }} /> Sign out
-            </button>
-          ) : (
-            <a href="/community" title="Students: sign in to edit your profile" className="nav-hide-sm">
-              <LogIn size={15} style={{ display: 'inline', verticalAlign: '-2px' }} /> Sign in
-            </a>
-          )}
         </nav>
       </div>
     </header>
@@ -44,22 +28,14 @@ function SiteHeader({ session }) {
 }
 
 export default function StudentsApp() {
-  const [session, setSession] = useState(null);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => setSession(session));
-    return () => subscription.unsubscribe();
-  }, []);
-
   return (
     <Router basename={STUDENTS_BASE}>
       <div className="site-shell">
-        <SiteHeader session={session} />
+        <SiteHeader />
         <main className="main-content">
           <Routes>
             <Route path="/" element={<StudentsGrid />} />
-            <Route path="/:slug" element={<StudentProfile session={session} />} />
+            <Route path="/:slug" element={<StudentProfile />} />
           </Routes>
         </main>
       </div>
