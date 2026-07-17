@@ -1,5 +1,8 @@
 {
   "cleanUrls": true,
+  "functions": {
+    "api/decks.js": { "maxDuration": 300 }
+  },
   "redirects": [
     {
       "source": "/apply",

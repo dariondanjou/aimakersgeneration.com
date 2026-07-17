@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ShieldCheck, ExternalLink, CheckCircle2, GraduationCap, KeyRound } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ShieldCheck, ExternalLink, CheckCircle2, GraduationCap, KeyRound, Presentation, BookOpen } from 'lucide-react';
 
 // Cohort admin: the full roster (every application + every students row),
 // served by /api/admin-roster, which allows only the user IDs in the
@@ -22,6 +23,7 @@ const KEY_STORAGE = 'aimg-admin-key';
 
 export default function Admin({ session }) {
   const [roster, setRoster] = useState(null);
+  const [sessions, setSessions] = useState(null);
   const [error, setError] = useState(null);
   const [needsKey, setNeedsKey] = useState(false);
   const [keyInput, setKeyInput] = useState('');
@@ -56,6 +58,24 @@ export default function Admin({ session }) {
   useEffect(() => {
     load(sessionStorage.getItem(KEY_STORAGE) || undefined);
   }, [session?.access_token]);
+
+  // Cohort sessions (deck links) — loads once the roster unlocked us.
+  useEffect(() => {
+    if (roster === null) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const headers = {};
+        if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
+        const stored = sessionStorage.getItem(KEY_STORAGE);
+        if (stored) headers['x-admin-key'] = stored;
+        const res = await fetch('/api/decks', { headers });
+        const data = await res.json();
+        if (!cancelled && res.ok) setSessions(data.decks);
+      } catch { /* sessions list is optional chrome */ }
+    })();
+    return () => { cancelled = true; };
+  }, [roster, session?.access_token]);
 
   const submitKey = async (e) => {
     e.preventDefault();
@@ -125,9 +145,14 @@ export default function Admin({ session }) {
               {paid} paid · {roster.length} total · 20 seats
             </p>
           </div>
-          <a href="/students" className="btn !text-sm" title="The public cohort showcase">
-            <GraduationCap size={16} /> Students overview page <ExternalLink size={13} />
-          </a>
+          <div className="flex items-center gap-2">
+            <Link to="/admin/curriculum" className="btn !text-sm" title="The 8-week curriculum — inline editable">
+              <BookOpen size={16} /> Curriculum
+            </Link>
+            <a href="/students" className="btn !text-sm" title="The public cohort showcase">
+              <GraduationCap size={16} /> Students overview page <ExternalLink size={13} />
+            </a>
+          </div>
         </div>
 
         <div className="glass-panel !p-0 overflow-x-auto">
@@ -191,6 +216,37 @@ export default function Admin({ session }) {
           applications with no roster entry yet (or unpaid). “Claimed” means the student has signed in and can
           edit their own profile.
         </p>
+
+        {/* Cohort sessions — click straight into the deck you're presenting */}
+        {sessions && (
+          <div className="mt-8">
+            <h2 className="text-sm uppercase tracking-wider flex items-center gap-2 mb-3">
+              <Presentation size={16} className="text-[#3E9E28]" /> Cohort Sessions — slide decks
+            </h2>
+            <div className="glass-panel !p-0 overflow-hidden">
+              {sessions.map((s) => (
+                <div key={s.week} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-[#E3E3DF]/60 last:border-0 hover:bg-[#F7F8F5]">
+                  <div className="min-w-[240px]">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#0F7B3F] mr-2">
+                      Week {s.week} · {new Date(s.session_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </span>
+                    <span className="text-sm font-semibold">{s.title}</span>
+                    {s.dirty && (
+                      <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5"
+                        title="Curriculum edited since this deck was last regenerated">
+                        edits pending
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Link to={`/admin/curriculum?week=${s.week}`} className="btn !text-xs !py-1 !px-3"><BookOpen size={12} /> Curriculum</Link>
+                    <Link to={`/admin/deck/${s.week}`} className="btn btn-primary !text-xs !py-1 !px-3"><Presentation size={12} /> Open slide deck</Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

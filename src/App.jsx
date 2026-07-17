@@ -6,6 +6,8 @@ import Dashboard from './Dashboard';
 import ProfilePage from './ProfilePage';
 import Settings from './Settings';
 import Admin from './Admin';
+import Curriculum from './Curriculum';
+import Deck from './Deck';
 
 function ChatWindow({ session, onDataChange }) {
   const loggedOutWelcome = "Hello! I'm the AI Maker Bot.\n\nI can answer general questions about the AI MAKERS GENERATION community.";
@@ -636,9 +638,11 @@ function App() {
               <Route path="/" element={session ? <Dashboard session={session} refreshKey={refreshKey} activeTab={activeTab} setActiveTab={setActiveTab} /> : <CommunityGate />} />
               <Route path="/profile/:id" element={session ? <ProfilePage session={session} /> : <CommunityGate />} />
               <Route path="/settings" element={session ? <Settings session={session} /> : <CommunityGate />} />
-              {/* No sign-in wall: the page itself asks for the shared admin
-                  password, verified server-side by /api/admin-roster. */}
+              {/* No sign-in wall: each admin page asks for the shared admin
+                  password, verified server-side by the /api endpoints. */}
               <Route path="/admin" element={<Admin session={session} />} />
+              <Route path="/admin/curriculum" element={<Curriculum session={session} />} />
+              <Route path="/admin/deck/:week" element={<Deck session={session} />} />
             </Routes>
           )}
         </main>
