@@ -807,62 +807,10 @@ export default function StudentProfile() {
               />
             </div>
 
-            {/* Links */}
-            <div className="mt-4">
-              <div className="flex items-center gap-2 mb-2">
-                <label className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40">Links</label>
-                {isOwner && (
-                  <button onClick={() => setAddingLink(true)} className="text-[#3E9E28] hover:text-[#1A1A1A] transition-colors" title="Add link">
-                    <Plus size={16} />
-                  </button>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-3">
-                {links.map((link, i) => {
-                  const fullUrl = link.startsWith('http') ? link : `https://${link}`;
-                  const platform = getSocialPlatform(link);
-                  return (
-                    <div key={i} className="flex items-center gap-1 group/link">
-                      <a
-                        href={fullUrl} target="_blank" rel="noreferrer"
-                        title={getSocialTooltip(link, firstName)}
-                        className="w-8 h-8 rounded-lg bg-[#1A1A1A]/5 border border-[#1A1A1A]/10 hover:border-[#3E9E28]/50 hover:bg-[#1A1A1A]/10 flex items-center justify-center transition-all"
-                      >
-                        {platform.logo
-                          ? <img src={platform.logo} alt={platform.name} className="w-5 h-5" />
-                          : <ExternalLink size={16} className="text-[#1A1A1A]/60" />}
-                      </a>
-                      {isOwner && (
-                        <button onClick={() => removeProfileLink(i)} className="text-[#1A1A1A]/0 group-hover/link:text-[#1A1A1A]/40 hover:!text-red-400 transition-colors" title="Remove link">
-                          <X size={14} />
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-                {links.length === 0 && !addingLink && (
-                  <span className="text-[#1A1A1A]/30 text-sm italic">No links yet</span>
-                )}
-              </div>
-              {addingLink && (
-                <div className="flex items-center gap-2 mt-3">
-                  <input
-                    type="text" value={newLinkUrl} autoFocus
-                    onChange={(e) => setNewLinkUrl(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') addProfileLink(); if (e.key === 'Escape') { setAddingLink(false); setNewLinkUrl(''); } }}
-                    placeholder="https://instagram.com/yourname"
-                    className="flex-1 bg-[#F4F4F2] border border-[#3E9E28]/50 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#3E9E28] transition-colors"
-                  />
-                  <button onClick={addProfileLink} className="text-[#3E9E28] hover:text-[#1A1A1A] p-1"><Check size={18} /></button>
-                  <button onClick={() => { setAddingLink(false); setNewLinkUrl(''); }} className="text-[#1A1A1A]/40 hover:text-[#1A1A1A] p-1"><X size={18} /></button>
-                </div>
-              )}
-            </div>
-
           </div>
         </div>
 
-        {/* ── LinkedIn ── */}
+        {/* ── LinkedIn (first section below the header) ── */}
         {(isOwner || student.linkedin_url) && (
           <LinkedInSection
             student={student}
@@ -871,6 +819,62 @@ export default function StudentProfile() {
             onSaveField={saveField}
             onSaveWeek={saveLinkedinWeek}
           />
+        )}
+
+        {/* ── Links (follows LinkedIn) ── */}
+        {(isOwner || links.length > 0) && (
+          <div className="glass-panel mb-5">
+            <div className="flex items-center gap-2 mb-3">
+              <h2 className="text-sm uppercase tracking-wider flex items-center gap-2">
+                <LinkIcon size={16} className="text-[#3E9E28]" /> Links
+              </h2>
+              {isOwner && (
+                <button onClick={() => setAddingLink(true)} className="text-[#3E9E28] hover:text-[#1A1A1A] transition-colors" title="Add link">
+                  <Plus size={16} />
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {links.map((link, i) => {
+                const fullUrl = link.startsWith('http') ? link : `https://${link}`;
+                const platform = getSocialPlatform(link);
+                return (
+                  <div key={i} className="flex items-center gap-1 group/link">
+                    <a
+                      href={fullUrl} target="_blank" rel="noreferrer"
+                      title={getSocialTooltip(link, firstName)}
+                      className="w-8 h-8 rounded-lg bg-[#1A1A1A]/5 border border-[#1A1A1A]/10 hover:border-[#3E9E28]/50 hover:bg-[#1A1A1A]/10 flex items-center justify-center transition-all"
+                    >
+                      {platform.logo
+                        ? <img src={platform.logo} alt={platform.name} className="w-5 h-5" />
+                        : <ExternalLink size={16} className="text-[#1A1A1A]/60" />}
+                    </a>
+                    {isOwner && (
+                      <button onClick={() => removeProfileLink(i)} className="text-[#1A1A1A]/0 group-hover/link:text-[#1A1A1A]/40 hover:!text-red-400 transition-colors" title="Remove link">
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+              {links.length === 0 && !addingLink && (
+                <span className="text-[#1A1A1A]/30 text-sm italic">No links yet</span>
+              )}
+            </div>
+            {addingLink && (
+              <div className="flex items-center gap-2 mt-3">
+                <input
+                  type="text" value={newLinkUrl} autoFocus
+                  onChange={(e) => setNewLinkUrl(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') addProfileLink(); if (e.key === 'Escape') { setAddingLink(false); setNewLinkUrl(''); } }}
+                  placeholder="https://instagram.com/yourname"
+                  className="flex-1 bg-[#F4F4F2] border border-[#3E9E28]/50 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#3E9E28] transition-colors"
+                />
+                <button onClick={addProfileLink} className="text-[#3E9E28] hover:text-[#1A1A1A] p-1"><Check size={18} /></button>
+                <button onClick={() => { setAddingLink(false); setNewLinkUrl(''); }} className="text-[#1A1A1A]/40 hover:text-[#1A1A1A] p-1"><X size={18} /></button>
+              </div>
+            )}
+          </div>
         )}
 
         {/* ── Goals ── */}
