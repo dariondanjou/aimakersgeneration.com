@@ -131,7 +131,11 @@ export default function Admin({ session }) {
     );
   }
 
-  const paid = roster.filter((r) => r.status === 'paid').length;
+  // The roster shows enrolled students only — pending (unpaid) applications are
+  // hidden so they don't clutter the student roster. They still exist in the DB
+  // and reappear here the moment they're marked paid.
+  const shown = roster.filter((r) => r.status !== 'pending');
+  const paid = shown.filter((r) => r.status === 'paid').length;
 
   return (
     <div className="custom-scrollbar flex-1 overflow-y-auto p-6">
@@ -143,7 +147,7 @@ export default function Admin({ session }) {
             </p>
             <h1 className="text-2xl sm:text-3xl uppercase">Summer 2026 Roster</h1>
             <p className="text-sm text-[#5C5C5C] mt-1">
-              {paid} paid · {roster.length} total · 20 seats
+              {paid} paid · {shown.length} on roster · 20 seats
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -171,7 +175,7 @@ export default function Admin({ session }) {
               </tr>
             </thead>
             <tbody>
-              {roster.map((r, i) => (
+              {shown.map((r, i) => (
                 <tr key={i} className="border-b border-[#E3E3DF]/60 last:border-0 hover:bg-[#F7F8F5]">
                   <td className="px-4 py-3 font-semibold">
                     {r.slug ? (
@@ -206,17 +210,17 @@ export default function Admin({ session }) {
                   </td>
                 </tr>
               ))}
-              {roster.length === 0 && (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-[#1A1A1A]/40 italic">No applications yet.</td></tr>
+              {shown.length === 0 && (
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-[#1A1A1A]/40 italic">No enrolled students yet.</td></tr>
               )}
             </tbody>
           </table>
         </div>
 
         <p className="text-xs text-[#1A1A1A]/40 mt-4">
-          A linked name means the student has a public profile at /students/&lt;name&gt;. Rows without a link are
-          applications with no roster entry yet (or unpaid). “Claimed” means the student has signed in and can
-          edit their own profile.
+          Enrolled (paid) students only — pending applications are hidden and appear here once they pay. A linked
+          name means the student has a public profile at /students/&lt;name&gt;. “Claimed” means the student has
+          signed in and can edit their own profile.
         </p>
 
         {/* Cohort sessions — click straight into the deck you're presenting */}
