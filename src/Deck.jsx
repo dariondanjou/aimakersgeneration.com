@@ -25,14 +25,20 @@ const BigTitle = ({ text, size = 'clamp(44px,11.5vw,196px)' }) => (
 
 function Slide({ s }) {
   const wrap = { width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '6vh 7vw', boxSizing: 'border-box' };
-  // Generated supporting graphic (Higgsfield): content shifts left, art on the right.
+  // Generated supporting graphic (Higgsfield): content shifts left, art on the
+  // right. The art is a glowing subject on a pure-black background; mixBlendMode
+  // 'screen' drops the black out so only the glow floats on the slide — no
+  // rectangle, no frame. objectFit 'contain' keeps the whole subject in view.
   if (s.image) {
     return (
       <div style={{ width: '100%', height: '100%', display: 'grid', gridTemplateColumns: '1.2fr 1fr' }}>
         <div style={{ minWidth: 0 }}><Slide s={{ ...s, image: undefined }} /></div>
-        <div style={{ position: 'relative', overflow: 'hidden' }}>
-          <img src={s.image} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #0B0B0B 0%, transparent 30%)' }} />
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <img
+            src={s.image}
+            alt=""
+            style={{ width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'screen', padding: '6vh 2.5vw', boxSizing: 'border-box' }}
+          />
         </div>
       </div>
     );
