@@ -147,10 +147,10 @@ export default function Admin({ session }) {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/admin/curriculum" className="btn !text-sm" title="The 8-week curriculum — inline editable">
+            <Link to="/admin/curriculum" target="_blank" rel="noopener" className="btn !text-sm" title="The 8-week curriculum — inline editable">
               <BookOpen size={16} /> Curriculum
             </Link>
-            <a href="/students" className="btn !text-sm" title="The public cohort showcase">
+            <a href="/students" target="_blank" rel="noopener" className="btn !text-sm" title="The public cohort showcase">
               <GraduationCap size={16} /> Students overview page <ExternalLink size={13} />
             </a>
           </div>
