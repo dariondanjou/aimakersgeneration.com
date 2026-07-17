@@ -74,7 +74,7 @@ export default async function handler(req, res) {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const msg = await anthropic.messages.create({
       model: "claude-sonnet-5",
-      max_tokens: 16000,
+      max_tokens: 32000,
       system: `You maintain the slide decks for AI MAKERS GENERATION's 8-week cohort (Saturdays 1-4 PM, Atlanta). Style: dark slides, chartreuse accent, Inter, ALL-CAPS stacked titles, terse bullets — presentation-grade, never wordy.
 
 ${SLIDE_SCHEMA}
@@ -89,14 +89,23 @@ You receive the CURRENT slides and the UPDATED curriculum page for one session. 
       }],
     });
 
-    let text = (msg.content?.[0]?.text || "").trim();
-    if (text.startsWith("```")) text = text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+    if (msg.stop_reason === "max_tokens") {
+      console.error("decks: model output truncated at max_tokens");
+      return res.status(502).json({ error: "Regeneration output was truncated. Nothing was changed — try again." });
+    }
+    // The model is told to return bare JSON, but be forgiving: take the
+    // outermost JSON array from whatever came back.
+    const raw = (msg.content || []).filter(b => b.type === "text").map(b => b.text).join("").trim();
+    const start = raw.indexOf("[");
+    const end = raw.lastIndexOf("]");
     let slides;
     try {
-      slides = JSON.parse(text);
+      if (start === -1 || end <= start) throw new Error("no JSON array in response");
+      slides = JSON.parse(raw.slice(start, end + 1));
       if (!Array.isArray(slides) || slides.length === 0) throw new Error("not a slide array");
+      if (!slides.every(s => s && typeof s === "object" && typeof s.layout === "string")) throw new Error("malformed slide entries");
     } catch (err) {
-      console.error("decks: model returned unparseable slides —", err.message);
+      console.error("decks: model returned unparseable slides —", err.message, "| head:", raw.slice(0, 200));
       return res.status(502).json({ error: "Regeneration produced invalid slides. Nothing was changed — try again." });
     }
 
