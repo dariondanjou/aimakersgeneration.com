@@ -57,6 +57,9 @@ body {
   position: relative;
 }
 
+/* Slide presentation mode: hide the floating AI MAKERS BOT widget */
+body.aimg-presenting .aimg-bot { display: none !important; }
+
 /* A very light paper grain, sketched over the grid */
 body::before {
   content: "";

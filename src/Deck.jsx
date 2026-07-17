@@ -155,6 +155,14 @@ export default function Deck({ session }) {
 
   useEffect(() => { load(); }, [load]);
 
+  // The floating AI MAKERS BOT has no place on a projector — a body class
+  // hides it (CSS in index.css), which also catches the widget injecting
+  // after this page mounts. Removed when leaving the deck.
+  useEffect(() => {
+    document.body.classList.add('aimg-presenting');
+    return () => document.body.classList.remove('aimg-presenting');
+  }, []);
+
   const slides = deck?.slides || [];
   const next = useCallback(() => setIdx(i => Math.min(i + 1, slides.length - 1)), [slides.length]);
   const prev = useCallback(() => setIdx(i => Math.max(i - 1, 0)), []);
