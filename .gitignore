@@ -30,3 +30,6 @@ supabase/.temp/
 
 # Local operational notes — keep out of the public repo
 STRIPE-CONNECTION-INFO.txt
+
+# Cohort curriculum workspace (local only)
+cohorts/
