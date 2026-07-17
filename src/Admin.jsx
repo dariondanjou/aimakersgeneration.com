@@ -177,6 +177,7 @@ export default function Admin({ session }) {
                     {r.slug ? (
                       <a
                         href={`/students/${r.slug}`}
+                        target="_blank" rel="noopener"
                         className="hover:underline inline-flex items-center gap-1.5"
                         title={`Open ${r.full_name}'s profile page`}
                       >
@@ -240,7 +241,7 @@ export default function Admin({ session }) {
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <Link to={`/admin/curriculum?week=${s.week}`} className="btn !text-xs !py-1 !px-3"><BookOpen size={12} /> Curriculum</Link>
+                    <Link to={`/admin/curriculum?week=${s.week}`} target="_blank" rel="noopener" className="btn !text-xs !py-1 !px-3"><BookOpen size={12} /> Curriculum</Link>
                     <Link to={`/admin/deck/${s.week}`} target="_blank" rel="noopener" className="btn btn-primary !text-xs !py-1 !px-3"><Presentation size={12} /> Open slide deck</Link>
                   </div>
                 </div>
