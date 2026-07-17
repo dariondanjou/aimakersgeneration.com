@@ -18,7 +18,8 @@ const fmtDate = (d) =>
 
 // Anyone with the shared admin password gets in (checked server-side against
 // the ADMIN_KEY env var); allowlisted signed-in admins skip the prompt. The
-// accepted password is kept for the tab's lifetime so refreshes don't re-ask.
+// accepted password is kept in localStorage so refreshes and new tabs
+// (e.g. decks opening in their own tab) don't re-ask.
 const KEY_STORAGE = 'aimg-admin-key';
 
 export default function Admin({ session }) {
@@ -38,7 +39,7 @@ export default function Admin({ session }) {
       const res = await fetch('/api/admin-roster', { headers });
       const data = await res.json();
       if (res.ok) {
-        if (adminKey) sessionStorage.setItem(KEY_STORAGE, adminKey);
+        if (adminKey) localStorage.setItem(KEY_STORAGE, adminKey);
         setRoster(data.roster);
         setNeedsKey(false);
         return true;
@@ -56,7 +57,7 @@ export default function Admin({ session }) {
   };
 
   useEffect(() => {
-    load(sessionStorage.getItem(KEY_STORAGE) || undefined);
+    load(localStorage.getItem(KEY_STORAGE) || undefined);
   }, [session?.access_token]);
 
   // Cohort sessions (deck links) — loads once the roster unlocked us.
@@ -67,7 +68,7 @@ export default function Admin({ session }) {
       try {
         const headers = {};
         if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
-        const stored = sessionStorage.getItem(KEY_STORAGE);
+        const stored = localStorage.getItem(KEY_STORAGE);
         if (stored) headers['x-admin-key'] = stored;
         const res = await fetch('/api/decks', { headers });
         const data = await res.json();
@@ -240,7 +241,7 @@ export default function Admin({ session }) {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <Link to={`/admin/curriculum?week=${s.week}`} className="btn !text-xs !py-1 !px-3"><BookOpen size={12} /> Curriculum</Link>
-                    <Link to={`/admin/deck/${s.week}`} className="btn btn-primary !text-xs !py-1 !px-3"><Presentation size={12} /> Open slide deck</Link>
+                    <Link to={`/admin/deck/${s.week}`} target="_blank" rel="noopener" className="btn btn-primary !text-xs !py-1 !px-3"><Presentation size={12} /> Open slide deck</Link>
                   </div>
                 </div>
               ))}

@@ -274,7 +274,7 @@ export default function Curriculum({ session }) {
                 <RefreshCw size={13} className={regen[week.week] === 'running' ? 'animate-spin' : ''} />
                 {regen[week.week] === 'running' ? 'Regenerating…' : 'Regenerate slide deck'}
               </button>
-              <Link to={`/admin/deck/${week.week}`} className="btn btn-primary !text-xs !py-1.5 !px-3.5">
+              <Link to={`/admin/deck/${week.week}`} target="_blank" rel="noopener" className="btn btn-primary !text-xs !py-1.5 !px-3.5">
                 <Presentation size={13} /> Open deck
               </Link>
             </div>
