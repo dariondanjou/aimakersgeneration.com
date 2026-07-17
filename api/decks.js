@@ -72,9 +72,11 @@ export default async function handler(req, res) {
     if (!cw || !deck) return res.status(404).json({ error: "Week not found." });
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const msg = await anthropic.messages.create({
+    // Streamed: large max_tokens on a non-streaming call makes the SDK throw
+    // (10-minute guard). finalMessage() gives the same shape back.
+    const stream = anthropic.messages.stream({
       model: "claude-sonnet-5",
-      max_tokens: 32000,
+      max_tokens: 24000,
       system: `You maintain the slide decks for AI MAKERS GENERATION's 8-week cohort (Saturdays 1-4 PM, Atlanta). Style: dark slides, chartreuse accent, Inter, ALL-CAPS stacked titles, terse bullets — presentation-grade, never wordy.
 
 ${SLIDE_SCHEMA}
@@ -88,6 +90,7 @@ You receive the CURRENT slides and the UPDATED curriculum page for one session. 
         }),
       }],
     });
+    const msg = await stream.finalMessage();
 
     if (msg.stop_reason === "max_tokens") {
       console.error("decks: model output truncated at max_tokens");
