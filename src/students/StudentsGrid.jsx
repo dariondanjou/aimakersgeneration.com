@@ -32,8 +32,7 @@ export default function StudentsGrid() {
           </p>
           <h1 className="text-3xl sm:text-4xl uppercase">Meet the Students</h1>
           <p className="text-[#5C5C5C] mt-3 max-w-xl mx-auto">
-            Eight Saturdays, twenty seats. These are the makers building their
-            portfolios, one week at a time.
+            Eight Saturdays, Life Changing.
           </p>
         </div>
 
