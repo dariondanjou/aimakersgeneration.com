@@ -37,21 +37,32 @@ function Slide({ s }) {
           {s.meta && <p style={{ color: '#888', fontSize: 'clamp(11px,1.3vw,16px)', marginTop: '4vh' }}>{s.meta}</p>}
         </div>
       );
-    case 'agenda':
+    case 'agenda': {
+      // The agenda recurs through the class as a time-check. `current` (an index
+      // into rows) marks where we are: that segment's dot fills in and its time
+      // + label go chartreuse; every other segment stays a hollow dot with white
+      // text. The opening overview omits `current`, so all dots read empty.
+      const cur = Number.isInteger(s.current) ? s.current : -1;
+      const dot = 'clamp(11px,1.25vw,17px)';
       return (
         <div style={wrap}>
           <Kicker>{s.kicker}</Kicker>
           <BigTitle text={s.title} size="clamp(34px,8.2vw,128px)" />
-          <div style={{ marginTop: '5.5vh', display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: '3vw', rowGap: '1.4vh', maxWidth: 900 }}>
-            {(s.rows || []).map(([time, label], i) => (
-              <div key={i} style={{ display: 'contents' }}>
-                <span style={{ color: ACCENT, fontWeight: 800, fontSize: 'clamp(13px,1.7vw,22px)', fontVariantNumeric: 'tabular-nums' }}>{time}</span>
-                <span style={{ color: '#DDD', fontSize: 'clamp(13px,1.7vw,22px)' }}>{label}</span>
-              </div>
-            ))}
+          <div style={{ marginTop: '4.5vh', display: 'grid', gridTemplateColumns: 'auto auto 1fr', columnGap: '2.2vw', rowGap: '1.3vh', maxWidth: 980, alignItems: 'center' }}>
+            {(s.rows || []).map(([time, label], i) => {
+              const active = i === cur;
+              return (
+                <div key={i} style={{ display: 'contents' }}>
+                  <span style={{ width: dot, height: dot, borderRadius: '50%', boxSizing: 'border-box', display: 'inline-block', justifySelf: 'center', border: `2px solid ${active ? ACCENT : '#5C5C5C'}`, background: active ? ACCENT : 'transparent' }} />
+                  <span style={{ color: active ? ACCENT : '#7E7E7E', fontWeight: 800, fontSize: 'clamp(13px,1.7vw,22px)', fontVariantNumeric: 'tabular-nums' }}>{time}</span>
+                  <span style={{ color: active ? ACCENT : '#FFFFFF', fontWeight: active ? 700 : 400, fontSize: 'clamp(13px,1.7vw,22px)' }}>{label}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       );
+    }
     case 'section':
       return (
         <div style={wrap}>
