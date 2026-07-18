@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { GraduationCap, BookOpen, Target, Backpack, ChevronDown } from 'lucide-react';
+import { GraduationCap, BookOpen, Target, Backpack, ChevronDown, Calculator } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 const fmtDate = (d) => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
@@ -94,6 +94,93 @@ function CurriculumSection() {
   );
 }
 
+// A really simple four-function calculator.
+function CalculatorSection() {
+  const [display, setDisplay] = useState('0');
+  const [acc, setAcc] = useState(null);      // pending left operand
+  const [op, setOp] = useState(null);        // pending operator
+  const [fresh, setFresh] = useState(true);  // next digit starts a new number
+
+  const apply = (a, b, o) => {
+    if (o === '+') return a + b;
+    if (o === '−') return a - b;
+    if (o === '×') return a * b;
+    if (o === '÷') return b === 0 ? NaN : a / b;
+    return b;
+  };
+  const show = (n) => {
+    if (!Number.isFinite(n)) return 'Error';
+    const s = String(Math.round(n * 1e10) / 1e10);
+    return s.length > 12 ? n.toExponential(6) : s;
+  };
+
+  const digit = (d) => {
+    if (fresh) { setDisplay(d === '.' ? '0.' : d); setFresh(false); return; }
+    if (d === '.' && display.includes('.')) return;
+    setDisplay(display.length < 12 ? display + d : display);
+  };
+  const operator = (o) => {
+    const cur = parseFloat(display);
+    if (op != null && acc != null && !fresh) {
+      const r = apply(acc, cur, op);
+      setAcc(r); setDisplay(show(r));
+    } else {
+      setAcc(cur);
+    }
+    setOp(o); setFresh(true);
+  };
+  const equals = () => {
+    if (op == null || acc == null) return;
+    const r = apply(acc, parseFloat(display), op);
+    setDisplay(show(r)); setAcc(null); setOp(null); setFresh(true);
+  };
+  const clear = () => { setDisplay('0'); setAcc(null); setOp(null); setFresh(true); };
+
+  const keys = ['7', '8', '9', '÷', '4', '5', '6', '×', '1', '2', '3', '−', '0', '.', 'C', '+'];
+  const press = (k) => {
+    if (k === 'C') return clear();
+    if ('+−×÷'.includes(k)) return operator(k);
+    digit(k);
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto w-full pb-16">
+      <div className="text-center mb-6">
+        <p className="text-xs uppercase tracking-[0.18em] font-semibold text-[#3E9E28] mb-2 flex items-center justify-center gap-2">
+          <Calculator size={16} /> Calculator
+        </p>
+      </div>
+      <div className="glass-panel !p-5 max-w-[280px] mx-auto">
+        <div className="bg-[#F4F4F2] border border-[#E3E3DF] rounded-xl px-4 py-3 mb-3 text-right text-2xl font-extrabold tabular-nums overflow-hidden text-ellipsis whitespace-nowrap"
+          style={{ fontFamily: 'Poppins, sans-serif' }}>
+          {display}
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          {keys.map((k) => (
+            <button
+              key={k}
+              onClick={() => press(k)}
+              className={`rounded-xl py-2.5 text-lg font-bold transition-colors border ${
+                'C+−×÷'.includes(k)
+                  ? 'bg-white text-[#0F7B3F] border-[#E3E3DF] hover:border-[#3E9E28]'
+                  : 'bg-white text-[#1A1A1A] border-[#E3E3DF] hover:border-[#3E9E28]'
+              } ${op === k && acc != null ? '!bg-[#3E9E28]/10 !border-[#3E9E28]' : ''}`}
+            >
+              {k}
+            </button>
+          ))}
+          <button
+            onClick={equals}
+            className="col-span-4 rounded-xl py-2.5 text-lg font-bold bg-[#0F7B3F] text-white border border-[#0F7B3F] hover:bg-[#3E9E28] transition-colors"
+          >
+            =
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function StudentsGrid() {
   const [students, setStudents] = useState(null);
 
@@ -159,6 +246,8 @@ export default function StudentsGrid() {
         )}
 
         <CurriculumSection />
+
+        <CalculatorSection />
       </div>
     </div>
   );
