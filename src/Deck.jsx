@@ -24,25 +24,9 @@ const BigTitle = ({ text, size = 'clamp(44px,11.5vw,196px)' }) => (
 );
 
 function Slide({ s }) {
-  const wrap = { width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '6vh 7vw', boxSizing: 'border-box' };
-  // Generated supporting graphic (Higgsfield): content shifts left, art on the
-  // right. The art is a glowing subject on a pure-black background; mixBlendMode
-  // 'screen' drops the black out so only the glow floats on the slide — no
-  // rectangle, no frame. objectFit 'contain' keeps the whole subject in view.
-  if (s.image) {
-    return (
-      <div style={{ width: '100%', height: '100%', display: 'grid', gridTemplateColumns: '1.2fr 1fr' }}>
-        <div style={{ minWidth: 0 }}><Slide s={{ ...s, image: undefined }} /></div>
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-          <img
-            src={s.image}
-            alt=""
-            style={{ width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'screen', padding: '6vh 2.5vw', boxSizing: 'border-box' }}
-          />
-        </div>
-      </div>
-    );
-  }
+  const wrap = { width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '6vh 7vw', boxSizing: 'border-box', overflow: 'hidden' };
+  // Decks are intentionally text-only — no supporting graphics. Any legacy
+  // `image` URL still sitting on a slide record is ignored, never rendered.
   switch (s.layout) {
     case 'title':
       return (
@@ -120,14 +104,20 @@ function Slide({ s }) {
           </ul>
         </div>
       );
-    case 'closing':
+    case 'closing': {
+      // Title AND subtitle both render huge, and each can wrap to two lines —
+      // up to four oversized lines plus meta. Cap the type on the SHORTER of
+      // width/height (min(vw,vh)) so the whole send-off always fits the frame
+      // instead of running off the bottom.
+      const closeSize = 'clamp(36px, min(9vw, 12.5vh), 168px)';
       return (
         <div style={{ ...wrap, alignItems: 'flex-start' }}>
-          <BigTitle text={s.title} />
-          {s.subtitle && <div style={{ color: ACCENT, fontFamily: 'Inter, sans-serif', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.035em', lineHeight: 0.98, fontSize: 'clamp(44px,11.5vw,196px)', whiteSpace: 'pre-line' }}>{s.subtitle}</div>}
-          {s.meta && <p style={{ color: '#888', fontSize: 'clamp(11px,1.3vw,16px)', marginTop: '5vh' }}>{s.meta}</p>}
+          <BigTitle text={s.title} size={closeSize} />
+          {s.subtitle && <div style={{ color: ACCENT, fontFamily: 'Inter, sans-serif', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.035em', lineHeight: 0.98, fontSize: closeSize, whiteSpace: 'pre-line' }}>{s.subtitle}</div>}
+          {s.meta && <p style={{ color: '#888', fontSize: 'clamp(11px,1.3vw,16px)', marginTop: '3.5vh' }}>{s.meta}</p>}
         </div>
       );
+    }
     default:
       return <div style={wrap}><BigTitle text={s.title || ''} /></div>;
   }

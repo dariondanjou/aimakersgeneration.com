@@ -23,9 +23,8 @@ const SLIDE_SCHEMA = `Slides are a JSON array. Each slide is one of:
 - {"layout":"homework","kicker","title","due","bullets":[...]}  (the assignment)
 - {"layout":"closing","title","subtitle","meta"}                (send-off)
 Titles are ALL-CAPS and may contain \\n for stacked lines. Bullets are short,
-punchy, presentation-grade — never paragraphs. Any slide may carry an optional
-"image" field (URL of a generated supporting graphic) — always preserve it
-unchanged unless a note explicitly says to remove or replace that visual.`;
+punchy, presentation-grade — never paragraphs. Decks are text-only: never add
+an "image" field, and drop any "image" or "imgPrompt" field you encounter.`;
 
 export default async function handler(req, res) {
   const denied = await requireAdmin(req);
