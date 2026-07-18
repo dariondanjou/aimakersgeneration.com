@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { ArrowLeft, ChevronLeft, ChevronRight, Maximize } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Maximize, Minimize } from 'lucide-react';
 import { adminHeaders } from './adminAuth';
 import AdminKeyForm from './AdminKeyForm';
 
@@ -142,7 +142,21 @@ export default function Deck({ session }) {
   const [needsKey, setNeedsKey] = useState(false);
   const [keyError, setKeyError] = useState(null);
   const [error, setError] = useState(null);
+  const [isFull, setIsFull] = useState(false);
   const rootRef = useRef(null);
+
+  // Present full-screen. Toggled by the ⤢ button and the F key; we mirror the
+  // browser's own fullscreen state (Esc/F11 also change it) so the icon and
+  // label stay honest.
+  const toggleFull = useCallback(() => {
+    if (document.fullscreenElement) document.exitFullscreen?.();
+    else rootRef.current?.requestFullscreen?.();
+  }, []);
+  useEffect(() => {
+    const sync = () => setIsFull(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', sync);
+    return () => document.removeEventListener('fullscreenchange', sync);
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -178,11 +192,12 @@ export default function Deck({ session }) {
     const onKey = (e) => {
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); next(); }
       else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+      else if (e.key === 'f' || e.key === 'F') { e.preventDefault(); toggleFull(); }
       else if (e.key === 'Escape' && !document.fullscreenElement) navigate('/admin');
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [next, prev, navigate]);
+  }, [next, prev, navigate, toggleFull]);
 
   if (needsKey) return <AdminKeyForm title="Session Deck" onUnlock={load} error={keyError} />;
   if (error) return <div className="flex-1 flex items-center justify-center text-[#5C5C5C]">{error}</div>;
@@ -211,10 +226,10 @@ export default function Deck({ session }) {
           <span style={{ color: '#CCFF00', fontVariantNumeric: 'tabular-nums' }}>{idx + 1} / {slides.length}</span>
           <button onClick={next} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}><ChevronRight size={16} /></button>
           <button
-            onClick={() => { document.fullscreenElement ? document.exitFullscreen() : rootRef.current?.requestFullscreen?.(); }}
-            title="Fullscreen (present)"
-            style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}
-          ><Maximize size={15} /></button>
+            onClick={toggleFull}
+            title={isFull ? 'Exit full screen (F)' : 'Full screen — present (F)'}
+            style={{ background: 'none', border: 'none', color: isFull ? '#CCFF00' : '#888', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12 }}
+          >{isFull ? <Minimize size={15} /> : <Maximize size={15} />}<span>{isFull ? 'Exit' : 'Full screen'}</span></button>
         </span>
       </div>
     </div>
