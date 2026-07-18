@@ -1,7 +1,98 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { GraduationCap } from 'lucide-react';
+import { GraduationCap, BookOpen, Target, Backpack, ChevronDown } from 'lucide-react';
 import { supabase } from '../supabaseClient';
+
+const fmtDate = (d) => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+// Public read-only curriculum outline (objective / covered / homework per
+// session — the sanitized view served by /api/curriculum?public=1).
+function CurriculumSection() {
+  const [weeks, setWeeks] = useState(null);
+  const [open, setOpen] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/curriculum?public=1')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => setWeeks(data?.weeks || []))
+      .catch(() => setWeeks([]));
+  }, []);
+
+  if (!weeks || weeks.length === 0) return null;
+
+  return (
+    <div className="max-w-3xl mx-auto w-full pb-16">
+      <div className="text-center mb-8">
+        <p className="text-xs uppercase tracking-[0.18em] font-semibold text-[#3E9E28] mb-2 flex items-center justify-center gap-2">
+          <BookOpen size={16} /> The Curriculum
+        </p>
+        <h2 className="text-2xl sm:text-3xl uppercase">Eight Sessions</h2>
+        <p className="text-[#5C5C5C] mt-3 max-w-xl mx-auto text-sm">
+          Saturdays 1:00–4:00 PM ET at RICE, Atlanta. Tap a week to see what we cover.
+        </p>
+      </div>
+      <div className="space-y-3">
+        {weeks.map((w) => {
+          const isOpen = open === w.week;
+          return (
+            <div key={w.week} className="glass-panel !p-0 overflow-hidden">
+              <button
+                onClick={() => setOpen(isOpen ? null : w.week)}
+                className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-[#3E9E28]/5 transition-colors"
+              >
+                <span className="text-xs font-bold text-[#0F7B3F] tabular-nums shrink-0 w-24">
+                  Wk {w.week} · {fmtDate(w.session_date)}
+                </span>
+                <span className="flex-1 font-semibold text-sm sm:text-base">{w.title}</span>
+                <ChevronDown size={16} className={`shrink-0 text-[#1A1A1A]/40 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {isOpen && (
+                <div className="px-5 pb-5 space-y-4">
+                  {w.objective && (
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1 flex items-center gap-1.5">
+                        <Target size={12} className="text-[#3E9E28]" /> Objective
+                      </p>
+                      <p className="text-sm text-[#1A1A1A]/85 leading-relaxed">{w.objective}</p>
+                    </div>
+                  )}
+                  {w.covered.length > 0 && (
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1 flex items-center gap-1.5">
+                        <BookOpen size={12} className="text-[#3E9E28]" /> What gets covered
+                      </p>
+                      <ul className="space-y-1.5">
+                        {w.covered.map((t, i) => (
+                          <li key={i} className="text-sm text-[#1A1A1A]/85 leading-relaxed flex gap-2">
+                            <span className="text-[#3E9E28] font-bold shrink-0">—</span> {t}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {w.homework.length > 0 && (
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1 flex items-center gap-1.5">
+                        <Backpack size={12} className="text-[#3E9E28]" /> Homework
+                      </p>
+                      <ul className="space-y-1.5">
+                        {w.homework.map((t, i) => (
+                          <li key={i} className="text-sm text-[#1A1A1A]/85 leading-relaxed flex gap-2">
+                            <span className="text-[#3E9E28] font-bold shrink-0">—</span> {t}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export default function StudentsGrid() {
   const [students, setStudents] = useState(null);
@@ -66,6 +157,8 @@ export default function StudentsGrid() {
             ))}
           </div>
         )}
+
+        <CurriculumSection />
       </div>
     </div>
   );
