@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="supported-color-schemes" content="dark" />
+  <title>Receipt — AI Makers Generation</title>
+  <!--[if mso]>
+  <noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    body { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+    a { text-decoration: none; }
+    @media screen and (max-width: 600px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 24px !important; padding-right: 24px !important; }
+      .hero-title { font-size: 44px !important; line-height: 0.98 !important; }
+    }
+  </style>
+</head>
+<body style="margin:0; padding:0; background-color:#0B0B0B;">
+  <!-- Preheader (hidden) -->
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:#0B0B0B; font-size:1px; line-height:1px;">
+    Receipt {{RECEIPT_NO}} — {{AMOUNT}} paid — AI Makers Generation Summer 2026 Cohort.
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0B0B0B;">
+    <tr>
+      <td align="center" style="padding:0;">
+        <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:600px; background-color:#0B0B0B; font-family:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;">
+
+          <!-- Masthead -->
+          <tr>
+            <td class="px" style="padding:32px 40px 8px 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="left" style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:900; letter-spacing:0.12em; color:#FFFFFF; text-transform:uppercase;">
+                    AI&nbsp;MAKERS&nbsp;GENERATION
+                  </td>
+                  <td align="right" style="font-family:'Inter',Arial,sans-serif; font-size:11px; font-weight:700; letter-spacing:0.22em; color:#CCFF00; text-transform:uppercase;">
+                    Summer&nbsp;2026&nbsp;Cohort
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Hero -->
+          <tr>
+            <td class="px" style="padding:28px 40px 8px 40px;">
+              <div style="font-family:'Inter',Arial,sans-serif; font-size:11px; font-weight:700; letter-spacing:0.22em; color:#CCFF00; text-transform:uppercase; margin-bottom:16px;">
+                Payment received
+              </div>
+              <h1 class="hero-title" style="margin:0; font-family:'Inter','Helvetica Neue',Arial,sans-serif; font-size:72px; line-height:0.96; font-weight:900; letter-spacing:-0.035em; color:#FFFFFF; text-transform:uppercase;">
+                Paid<br /><span style="color:#CCFF00;">in full</span>
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Body copy -->
+          <tr>
+            <td class="px" style="padding:28px 40px 8px 40px;">
+              <p style="margin:0 0 18px 0; font-family:'Inter',Arial,sans-serif; font-size:17px; line-height:1.5; color:#EDEDED;">
+                Hi {{FIRST_NAME}},
+              </p>
+              <p style="margin:0 0 18px 0; font-family:'Inter',Arial,sans-serif; font-size:16px; line-height:1.6; color:#CCCCCC;">
+                This is your receipt for the AI Makers Generation Summer 2026 Cohort. Your tuition is paid in full — your seat is confirmed, and nothing further is due.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Receipt card -->
+          <tr>
+            <td class="px" style="padding:16px 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#141414; border-top:3px solid #CCFF00; border-radius:12px;">
+                <tr>
+                  <td style="padding:26px 28px;">
+                    <div style="font-family:'Inter',Arial,sans-serif; font-size:12px; font-weight:800; letter-spacing:0.12em; color:#CCFF00; text-transform:uppercase; margin-bottom:16px;">
+                      Receipt &middot; {{RECEIPT_NO}}
+                    </div>
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="padding:0 0 14px 0;">
+                          <div style="font-family:'Inter',Arial,sans-serif; font-size:11px; font-weight:700; letter-spacing:0.1em; color:#888888; text-transform:uppercase; margin-bottom:4px;">Billed to</div>
+                          <div style="font-family:'Inter',Arial,sans-serif; font-size:16px; font-weight:700; line-height:1.4; color:#FFFFFF;">{{FULL_NAME}}</div>
+                          <div style="font-family:'Inter',Arial,sans-serif; font-size:14px; line-height:1.5; color:#CCCCCC;">{{EMAIL}}</div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:0 0 14px 0;">
+                          <div style="font-family:'Inter',Arial,sans-serif; font-size:11px; font-weight:700; letter-spacing:0.1em; color:#888888; text-transform:uppercase; margin-bottom:4px;">Item</div>
+                          <div style="font-family:'Inter',Arial,sans-serif; font-size:15px; line-height:1.5; color:#CCCCCC;">Summer 2026 Cohort tuition &mdash; eight-week program, July 18 &rarr; September 5, 2026</div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:0 0 14px 0;">
+                          <div style="font-family:'Inter',Arial,sans-serif; font-size:11px; font-weight:700; letter-spacing:0.1em; color:#888888; text-transform:uppercase; margin-bottom:4px;">Payment date</div>
+                          <div style="font-family:'Inter',Arial,sans-serif; font-size:15px; line-height:1.5; color:#CCCCCC;">{{PAID_DATE}}</div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:0 0 18px 0;">
+                          <div style="font-family:'Inter',Arial,sans-serif; font-size:11px; font-weight:700; letter-spacing:0.1em; color:#888888; text-transform:uppercase; margin-bottom:4px;">Payment method</div>
+                          <div style="font-family:'Inter',Arial,sans-serif; font-size:15px; line-height:1.5; color:#CCCCCC;">Card, processed securely by Stripe</div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:18px 0 0 0; border-top:1px solid #2A2A2A;">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td align="left" style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:800; letter-spacing:0.12em; color:#FFFFFF; text-transform:uppercase;">
+                                Total paid
+                              </td>
+                              <td align="right" style="font-family:'Inter',Arial,sans-serif; font-size:26px; font-weight:900; letter-spacing:-0.02em; color:#CCFF00;">
+                                {{AMOUNT}}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td></td>
+                              <td align="right" style="font-family:'Inter',Arial,sans-serif; font-size:12px; font-weight:700; letter-spacing:0.14em; color:#888888; text-transform:uppercase; padding-top:2px;">
+                                USD &middot; Paid in full
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Questions -->
+          <tr>
+            <td class="px" style="padding:24px 40px 8px 40px;">
+              <p style="margin:0 0 6px 0; font-family:'Inter',Arial,sans-serif; font-size:15px; line-height:1.6; color:#CCCCCC;">
+                Questions about this receipt? Reply to this email or reach Darion D'Anjou directly at
+                <a href="mailto:dariondanjou@gmail.com" style="color:#CCFF00;">dariondanjou@gmail.com</a>.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td class="px" style="padding:28px 40px 40px 40px;">
+              <div style="font-family:'Inter',Arial,sans-serif; font-size:12px; font-weight:900; letter-spacing:0.1em; color:#666666; text-transform:uppercase;">
+                AI Makers Generation
+              </div>
+              <div style="font-family:'Inter',Arial,sans-serif; font-size:12px; letter-spacing:0.06em; color:#555555; margin-top:4px;">
+                Build the future. Share the knowledge.
+              </div>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
