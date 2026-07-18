@@ -69,6 +69,18 @@ function Slide({ s }) {
           <Kicker>{s.kicker}</Kicker>
           <BigTitle text={s.title} />
           {s.subtitle && <p style={{ color: '#CCC', fontSize: 'clamp(14px,1.9vw,25px)', marginTop: '3.5vh', maxWidth: '46ch', lineHeight: 1.45 }}>{s.subtitle}</p>}
+          {s.people && (
+            <div style={{ marginTop: '3.5vh', display: 'flex', flexDirection: 'column', gap: '1.6vh' }}>
+              {s.people.map(([name, info], i) => (
+                // One person per line, never wrapped — the vw-clamped size keeps
+                // the longest line inside the frame at projector ratios.
+                <p key={i} style={{ margin: 0, whiteSpace: 'nowrap', fontSize: 'clamp(12px,1.7vw,22px)', lineHeight: 1.4 }}>
+                  <span style={{ color: ACCENT, fontWeight: 800 }}>{name}</span>
+                  <span style={{ color: '#CCC' }}> — {info}</span>
+                </p>
+              ))}
+            </div>
+          )}
         </div>
       );
     case 'bullets':
