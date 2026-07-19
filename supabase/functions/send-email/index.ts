@@ -39,10 +39,10 @@ async function sendEmail(options: {
   try {
     await client.send({
       from: `AI Makers Generation <${EMAIL_USER}>`,
-      to: Array.isArray(options.to) ? options.to.join(", ") : options.to,
-      cc: options.cc
-        ? Array.isArray(options.cc) ? options.cc.join(", ") : options.cc
-        : undefined,
+      // denomailer accepts string | string[] — do NOT comma-join arrays into
+      // one string; Gmail rejects that as a single invalid RFC 5321 address.
+      to: options.to,
+      cc: options.cc,
       subject: options.subject,
       html: options.html,
     });
@@ -174,14 +174,14 @@ Deno.serve(async (req) => {
           { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      const { to, subject, html } = payload;
+      const { to, cc, subject, html } = payload;
       if (!to || !subject || !html) {
         return new Response(
           JSON.stringify({ error: "Missing required fields: to, subject, html" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      await sendEmail({ to, subject, html });
+      await sendEmail({ to, cc, subject, html });
       return new Response(
         JSON.stringify({ success: true, to }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
