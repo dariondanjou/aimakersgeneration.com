@@ -33,6 +33,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
+        about: resolve(__dirname, 'about.html'),
         apply: resolve(__dirname, 'apply.html'),
         // Private, unadvertised 10%-discount copy of the application page. Nothing links
         // to it; reachable only by direct URL (/discount).
