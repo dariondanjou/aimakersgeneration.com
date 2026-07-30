@@ -21,7 +21,7 @@ function SiteHeader() {
           <Link to="/" className="community-tab active" style={{ color: 'var(--green-deep)', fontWeight: 700 }}>Students</Link>
           <a href="/about" className="nav-hide-sm">Who we are</a>
           <a href="/community" className="nav-hide-sm">Makers</a>
-          <a href="/apply" className="site-cta">Apply to the Cohort</a>
+          <a href="/apply" className="site-cta">Learn About Our Cohorts</a>
         </nav>
       </div>
     </header>
