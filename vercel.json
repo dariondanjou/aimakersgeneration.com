@@ -1,7 +1,9 @@
 {
   "cleanUrls": true,
   "functions": {
-    "api/decks.js": { "maxDuration": 300 }
+    "api/decks.js": { "maxDuration": 300 },
+    "api/scan-homework.js": { "maxDuration": 120 },
+    "api/refresh-resources.js": { "maxDuration": 300 }
   },
   "redirects": [
     {

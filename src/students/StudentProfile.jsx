@@ -4,6 +4,7 @@ import {
   ArrowLeft, Camera, Check, X, Plus, ExternalLink, Target, Flag,
   Image as ImageIcon, Link as LinkIcon, Upload, FileText, Clock, CheckCircle2, Trash2,
   MapPin, Briefcase, CalendarClock, Linkedin, TrendingUp, Users, Sparkles,
+  ListChecks, RefreshCw, AlertTriangle,
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { getSocialPlatform, getSocialTooltip } from '../socialPlatforms';
@@ -129,33 +130,276 @@ const formatDue = (dueAt) =>
 const formatAssigned = (d) =>
   new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
+// ── Homework verification (scan) helpers ────────────────────────────────────
+// A submission is scanned server-side (/api/scan-homework) for relevance to
+// its assignment; the week's checklist circle only checks once at least one
+// submission scans as relevant. Rows from before the scan migration have no
+// scan_status — treat those as verified so old submissions keep counting.
+function verificationState(subs) {
+  if (subs.length === 0) return 'empty';
+  if (subs.some((s) => s.scan_status === 'relevant' || s.scan_status === undefined)) return 'verified';
+  if (subs.some((s) => s.scan_status === 'pending')) return 'pending';
+  if (subs.some((s) => s.scan_status === 'error')) return 'error';
+  return 'flagged';
+}
+
+// The checklist circle: empty → spinner while scanning → green check when a
+// relevant upload exists; red "!" when everything uploaded scanned off-topic.
+function ScanCircle({ state, size = 26 }) {
+  const style = { width: size, height: size };
+  const base = 'rounded-full flex items-center justify-center shrink-0';
+  if (state === 'verified') {
+    return (
+      <span className={`${base} bg-[#0F7B3F]`} style={style} title="Verified — a relevant submission is in">
+        <Check size={Math.round(size * 0.62)} className="text-white" strokeWidth={3} />
+      </span>
+    );
+  }
+  if (state === 'pending') {
+    return (
+      <span
+        className={`${base} border-2 border-[#3E9E28] border-t-transparent animate-spin`}
+        style={style}
+        title="Checking the upload for relevance…"
+      />
+    );
+  }
+  if (state === 'flagged') {
+    return (
+      <span className={`${base} border-2 border-red-400 text-red-500 font-bold`} style={{ ...style, fontSize: size * 0.5 }}
+        title="The upload didn't look related to this assignment">!</span>
+    );
+  }
+  if (state === 'error') {
+    return (
+      <span className={`${base} border-2 border-amber-400 text-amber-500 font-bold`} style={{ ...style, fontSize: size * 0.5 }}
+        title="The scan hit an error — retry it">?</span>
+    );
+  }
+  return (
+    <span className={`${base} border-2 border-dashed border-[#1A1A1A]/25`} style={style}
+      title="Nothing verified yet" />
+  );
+}
+
+// Per-file scan status chip shown next to each submission.
+function ScanChip({ sub, onScan, scanning }) {
+  const s = sub.scan_status;
+  if (s === undefined) return null; // scan migration not applied yet
+  if (s === 'relevant') {
+    return (
+      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0F7B3F] shrink-0" title={sub.scan_note || undefined}>
+        <CheckCircle2 size={12} /> Verified
+      </span>
+    );
+  }
+  if (s === 'off_topic') {
+    return (
+      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-600 shrink-0" title={sub.scan_note || undefined}>
+        <AlertTriangle size={12} /> Not relevant
+      </span>
+    );
+  }
+  if (scanning) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#3E9E28] shrink-0">
+        <span className="w-3 h-3 border-2 border-t-[#3E9E28] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
+        Scanning…
+      </span>
+    );
+  }
+  // pending (not currently scanning) or error → offer a (re)scan
+  return (
+    <button
+      onClick={() => onScan(sub.id)}
+      className={`inline-flex items-center gap-1 text-[11px] font-semibold shrink-0 hover:underline ${s === 'error' ? 'text-amber-600' : 'text-[#1A1A1A]/50'}`}
+      title={sub.scan_note || 'Run the relevance check'}
+    >
+      <RefreshCw size={12} /> {s === 'error' ? 'Retry scan' : 'Scan'}
+    </button>
+  );
+}
+
+const STATE_LINES = {
+  verified: 'Homework verified — the circle is checked. Nice work.',
+  pending: 'Upload received — checking it against the assignment…',
+  flagged: "The upload didn't look related to this assignment. Try another file.",
+  error: 'The automated check hit an error — retry the scan below.',
+};
+
+// ── "This Week" panel: the current assignment highlighted at the top ────────
+function ThisWeekPanel({
+  assignment, assignments, submissions, isOwner, now,
+  onSubmitFiles, onSubmitText, onScan, scanningIds,
+}) {
+  const fileRef = useRef(null);
+  const [drag, setDrag] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const closed = assignment ? new Date(assignment.due_at).getTime() <= now : true;
+  const mine = assignment ? submissions.filter((s) => s.assignment_id === assignment.id) : [];
+  const state = verificationState(mine);
+
+  const handleFiles = async (files) => {
+    if (!files?.length || busy || closed) return;
+    setBusy(true);
+    await onSubmitFiles(assignment, files);
+    setBusy(false);
+    if (fileRef.current) fileRef.current.value = '';
+  };
+
+  // Paste anywhere on the page (outside a text field) to submit — files from
+  // the clipboard upload directly; pasted links/text become a submission.
+  useEffect(() => {
+    if (!isOwner || !assignment || closed) return;
+    const onPaste = (e) => {
+      const t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      const files = Array.from(e.clipboardData?.files || []);
+      if (files.length > 0) {
+        e.preventDefault();
+        handleFiles(files);
+        return;
+      }
+      const text = (e.clipboardData?.getData('text') || '').trim();
+      if (text) {
+        e.preventDefault();
+        setBusy(true);
+        Promise.resolve(onSubmitText(assignment, text)).finally(() => setBusy(false));
+      }
+    };
+    window.addEventListener('paste', onPaste);
+    return () => window.removeEventListener('paste', onPaste);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOwner, assignment?.id, closed, busy]);
+
+  if (!assignment) return null;
+
+  const stateLine = state === 'empty'
+    ? (closed ? 'No submission went in before the deadline.' : 'Nothing uploaded yet — drop your homework in below.')
+    : STATE_LINES[state];
+  const verifiedNote = mine.find((s) => s.scan_status === 'relevant')?.scan_note;
+
+  return (
+    <div className="glass-panel mb-5 !border-[#3E9E28]/40">
+      <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
+        <h2 className="text-sm uppercase tracking-wider flex items-center gap-2">
+          <ListChecks size={16} className="text-[#3E9E28]" /> This Week
+        </h2>
+        <Countdown dueAt={assignment.due_at} now={now} />
+      </div>
+
+      <div className="flex items-start gap-3">
+        <ScanCircle state={state} size={30} />
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#3E9E28] rounded-full px-2 py-0.5">
+              Week {assignment.week_assigned}
+            </span>
+            <h3 className="text-base">{assignment.title}</h3>
+          </div>
+          {assignment.description && (
+            <p className="text-sm text-[#5C5C5C] mt-1">{assignment.description}</p>
+          )}
+          <p className={`text-sm mt-1.5 font-semibold ${
+            state === 'verified' ? 'text-[#0F7B3F]'
+              : state === 'flagged' ? 'text-red-600'
+                : state === 'error' ? 'text-amber-600'
+                  : 'text-[#1A1A1A]/60'
+          }`}>
+            {stateLine}
+          </p>
+          {state === 'verified' && verifiedNote && (
+            <p className="text-xs text-[#5C5C5C] mt-0.5">{verifiedNote}</p>
+          )}
+          <p className="text-xs text-[#1A1A1A]/50 mt-1.5">
+            Assigned {formatAssigned(assignment.assigned_on)} · Due {formatDue(assignment.due_at)}
+          </p>
+        </div>
+      </div>
+
+      {isOwner && !closed && (
+        <div
+          onClick={() => !busy && fileRef.current?.click()}
+          onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+          onDragLeave={(e) => { e.preventDefault(); if (!e.currentTarget.contains(e.relatedTarget)) setDrag(false); }}
+          onDrop={(e) => { e.preventDefault(); setDrag(false); handleFiles(Array.from(e.dataTransfer.files || [])); }}
+          className={`mt-4 rounded-xl border-2 border-dashed px-4 py-6 text-center cursor-pointer transition-colors ${
+            drag ? 'border-[#3E9E28] bg-[#3E9E28]/5' : 'border-[#E3E3DF] hover:border-[#3E9E28]/50'
+          }`}
+        >
+          <input ref={fileRef} type="file" multiple className="hidden" disabled={busy}
+            onChange={(e) => handleFiles(Array.from(e.target.files || []))} />
+          {busy ? (
+            <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#0F7B3F]">
+              <span className="w-4 h-4 border-2 border-t-[#3E9E28] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
+              Uploading &amp; scanning…
+            </span>
+          ) : (
+            <>
+              <Upload size={20} className="mx-auto mb-2 text-[#3E9E28]" />
+              <p className="text-sm font-semibold">Drag &amp; drop, paste, or click to add your homework</p>
+              <p className="text-xs text-[#5C5C5C] mt-1">
+                Any file or link works. It's scanned for relevance to the assignment — the circle checks once it's verified.
+              </p>
+            </>
+          )}
+        </div>
+      )}
+
+      {mine.length > 0 && (
+        <ul className="mt-3 space-y-1.5">
+          {mine.map((sub) => (
+            <li key={sub.id} className="flex items-center gap-2 text-sm">
+              <FileText size={15} className="text-[#3E9E28] shrink-0" />
+              <a href={sub.url} target="_blank" rel="noreferrer" className="truncate hover:underline">
+                {sub.file_name || 'Submission'}
+              </a>
+              <ScanChip sub={sub} onScan={onScan} scanning={scanningIds.has(sub.id)} />
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {/* The whole cohort at a glance: one circle per homework, current week bold. */}
+      <div className="mt-5">
+        <label className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-2 block">
+          Homework checklist
+        </label>
+        <div className="flex flex-wrap gap-3">
+          {assignments.map((a) => {
+            const st = verificationState(submissions.filter((s) => s.assignment_id === a.id));
+            const isCurrent = a.id === assignment.id;
+            return (
+              <div key={a.id} className={`flex flex-col items-center gap-1 ${isCurrent ? '' : 'opacity-75'}`}>
+                <ScanCircle state={st} size={26} />
+                <span className={`text-[10px] uppercase tracking-wider ${isCurrent ? 'text-[#0F7B3F] font-bold' : 'text-[#1A1A1A]/40'}`}>
+                  HW{a.number}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── One homework assignment row ─────────────────────────────────────────────
-function AssignmentRow({ assignment, submissions, isOwner, studentSlug, studentId, now, onChanged }) {
+function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCurrent, onSubmitFiles, onScan, scanningIds }) {
   const fileRef = useRef(null);
   const [busy, setBusy] = useState(false);
   const closed = new Date(assignment.due_at).getTime() <= now;
   const mine = submissions.filter((s) => s.assignment_id === assignment.id);
+  const state = verificationState(mine);
 
   const handleUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 25 * 1024 * 1024) { alert('Max file size is 25MB'); return; }
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
     setBusy(true);
-    const ext = file.name.split('.').pop();
-    const path = `public/${studentSlug}/homework/hw${assignment.number}-${Date.now()}.${ext}`;
-    const { error: upErr } = await supabase.storage.from('student-uploads').upload(path, file);
-    if (upErr) { alert('Upload failed: ' + upErr.message); setBusy(false); return; }
-    const { data } = supabase.storage.from('student-uploads').getPublicUrl(path);
-    const { error: insErr } = await supabase.from('student_submissions').insert({
-      student_id: studentId,
-      assignment_id: assignment.id,
-      url: data.publicUrl,
-      file_name: file.name,
-    });
-    if (insErr) alert('Could not record the submission: ' + insErr.message);
+    await onSubmitFiles(assignment, files);
     setBusy(false);
     if (fileRef.current) fileRef.current.value = '';
-    onChanged();
   };
 
   const handleDelete = async (sub) => {
@@ -166,17 +410,27 @@ function AssignmentRow({ assignment, submissions, isOwner, studentSlug, studentI
   };
 
   return (
-    <div className={`border rounded-xl p-4 ${closed ? 'border-[#E3E3DF] bg-[#F4F4F2]/50' : 'border-[#E3E3DF] bg-white'}`}>
+    <div className={`border rounded-xl p-4 ${
+      isCurrent ? 'border-[#3E9E28]/60 bg-white shadow-[0_0_0_3px_rgba(62,158,40,0.08)]'
+        : closed ? 'border-[#E3E3DF] bg-[#F4F4F2]/50' : 'border-[#E3E3DF] bg-white'
+    }`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="flex items-start gap-2.5 min-w-0">
+          <div className="mt-0.5"><ScanCircle state={state} size={22} /></div>
+          <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#3E9E28] rounded-full px-2 py-0.5">
               Week {assignment.week_assigned}
             </span>
             <h3 className="text-base">{assignment.title}</h3>
-            {mine.length > 0 && (
+            {isCurrent && (
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#0F7B3F] bg-[#3E9E28]/10 border border-[#3E9E28]/25 rounded-full px-2 py-0.5">
+                This week
+              </span>
+            )}
+            {state === 'verified' && (
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#0F7B3F]">
-                <CheckCircle2 size={14} /> Submitted
+                <CheckCircle2 size={14} /> Verified
               </span>
             )}
           </div>
@@ -186,12 +440,13 @@ function AssignmentRow({ assignment, submissions, isOwner, studentSlug, studentI
           <p className="text-xs text-[#1A1A1A]/50 mt-1.5">
             Assigned {formatAssigned(assignment.assigned_on)} · Due {formatDue(assignment.due_at)}
           </p>
+          </div>
         </div>
         <div className="flex flex-col items-end gap-2 shrink-0">
           <Countdown dueAt={assignment.due_at} now={now} />
           {isOwner && !closed && (
             <>
-              <input ref={fileRef} type="file" className="hidden" onChange={handleUpload} disabled={busy} />
+              <input ref={fileRef} type="file" multiple className="hidden" onChange={handleUpload} disabled={busy} />
               <button onClick={() => fileRef.current?.click()} disabled={busy} className="btn !py-1.5 !px-3.5 !text-xs">
                 {busy
                   ? <span className="w-3.5 h-3.5 border-2 border-t-[#3E9E28] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
@@ -214,6 +469,7 @@ function AssignmentRow({ assignment, submissions, isOwner, studentSlug, studentI
               <span className="text-xs text-[#1A1A1A]/40 shrink-0">
                 {new Date(sub.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </span>
+              <ScanChip sub={sub} onScan={onScan} scanning={scanningIds.has(sub.id)} />
               {isOwner && !closed && (
                 <button
                   onClick={() => handleDelete(sub)}
@@ -556,6 +812,61 @@ export default function StudentProfile() {
     setSubmissions(data || []);
   };
 
+  // ── Homework: upload → record → server-side relevance scan ────────────────
+  const [scanningIds, setScanningIds] = useState(() => new Set());
+
+  const scanSubmission = async (submissionId) => {
+    setScanningIds((prev) => new Set(prev).add(submissionId));
+    try {
+      await fetch('/api/scan-homework', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ submission_id: submissionId }),
+      });
+    } catch { /* the chip stays on "Scan" for a manual retry */ }
+    setScanningIds((prev) => { const next = new Set(prev); next.delete(submissionId); return next; });
+    loadSubmissions(student.id);
+  };
+
+  const submitHomeworkFiles = async (assignment, files) => {
+    for (const file of files) {
+      if (file.size > 25 * 1024 * 1024) { alert(`${file.name}: max file size is 25MB`); continue; }
+      const ext = file.name.split('.').pop();
+      const path = `public/${student.slug}/homework/hw${assignment.number}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('student-uploads').upload(path, file);
+      if (upErr) { alert(`${file.name}: upload failed — ${upErr.message}`); continue; }
+      const { data } = supabase.storage.from('student-uploads').getPublicUrl(path);
+      const { data: row, error: insErr } = await supabase
+        .from('student_submissions')
+        .insert({ student_id: student.id, assignment_id: assignment.id, url: data.publicUrl, file_name: file.name })
+        .select('id')
+        .single();
+      if (insErr) { alert(`${file.name}: could not record the submission — ${insErr.message}`); continue; }
+      await loadSubmissions(student.id);
+      scanSubmission(row.id);
+    }
+  };
+
+  // Pasted homework: a URL becomes a link submission; anything else is saved
+  // as a text file so there's a verifiable artifact to scan.
+  const submitHomeworkText = async (assignment, text) => {
+    const urlLike = /^https?:\/\/\S+$/i.test(text) || /^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(text);
+    if (urlLike && text.length < 500) {
+      const full = text.startsWith('http') ? text : `https://${text}`;
+      const { data: row, error } = await supabase
+        .from('student_submissions')
+        .insert({ student_id: student.id, assignment_id: assignment.id, url: full, file_name: full.replace(/^https?:\/\//, '') })
+        .select('id')
+        .single();
+      if (error) { alert('Could not record the submission: ' + error.message); return; }
+      await loadSubmissions(student.id);
+      scanSubmission(row.id);
+    } else {
+      const file = new File([text], `hw${assignment.number}-pasted-${Date.now()}.txt`, { type: 'text/plain' });
+      await submitHomeworkFiles(assignment, [file]);
+    }
+  };
+
   const loadMedia = async (studentId) => {
     const { data } = await supabase
       .from('student_media')
@@ -724,6 +1035,16 @@ export default function StudentProfile() {
 
   const links = student.links ? student.links.split(',').map((l) => l.trim()).filter(Boolean) : [];
   const firstName = student.full_name?.split(' ')[0] || 'Student';
+
+  // The week we're on: the open assignment (handed out, not yet due) with the
+  // nearest deadline; before the cohort starts, the first upcoming one; after
+  // it ends, the last one.
+  const openAssignments = assignments.filter((a) => new Date(a.due_at).getTime() > now);
+  const currentAssignment =
+    openAssignments.find((a) => new Date(a.assigned_on + 'T00:00:00-04:00').getTime() <= now)
+    || openAssignments[0]
+    || assignments[assignments.length - 1]
+    || null;
   const images = media.filter((m) => m.kind === 'image');
   const videos = media.filter((m) => m.kind === 'video');
   const mediaLinks = media.filter((m) => m.kind === 'link');
@@ -809,6 +1130,19 @@ export default function StudentProfile() {
 
           </div>
         </div>
+
+        {/* ── This week's homework, highlighted at the top ── */}
+        <ThisWeekPanel
+          assignment={currentAssignment}
+          assignments={assignments}
+          submissions={submissions}
+          isOwner={isOwner}
+          now={now}
+          onSubmitFiles={submitHomeworkFiles}
+          onSubmitText={submitHomeworkText}
+          onScan={scanSubmission}
+          scanningIds={scanningIds}
+        />
 
         {/* ── LinkedIn (first section below the header) ── */}
         {(isOwner || student.linkedin_url) && (
@@ -1075,10 +1409,12 @@ export default function StudentProfile() {
                 assignment={a}
                 submissions={submissions}
                 isOwner={isOwner}
-                studentSlug={student.slug}
-                studentId={student.id}
                 now={now}
                 onChanged={() => loadSubmissions(student.id)}
+                isCurrent={a.id === currentAssignment?.id}
+                onSubmitFiles={submitHomeworkFiles}
+                onScan={scanSubmission}
+                scanningIds={scanningIds}
               />
             ))}
             {assignments.length === 0 && (
