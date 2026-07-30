@@ -85,7 +85,10 @@
   .mark img{height:34px;width:auto;flex:none}
   .nav a.back{color:var(--graphite);text-decoration:none;font-weight:500;font-size:.95rem}
   .nav a.back:hover{color:var(--near)}
-  .nav-right{display:flex;align-items:center;gap:18px}
+  .nav-right{display:flex;align-items:center;gap:22px}
+  .nav a.nav-link{color:var(--graphite);text-decoration:none;font-weight:500;font-size:.95rem}
+  .nav a.nav-link:hover{color:var(--near)}
+  @media(max-width:900px){ .nav a.nav-link{display:none} }
   .nav a.nav-bot{display:inline-flex;align-items:center;gap:6px;color:var(--green-deep);font-weight:600;
     text-decoration:none;border:1px solid var(--green-deep);border-radius:999px;padding:7px 14px;font-size:.9rem}
   .nav a.nav-bot:hover{background:var(--green-deep);color:#fff}
@@ -258,11 +261,15 @@
       <img src="/brand/aimg-mark-256.png" width="256" height="254" alt="">AIMG
     </a>
     <div class="nav-right">
+      <a class="nav-link" href="https://aimakersgeneration.com/#next">What's next</a>
+      <a class="nav-link" href="https://aimakersgeneration.com/#tracks">Three ways in</a>
+      <a class="nav-link" href="https://aimakersgeneration.com/about">Who we are</a>
+      <a class="nav-link" href="https://aimakersgeneration.com/#faq">FAQ</a>
       <a class="nav-bot" href="#" data-aimg-bot title="Ask the AI MAKERS BOT" aria-label="Ask the AI MAKERS BOT">
         <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" fill="#000"/><circle cx="8" cy="10.5" r="1.5" fill="#fff"/><circle cx="12" cy="10.5" r="1.5" fill="#fff"/><circle cx="16" cy="10.5" r="1.5" fill="#fff"/></svg>
         Ask the Bot
       </a>
-      <a class="back" href="https://aimakersgeneration.com/">← Main site</a>
+      <a class="nav-link" href="https://aimakersgeneration.com/community">Makers</a>
     </div>
   </div>
 </nav>
