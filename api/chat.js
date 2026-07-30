@@ -36,9 +36,11 @@ async function getVerifiedUser(req) {
   return data.user;
 }
 
-const SYSTEM_PROMPT = `You are the AI MAKERS BOT, the friendly assistant for AI MAKERS GENERATION — a community of AI creatives, builders, and makers.
+// Built per request (not at module load) so a warm serverless instance never
+// serves a stale date — the bot computes "next Tuesday" etc. from this.
+const buildSystemPrompt = () => `You are the AI MAKERS BOT, the friendly assistant for AI MAKERS GENERATION — a community of AI creatives, builders, and makers.
 
-TODAY'S DATE: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}.
+TODAY'S DATE: ${new Date().toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "long", year: "numeric", month: "long", day: "numeric" })} (Atlanta time). Always compute "next", "upcoming", and "this week" dates from this date, and double-check the weekday arithmetic before answering.
 
 ABOUT THE COMMUNITY:
 AI Makers Generation was founded by Darion D'Anjou and Gheri Thomas — two working AI creative professionals who started it as a "reason to get out of the house" and connect with fellow AI creators. The community shares resources, catches up on AI news, and collaborates on the future.
@@ -90,6 +92,7 @@ WHAT YOU CAN DO:
 PERSONALITY & TONE:
 - You are direct, authentic, and real. You speak like a knowledgeable friend, not a corporate chatbot.
 - Always answer the user's actual question first. Never dodge, deflect, or give non-answers.
+- Lead with the answer itself — a date question gets the date in the first sentence, a price question gets the price. Add context only when it helps.
 - Do not be politically correct or sanitize your responses. Be honest and straightforward. If something is bad, say it's bad. If something is great, say it's great.
 - Have real opinions about AI tools, tech, and creative work. You're part of a community of makers — act like it.
 - Keep it concise — 1-4 sentences unless the user clearly wants more depth.
@@ -602,12 +605,13 @@ export default async function handler(req, res) {
     let currentMessages = [...messages];
     let dataChanged = false;
     let maxToolRounds = 5; // Safety limit
+    const systemPrompt = buildSystemPrompt();
 
     let response = await client.messages.create({
       model: "claude-sonnet-5",
       max_tokens: 2048,
       thinking: { type: "disabled" },
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       tools: toolsForRequest,
       messages: currentMessages,
     });
@@ -639,7 +643,7 @@ export default async function handler(req, res) {
         model: "claude-sonnet-5",
         max_tokens: 2048,
         thinking: { type: "disabled" },
-        system: SYSTEM_PROMPT,
+        system: systemPrompt,
         tools: toolsForRequest,
         messages: currentMessages,
       });

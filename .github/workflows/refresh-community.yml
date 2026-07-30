@@ -1,0 +1,32 @@
+name: Refresh Community (events + resources)
+
+# Keeps the community section actively updated 3x/week (Mon/Wed/Fri):
+#  - /api/refresh-events   → queues up the next Film Bar AI Tuesdays and
+#                            Workshop Wednesday dates on the calendar
+#  - /api/refresh-resources → Claude curates 2-3 fresh AI resources into the wiki
+# News (4x/day) and videos (2x/day) already refresh on their own workflows.
+on:
+  schedule:
+    - cron: "0 12 * * 1,3,5" # 12:00 UTC Mon/Wed/Fri (8am ET)
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Queue up events
+        run: |
+          echo "Refreshing events…"
+          code=$(curl -sS -o /tmp/events.json -w "%{http_code}" -X POST \
+            "https://aimakersgeneration.com/api/refresh-events" \
+            -H "Authorization: Bearer ${{ secrets.NEWS_CRON_SECRET }}")
+          echo "HTTP $code"; cat /tmp/events.json; echo
+          test "$code" = "200"
+      - name: Curate fresh resources
+        run: |
+          echo "Refreshing resources…"
+          code=$(curl -sS -o /tmp/resources.json -w "%{http_code}" -X POST \
+            "https://aimakersgeneration.com/api/refresh-resources" \
+            -H "Authorization: Bearer ${{ secrets.NEWS_CRON_SECRET }}")
+          echo "HTTP $code"; cat /tmp/resources.json; echo
+          test "$code" = "200"
