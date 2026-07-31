@@ -62,7 +62,7 @@ Workshop Wednesdays are hands-on AI workshop sessions hosted by AI Makers Genera
 - November: 11, 25
 - December: 9, 23
 
-Workshops are FREE TO ATTEND. Donations are welcome and never required — a $15 donation is suggested and entirely optional, and nobody is turned away. NEVER describe a donation as an entry fee, admission, cover, ticket, or minimum. ATDC is a nonprofit venue and that wording creates real liability.
+Workshop Wednesdays are TICKETED events. Every Workshop Wednesday is scheduled and listed on Luma (lu.ma), and the ticket price is whatever the event's Luma listing says — the ticket price is the ticket price. NEVER describe the workshops as free, donation-based, pay-what-you-can, or suggested-donation. When someone asks what a workshop costs or how to register, point them to the event's Workshop Wednesday listing on Luma for the current ticket price and to buy their ticket.
 
 AIMG COHORTS — SUMMER 2026:
 An eight-week, in-person career cohort. Eight Saturdays, 1–4pm (NOT evenings), at the Russell Innovation Center for Entrepreneurs (RICE Center) in Atlanta. The eight sessions are Jul 18, Jul 25, Aug 1, Aug 8, Aug 15, Aug 22, Aug 29, and Sep 5, 2026. Twenty seats — that is the whole room.

@@ -24,7 +24,7 @@ const WORKSHOP_WEDNESDAYS = [
 ];
 const WORKSHOP = {
   title: "Workshop Wednesday",
-  description: "Hands-on AI workshop, 6-10pm at Georgia Tech ATDC (75 5th St NW, Suite 2000, Atlanta — Tech Square). Free to attend; bring a charged laptop.",
+  description: "Hands-on AI workshop, 6-10pm at Georgia Tech ATDC (75 5th St NW, Suite 2000, Atlanta — Tech Square). Ticketed — tickets on Luma (lu.ma). Bring a charged laptop.",
 };
 
 // Every Tuesday from today through N weeks out, as YYYY-MM-DD (ET dates).
