@@ -13,6 +13,10 @@ import { supabase } from '../supabaseClient';
 
 const TICK_MS = 250;
 
+// Same monthly AI-terms list the Quiz Builder draws topics from; used here as
+// a glossary so review-page tooltips can explain terms like "VLOP".
+const TERMS_URL = '/data/ai-terms-july-2026.json';
+
 // Floating tooltip for post-quiz review: hover (desktop) or tap (mobile) any
 // answer option to see why it's right or wrong.
 function OptionTip({ note, children }) {
@@ -36,6 +40,66 @@ function OptionTip({ note, children }) {
       )}
     </div>
   );
+}
+
+// Inline glossary tooltip: dotted-underlined term that reveals its definition
+// on hover (desktop) or tap (mobile). Used across the post-quiz review.
+function TermTip({ entry, children }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
+    >
+      <span className="underline decoration-dotted decoration-[#3E9E28] underline-offset-2 cursor-help">{children}</span>
+      {open && (
+        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-40 w-64 max-w-[80vw] pointer-events-none">
+          <span className="block bg-[#1A1A1A] text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-lg text-left normal-case font-normal tracking-normal whitespace-normal">
+            <span className="block font-bold text-[#8FD97B]">
+              {entry.term}
+              {entry.type && <span className="uppercase tracking-wider text-[9px] text-white/50 ml-1.5">{entry.type}</span>}
+            </span>
+            {entry.description}
+          </span>
+          <span className="block w-2.5 h-2.5 bg-[#1A1A1A] rotate-45 mx-auto -mt-1.5" />
+        </span>
+      )}
+    </span>
+  );
+}
+
+// Build a matcher over the glossary: longest terms first so "Claude Opus 5"
+// wins over "Claude". All-caps acronyms (VLOP, AGI…) must match case exactly
+// so ordinary words never trigger them; everything else is case-insensitive.
+function buildGlossary(terms) {
+  if (!terms?.length) return null;
+  const byKey = new Map(terms.map((t) => [t.term.toLowerCase(), t]));
+  const pattern = terms
+    .map((t) => t.term)
+    .sort((a, b) => b.length - a.length)
+    .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|');
+  return { byKey, regex: new RegExp(`(?<!\\w)(?:${pattern})(?!\\w)`, 'gi') };
+}
+
+// Turn plain text into text + TermTip spans for every glossary term found.
+function renderWithTerms(text, glossary) {
+  if (!glossary || !text) return text;
+  const out = [];
+  let last = 0;
+  for (const m of text.matchAll(glossary.regex)) {
+    const entry = glossary.byKey.get(m[0].toLowerCase());
+    if (!entry) continue;
+    if (entry.term === entry.term.toUpperCase() && m[0] !== entry.term) continue;
+    if (m.index > last) out.push(text.slice(last, m.index));
+    out.push(<TermTip key={m.index} entry={entry}>{m[0]}</TermTip>);
+    last = m.index + m[0].length;
+  }
+  if (!out.length) return text;
+  if (last < text.length) out.push(text.slice(last));
+  return out;
 }
 
 function TimerBar({ remaining, limit, label }) {
@@ -63,6 +127,7 @@ export default function QuizTake() {
 
   const [quiz, setQuiz] = useState(null);
   const [students, setStudents] = useState([]);
+  const [terms, setTerms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [phase, setPhase] = useState('start'); // start | taking | done
   const [nameChoice, setNameChoice] = useState('');   // roster name or '__other__'
@@ -98,7 +163,11 @@ export default function QuizTake() {
       setStudents(roster || []);
       setLoading(false);
     })();
+    fetch(TERMS_URL).then((r) => r.json()).then((j) => setTerms(j.terms || [])).catch(() => {});
   }, [id]);
+
+  const glossary = useMemo(() => buildGlossary(terms), [terms]);
+  const withTerms = (text) => renderWithTerms(text, glossary);
 
   const p = quiz?.params || {};
   const total = quiz?.questions?.length || 0;
@@ -401,6 +470,7 @@ export default function QuizTake() {
 
             <p className="text-xs text-[#5C5C5C] text-center mb-3">
               Hover or tap any answer choice to see why it's right — or why it's wrong.
+              <span className="underline decoration-dotted decoration-[#3E9E28] underline-offset-2"> Dotted terms</span> show a quick definition.
             </p>
             <div className="space-y-3">
               {quiz.questions.map((qq, i) => {
@@ -415,8 +485,8 @@ export default function QuizTake() {
                         : <X size={16} className="text-red-500 mt-1 shrink-0" />}
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold text-sm">
-                          Q{i + 1}. {qq.question}
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#1A1A1A]/35 ml-2">{qq.topic}</span>
+                          Q{i + 1}. {withTerms(qq.question)}
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#1A1A1A]/35 ml-2">{withTerms(qq.topic)}</span>
                         </p>
                         {picked === null && <p className="text-xs text-red-600 font-semibold mt-1">No answer given.</p>}
 
@@ -453,7 +523,7 @@ export default function QuizTake() {
                         {qq.explanation && (
                           <p className="text-xs text-[#5C5C5C] mt-2.5 bg-[#F4F4F2] border border-[#E3E3DF] rounded-lg px-3 py-2">
                             <span className="font-bold text-[#0F7B3F] uppercase tracking-wider text-[10px] mr-1.5">Why</span>
-                            {qq.explanation}
+                            {withTerms(qq.explanation)}
                           </p>
                         )}
                         <p className="text-[10px] text-[#1A1A1A]/35 mt-1.5">{Math.round((a?.seconds || 0))}s on this question</p>
