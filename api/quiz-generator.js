@@ -30,8 +30,13 @@ const QUIZ_SCHEMA = {
           correct: { type: "integer", description: "Index (0-3) of the correct option" },
           topic: { type: "string", description: "Which selected topic this question covers" },
           explanation: { type: "string", description: "1-2 sentence explanation of the correct answer, shown after the quiz" },
+          option_notes: {
+            type: "array",
+            items: { type: "string" },
+            description: "Exactly 4 short notes, one per option in order: for the correct option why it's right; for each wrong option why it's wrong (and what it actually refers to, when interesting). Max ~25 words each.",
+          },
         },
-        required: ["question", "options", "correct", "topic", "explanation"],
+        required: ["question", "options", "correct", "topic", "explanation", "option_notes"],
         additionalProperties: false,
       },
     },
@@ -48,7 +53,8 @@ Rules:
 - Vary which position holds the correct answer roughly evenly across the quiz.
 - Mix difficulty: ~1/3 easy recall, ~1/3 applied understanding, ~1/3 tricky distinctions.
 - Keep questions punchy (under 40 words) and conversational, matching a live cohort vibe.
-- Spread questions across the selected topics as evenly as the count allows; it's fine for a question to connect two topics.`;
+- Spread questions across the selected topics as evenly as the count allows; it's fine for a question to connect two topics.
+- For every option write a short option_note: the correct one gets why it's right; each wrong one gets why it's wrong — ideally teaching what that distractor actually refers to. These appear as tooltips during post-quiz review, so make them genuinely informative.`;
 
 function validateQuestions(qs, count) {
   if (!Array.isArray(qs)) throw new Error("Model returned no questions array");
@@ -61,6 +67,9 @@ function validateQuestions(qs, count) {
       correct: q.correct,
       topic: String(q.topic || ""),
       explanation: String(q.explanation || ""),
+      option_notes: Array.isArray(q.option_notes) && q.option_notes.length === 4
+        ? q.option_notes.map(String)
+        : ["", "", "", ""],
     }));
   if (cleaned.length < count) throw new Error(`Model returned ${cleaned.length} valid questions, needed ${count}`);
   return cleaned.slice(0, count);

@@ -13,6 +13,31 @@ import { supabase } from '../supabaseClient';
 
 const TICK_MS = 250;
 
+// Floating tooltip for post-quiz review: hover (desktop) or tap (mobile) any
+// answer option to see why it's right or wrong.
+function OptionTip({ note, children }) {
+  const [open, setOpen] = useState(false);
+  if (!note) return children;
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onClick={() => setOpen((o) => !o)}
+    >
+      {children}
+      {open && (
+        <div className="absolute bottom-full left-3 right-3 mb-1.5 z-30 pointer-events-none">
+          <div className="bg-[#1A1A1A] text-white text-xs leading-relaxed rounded-lg px-3 py-2 shadow-lg">
+            {note}
+          </div>
+          <div className="w-2.5 h-2.5 bg-[#1A1A1A] rotate-45 ml-5 -mt-1.5" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TimerBar({ remaining, limit, label }) {
   const pct = Math.max(0, Math.min(100, (remaining / limit) * 100));
   const urgent = remaining <= Math.min(10, limit * 0.2);
@@ -288,26 +313,64 @@ export default function QuizTake() {
               </div>
             </div>
 
+            <p className="text-xs text-[#5C5C5C] text-center mb-3">
+              Hover or tap any answer choice to see why it's right — or why it's wrong.
+            </p>
             <div className="space-y-3">
               {quiz.questions.map((qq, i) => {
                 const a = answers[i];
-                const right = a?.selected === qq.correct;
+                const picked = a?.selected;
+                const right = picked === qq.correct;
                 return (
                   <div key={i} className={`border rounded-xl p-4 bg-white ${right ? 'border-[#3E9E28]/40' : 'border-red-200'}`}>
                     <div className="flex items-start gap-2">
                       {right
                         ? <Check size={16} className="text-[#0F7B3F] mt-1 shrink-0" />
                         : <X size={16} className="text-red-500 mt-1 shrink-0" />}
-                      <div className="min-w-0">
-                        <p className="font-semibold text-sm">Q{i + 1}. {qq.question}</p>
-                        <p className="text-xs mt-1.5">
-                          <span className={right ? 'text-[#0F7B3F] font-semibold' : 'text-red-600'}>
-                            Your answer: {a?.selected !== null && a?.selected !== undefined ? qq.options[a.selected] : '— (no answer)'}
-                          </span>
-                          {!right && <span className="text-[#0F7B3F] font-semibold block">Correct: {qq.options[qq.correct]}</span>}
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-sm">
+                          Q{i + 1}. {qq.question}
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#1A1A1A]/35 ml-2">{qq.topic}</span>
                         </p>
-                        {qq.explanation && <p className="text-xs text-[#5C5C5C] mt-1.5 italic">{qq.explanation}</p>}
-                        <p className="text-[10px] text-[#1A1A1A]/35 mt-1">{Math.round((a?.seconds || 0))}s on this question</p>
+                        {picked === null && <p className="text-xs text-red-600 font-semibold mt-1">No answer given.</p>}
+
+                        <div className="mt-2.5 space-y-1.5">
+                          {qq.options.map((opt, oi) => {
+                            const isCorrect = oi === qq.correct;
+                            const isPicked = oi === picked;
+                            return (
+                              <OptionTip key={oi} note={qq.option_notes?.[oi]}>
+                                <div className={`text-sm px-3 py-2 rounded-lg border flex items-start gap-2 cursor-help ${
+                                  isCorrect
+                                    ? 'border-[#3E9E28] bg-[#3E9E28]/10 text-[#0F7B3F] font-semibold'
+                                    : isPicked
+                                      ? 'border-red-300 bg-red-50 text-red-700'
+                                      : 'border-[#E3E3DF] text-[#5C5C5C]'
+                                }`}>
+                                  {isCorrect
+                                    ? <Check size={14} className="mt-0.5 shrink-0" />
+                                    : isPicked
+                                      ? <X size={14} className="mt-0.5 shrink-0" />
+                                      : <span className="w-3.5 shrink-0" />}
+                                  <span className="min-w-0">
+                                    <span className="font-bold mr-1.5 opacity-50">{String.fromCharCode(65 + oi)}.</span>
+                                    {opt}
+                                    {isPicked && !isCorrect && <span className="text-[10px] font-bold uppercase tracking-wider ml-2">your pick</span>}
+                                    {isPicked && isCorrect && <span className="text-[10px] font-bold uppercase tracking-wider ml-2">your pick ✓</span>}
+                                  </span>
+                                </div>
+                              </OptionTip>
+                            );
+                          })}
+                        </div>
+
+                        {qq.explanation && (
+                          <p className="text-xs text-[#5C5C5C] mt-2.5 bg-[#F4F4F2] border border-[#E3E3DF] rounded-lg px-3 py-2">
+                            <span className="font-bold text-[#0F7B3F] uppercase tracking-wider text-[10px] mr-1.5">Why</span>
+                            {qq.explanation}
+                          </p>
+                        )}
+                        <p className="text-[10px] text-[#1A1A1A]/35 mt-1.5">{Math.round((a?.seconds || 0))}s on this question</p>
                       </div>
                     </div>
                   </div>

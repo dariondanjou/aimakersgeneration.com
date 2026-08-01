@@ -234,7 +234,8 @@ export default function QuizBuilder() {
                     </div>
                     <ul className="mt-3 space-y-1">
                       {q.options.map((opt, oi) => (
-                        <li key={oi} className={`text-sm px-3 py-1.5 rounded-lg flex items-center gap-2 ${oi === q.correct ? 'bg-[#3E9E28]/10 text-[#0F7B3F] font-semibold' : 'text-[#5C5C5C]'}`}>
+                        <li key={oi} title={q.option_notes?.[oi] || undefined}
+                          className={`text-sm px-3 py-1.5 rounded-lg flex items-center gap-2 ${oi === q.correct ? 'bg-[#3E9E28]/10 text-[#0F7B3F] font-semibold' : 'text-[#5C5C5C]'} ${q.option_notes?.[oi] ? 'cursor-help' : ''}`}>
                           {oi === q.correct ? <Check size={14} className="shrink-0" /> : <span className="w-3.5 shrink-0" />}
                           {opt}
                         </li>
