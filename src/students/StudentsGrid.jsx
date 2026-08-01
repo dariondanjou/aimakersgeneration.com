@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { GraduationCap, BookOpen, Target, Backpack, ChevronDown, ListChecks, Sparkles } from 'lucide-react';
+import { GraduationCap, BookOpen, Target, Backpack, ChevronDown, ListChecks, Sparkles, Activity, Check, PartyPopper } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 const fmtDate = (d) => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
@@ -152,6 +152,158 @@ function QuizzesSection() {
   );
 }
 
+// ── Live quiz session dashboard ─────────────────────────────────────────────
+// Polls quiz_progress every few seconds so the instructor can watch a quiz
+// session unfold: who is still busy (and on which question), who has finished
+// (with their score), and who hasn't started. Activity older than the session
+// window is ignored, so the dashboard goes quiet between sessions.
+const SESSION_WINDOW_MS = 3 * 60 * 60 * 1000;
+const POLL_MS = 5000;
+
+function timeAgo(iso, now) {
+  const s = Math.max(0, Math.round((now - new Date(iso).getTime()) / 1000));
+  if (s < 60) return `${s}s ago`;
+  const m = Math.round(s / 60);
+  if (m < 60) return `${m}m ago`;
+  return `${Math.round(m / 60)}h ago`;
+}
+
+function QuizLiveDashboard({ students }) {
+  const [rows, setRows] = useState([]);
+  const [quiz, setQuiz] = useState(null);
+  const [now, setNow] = useState(() => Date.now());
+  const quizRef = useRef(null);
+
+  useEffect(() => {
+    let alive = true;
+    const poll = async () => {
+      if (document.hidden) return;
+      const since = new Date(Date.now() - SESSION_WINDOW_MS).toISOString();
+      const { data } = await supabase
+        .from('quiz_progress')
+        .select('quiz_id, student_name, status, current_question, answered, total, score, started_at, updated_at')
+        .gte('updated_at', since)
+        .order('updated_at', { ascending: false });
+      if (!alive) return;
+      const all = data || [];
+      // The active session = the quiz with the most recent activity.
+      const quizId = all[0]?.quiz_id || null;
+      setRows(all.filter((r) => r.quiz_id === quizId));
+      setNow(Date.now());
+      if (!quizId) {
+        quizRef.current = null;
+        setQuiz(null);
+      } else if (quizRef.current?.id !== quizId) {
+        const { data: q } = await supabase
+          .from('quizzes').select('id, quiz_number, title').eq('id', quizId).maybeSingle();
+        if (!alive) return;
+        quizRef.current = q;
+        setQuiz(q);
+      }
+    };
+    poll();
+    const t = setInterval(poll, POLL_MS);
+    return () => { alive = false; clearInterval(t); };
+  }, []);
+
+  const taking = rows.filter((r) => r.status === 'taking').sort((a, b) => a.student_name.localeCompare(b.student_name));
+  const done = rows.filter((r) => r.status === 'completed')
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0) || a.student_name.localeCompare(b.student_name));
+  const activeNames = new Set(rows.map((r) => r.student_name));
+  const notStarted = (students || []).map((s) => s.full_name).filter((n) => !activeNames.has(n));
+
+  return (
+    <div className="max-w-3xl mx-auto w-full pb-16">
+      <div className="text-center mb-6">
+        <p className="text-xs uppercase tracking-[0.18em] font-semibold text-[#3E9E28] mb-2 flex items-center justify-center gap-2">
+          <Activity size={16} /> Live Quiz Session
+        </p>
+        {rows.length > 0 && quiz && (
+          <p className="text-sm text-[#5C5C5C]">
+            Quiz #{quiz.quiz_number} — {quiz.title} · {taking.length} in progress · {done.length} completed
+            {notStarted.length > 0 && ` · ${notStarted.length} not started`}
+          </p>
+        )}
+      </div>
+
+      {rows.length === 0 ? (
+        <p className="text-center text-sm text-[#1A1A1A]/40 italic">
+          No active quiz session right now — this dashboard lights up while a quiz is being taken.
+        </p>
+      ) : (
+        <div className="space-y-4">
+          {taking.length === 0 && (
+            <div className="rounded-xl border border-[#3E9E28]/40 bg-[#3E9E28]/10 text-[#0F7B3F] text-sm font-semibold px-4 py-3 flex items-center gap-2">
+              <PartyPopper size={16} className="shrink-0" />
+              {notStarted.length === 0
+                ? 'Everyone has finished the quiz!'
+                : `No one is mid-quiz — all ${done.length} active student${done.length === 1 ? '' : 's'} have finished.`}
+            </div>
+          )}
+
+          {taking.length > 0 && (
+            <div className="glass-panel">
+              <h3 className="text-sm uppercase tracking-wider mb-3 flex items-center gap-2">
+                <span className="relative flex w-2.5 h-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#3E9E28] opacity-60" />
+                  <span className="relative inline-flex rounded-full w-2.5 h-2.5 bg-[#3E9E28]" />
+                </span>
+                Still busy ({taking.length})
+              </h3>
+              <div className="space-y-3">
+                {taking.map((r) => {
+                  const idleMs = now - new Date(r.updated_at).getTime();
+                  return (
+                    <div key={r.student_name}>
+                      <div className="flex items-baseline justify-between gap-3 text-sm">
+                        <span className="font-semibold truncate">{r.student_name}</span>
+                        <span className="text-xs text-[#5C5C5C] tabular-nums shrink-0">
+                          Q{Math.min(r.current_question + 1, r.total)} of {r.total} · {r.answered} answered ·{' '}
+                          <span className={idleMs > 120000 ? 'text-amber-600 font-semibold' : ''}>{timeAgo(r.updated_at, now)}</span>
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-[#1A1A1A]/10 overflow-hidden mt-1">
+                        <div className="h-full rounded-full bg-[#3E9E28] transition-[width] duration-500"
+                          style={{ width: `${Math.min(100, ((r.current_question + 1) / Math.max(1, r.total)) * 100)}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {done.length > 0 && (
+            <div className="glass-panel">
+              <h3 className="text-sm uppercase tracking-wider mb-3 flex items-center gap-2">
+                <Check size={15} className="text-[#0F7B3F]" /> Completed ({done.length})
+              </h3>
+              <div className="space-y-2">
+                {done.map((r) => (
+                  <div key={r.student_name} className="flex items-baseline justify-between gap-3 text-sm">
+                    <span className="font-semibold truncate">{r.student_name}</span>
+                    <span className="text-xs text-[#5C5C5C] tabular-nums shrink-0">
+                      <span className="font-bold text-[#0F7B3F]">{r.score}/{r.total}</span>
+                      {' '}· {Math.round(((r.score ?? 0) / Math.max(1, r.total)) * 100)}% · finished {timeAgo(r.updated_at, now)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {notStarted.length > 0 && (
+            <p className="text-xs text-[#5C5C5C] text-center">
+              <span className="font-semibold uppercase tracking-wider text-[10px] text-[#1A1A1A]/40 mr-1.5">Not started</span>
+              {notStarted.join(' · ')}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function StudentsGrid() {
   const [students, setStudents] = useState(null);
 
@@ -219,6 +371,8 @@ export default function StudentsGrid() {
         <CurriculumSection />
 
         <QuizzesSection />
+
+        <QuizLiveDashboard students={students} />
       </div>
     </div>
   );

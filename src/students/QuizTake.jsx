@@ -169,6 +169,23 @@ export default function QuizTake() {
   const glossary = useMemo(() => buildGlossary(terms), [terms]);
   const withTerms = (text) => renderWithTerms(text, glossary);
 
+  // Live session reporting: upsert this student's row in quiz_progress so the
+  // dashboard at the bottom of /students shows who's busy, on which question,
+  // and who has finished. Fire-and-forget — never blocks the quiz.
+  const reportProgress = (fields) => {
+    if (!studentName) return;
+    supabase.from('quiz_progress').upsert({
+      quiz_id: id,
+      student_name: studentName,
+      student_id: students.find((s) => s.full_name === studentName)?.id || null,
+      total,
+      updated_at: new Date().toISOString(),
+      ...fields,
+    }, { onConflict: 'quiz_id,student_name' }).then(({ error }) => {
+      if (error) console.error('Could not report progress:', error.message);
+    });
+  };
+
   const p = quiz?.params || {};
   const total = quiz?.questions?.length || 0;
   const perQ = p.time_per_question || 60;
@@ -182,6 +199,7 @@ export default function QuizTake() {
     setRemaining(freeNav ? totalTime : perQ);
     startedAt.current = Date.now();
     finishing.current = false;
+    reportProgress({ status: 'taking', current_question: 0, answered: 0, score: null, started_at: new Date().toISOString() });
     setPhase('taking');
     window.scrollTo(0, 0);
   };
@@ -220,6 +238,10 @@ export default function QuizTake() {
       setLocalResult({
         student_name: studentName, score, total, timed_out: didTimeOut,
         created_at: new Date().toISOString(), answers: finalAnswers,
+      });
+      reportProgress({
+        status: 'completed', current_question: total, score,
+        answered: finalAnswers.filter((a) => a.selected !== null).length,
       });
       supabase.from('quiz_attempts').insert(payload).then(({ error }) => {
         if (error) console.error('Could not save the attempt:', error.message);
@@ -293,6 +315,14 @@ export default function QuizTake() {
   };
 
   const answeredCount = useMemo(() => answers.filter((a) => a.selected !== null).length, [answers]);
+
+  // Keep the live dashboard current: an upsert whenever the student answers a
+  // question or moves to another one (not on timer ticks).
+  useEffect(() => {
+    if (phase !== 'taking' || finishing.current) return;
+    reportProgress({ status: 'taking', current_question: current, answered: answeredCount });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, current, answeredCount]);
 
   if (loading) {
     return <div className="flex-1 flex items-center justify-center">
