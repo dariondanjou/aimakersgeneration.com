@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import StudentsGrid from './StudentsGrid.jsx';
 import StudentProfile from './StudentProfile.jsx';
+import QuizBuilder from './QuizBuilder.jsx';
+import QuizTake from './QuizTake.jsx';
 
 // Public student showcase, served at /students (see vercel.json + vite.config).
 // Deliberately auth-free: anyone who visits can browse AND edit profiles —
@@ -36,6 +38,8 @@ export default function StudentsApp() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<StudentsGrid />} />
+            <Route path="/quiz-builder" element={<QuizBuilder />} />
+            <Route path="/quiz/:id" element={<QuizTake />} />
             <Route path="/:slug" element={<StudentProfile />} />
           </Routes>
         </main>

@@ -3,7 +3,8 @@
   "functions": {
     "api/decks.js": { "maxDuration": 300 },
     "api/scan-homework.js": { "maxDuration": 120 },
-    "api/refresh-resources.js": { "maxDuration": 300 }
+    "api/refresh-resources.js": { "maxDuration": 300 },
+    "api/quiz-generator.js": { "maxDuration": 300 }
   },
   "redirects": [
     {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { GraduationCap, BookOpen, Target, Backpack, ChevronDown } from 'lucide-react';
+import { GraduationCap, BookOpen, Target, Backpack, ChevronDown, ListChecks, Sparkles } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 const fmtDate = (d) => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
@@ -94,6 +94,64 @@ function CurriculumSection() {
   );
 }
 
+// ── Published quizzes, listed at the bottom of the page ─────────────────────
+function QuizzesSection() {
+  const [quizzes, setQuizzes] = useState([]);
+
+  useEffect(() => {
+    supabase
+      .from('quizzes')
+      .select('id, quiz_number, title, params, questions, published_at')
+      .eq('status', 'published')
+      .order('quiz_number', { ascending: true })
+      .then(({ data }) => setQuizzes(data || []));
+  }, []);
+
+  return (
+    <div className="max-w-3xl mx-auto w-full pb-16">
+      <div className="text-center mb-6">
+        <p className="text-xs uppercase tracking-[0.18em] font-semibold text-[#3E9E28] mb-2 flex items-center justify-center gap-2">
+          <ListChecks size={16} /> Quizzes
+        </p>
+        <p className="text-sm text-[#5C5C5C]">Test yourself on the AI topics of the moment. Pick your name, and your scores are saved.</p>
+      </div>
+      {quizzes.length === 0 ? (
+        <p className="text-center text-sm text-[#1A1A1A]/40 italic">No quizzes published yet.</p>
+      ) : (
+        <div className="space-y-3">
+          {quizzes.map((qz) => {
+            const p = qz.params || {};
+            const n = (qz.questions || []).length;
+            return (
+              <Link key={qz.id} to={`/quiz/${qz.id}`}
+                className="glass-panel !p-5 flex items-center justify-between gap-4 hover:border-[#3E9E28]/50 hover:-translate-y-0.5 transition-all">
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#0F7B3F] rounded-full px-2.5 py-0.5">
+                    Quiz #{qz.quiz_number}
+                  </span>
+                  <h3 className="text-base mt-1.5 truncate">{qz.title}</h3>
+                  <p className="text-xs text-[#5C5C5C] mt-0.5">
+                    {n} questions · {p.timed
+                      ? (p.allow_back ? `${Math.round((p.time_per_question * n) / 60)} min total` : `${p.time_per_question}s per question`)
+                      : 'untimed'}
+                    {p.allow_back ? ' · free navigation' : ''}
+                  </p>
+                </div>
+                <span className="btn !py-2 !px-4 !text-sm shrink-0">Take the quiz →</span>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+      <p className="text-center mt-6">
+        <Link to="/quiz-builder" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1A1A1A]/40 hover:text-[#3E9E28] transition-colors">
+          <Sparkles size={13} /> Build a new quiz
+        </Link>
+      </p>
+    </div>
+  );
+}
+
 export default function StudentsGrid() {
   const [students, setStudents] = useState(null);
 
@@ -159,6 +217,8 @@ export default function StudentsGrid() {
         )}
 
         <CurriculumSection />
+
+        <QuizzesSection />
       </div>
     </div>
   );
