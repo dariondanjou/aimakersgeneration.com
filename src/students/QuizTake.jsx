@@ -65,14 +65,28 @@ export default function QuizTake() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [phase, setPhase] = useState('start'); // start | taking | done
-  const [studentName, setStudentName] = useState('');
+  const [nameChoice, setNameChoice] = useState('');   // roster name or '__other__'
+  const [otherName, setOtherName] = useState('');     // typed name when Other
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState([]);   // [{selected, seconds}]
   const [remaining, setRemaining] = useState(0); // seconds left (question or total)
-  const [timedOut, setTimedOut] = useState(false);
-  const [result, setResult] = useState(null);
+  const [localResult, setLocalResult] = useState(null); // the attempt just taken
+  const [attempts, setAttempts] = useState([]);  // everyone's saved attempts
+  const [viewedId, setViewedId] = useState('local'); // 'local' | attempt row id
   const startedAt = useRef(null);
   const finishing = useRef(false);
+
+  const studentName = nameChoice === '__other__' ? otherName.trim() : nameChoice;
+
+  const loadAttempts = async () => {
+    const { data } = await supabase
+      .from('quiz_attempts')
+      .select('id, student_name, score, total, answers, timed_out, created_at')
+      .eq('quiz_id', id)
+      .order('created_at', { ascending: false });
+    setAttempts(data || []);
+    return data || [];
+  };
 
   useEffect(() => {
     (async () => {
@@ -96,7 +110,6 @@ export default function QuizTake() {
   const begin = () => {
     setAnswers(Array.from({ length: total }, () => ({ selected: null, seconds: 0 })));
     setCurrent(0);
-    setTimedOut(false);
     setRemaining(freeNav ? totalTime : perQ);
     startedAt.current = Date.now();
     finishing.current = false;
@@ -104,11 +117,20 @@ export default function QuizTake() {
     window.scrollTo(0, 0);
   };
 
+  // Jump straight to the results browser without taking the quiz.
+  const browseResults = async () => {
+    const rows = await loadAttempts();
+    setLocalResult(null);
+    setViewedId(rows[0]?.id || 'none');
+    setPhase('done');
+    window.scrollTo(0, 0);
+  };
+
   const finish = (didTimeOut) => {
     if (finishing.current) return;
     finishing.current = true;
     setPhase('done');
-    setTimedOut(didTimeOut);
+    setViewedId('local');
     setAnswers((finalAnswers) => {
       const score = finalAnswers.reduce((n, a, i) => n + (a.selected === quiz.questions[i].correct ? 1 : 0), 0);
       const payload = {
@@ -126,14 +148,36 @@ export default function QuizTake() {
         duration_seconds: Math.round((Date.now() - startedAt.current) / 100) / 10,
         timed_out: didTimeOut,
       };
-      setResult({ score, total });
+      setLocalResult({
+        student_name: studentName, score, total, timed_out: didTimeOut,
+        created_at: new Date().toISOString(), answers: finalAnswers,
+      });
       supabase.from('quiz_attempts').insert(payload).then(({ error }) => {
         if (error) console.error('Could not save the attempt:', error.message);
+        loadAttempts();
       });
       return finalAnswers;
     });
     window.scrollTo(0, 0);
   };
+
+  // Whichever attempt the results browser is showing, normalized to one shape.
+  const viewed = (() => {
+    if (viewedId === 'local' && localResult) return localResult;
+    const row = attempts.find((a) => a.id === viewedId);
+    if (!row || !quiz) return null;
+    return {
+      student_name: row.student_name,
+      score: row.score,
+      total: row.total,
+      timed_out: row.timed_out,
+      created_at: row.created_at,
+      answers: quiz.questions.map((_, i) => {
+        const a = (row.answers || []).find((x) => x.q === i);
+        return { selected: a?.selected ?? null, seconds: a?.seconds || 0 };
+      }),
+    };
+  })();
 
   // The clock: accumulates time on the visible question and drives countdowns.
   useEffect(() => {
@@ -219,13 +263,25 @@ export default function QuizTake() {
               Results are saved under your name — you can retake it any time.
             </p>
             <label className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/50 mb-1 block">Who's taking the quiz?</label>
-            <select value={studentName} onChange={(e) => setStudentName(e.target.value)}
-              className="w-full bg-[#F4F4F2] border border-[#E3E3DF] rounded-lg px-3 py-2.5 text-sm mb-4 focus:outline-none focus:border-[#3E9E28]">
+            <select value={nameChoice} onChange={(e) => setNameChoice(e.target.value)}
+              className="w-full bg-[#F4F4F2] border border-[#E3E3DF] rounded-lg px-3 py-2.5 text-sm mb-3 focus:outline-none focus:border-[#3E9E28]">
               <option value="">Select your name…</option>
               {students.map((s) => <option key={s.id} value={s.full_name}>{s.full_name}</option>)}
+              <option value="__other__">Other — type your name…</option>
             </select>
+            {nameChoice === '__other__' && (
+              <input
+                type="text" value={otherName} autoFocus
+                onChange={(e) => setOtherName(e.target.value)}
+                placeholder="Type your name (e.g. Darion, Gheri)"
+                className="w-full bg-[#F4F4F2] border border-[#3E9E28]/50 rounded-lg px-3 py-2.5 text-sm mb-3 focus:outline-none focus:border-[#3E9E28]"
+              />
+            )}
             <button onClick={begin} disabled={!studentName} className="btn btn-primary w-full justify-center !py-3.5 disabled:opacity-50">
               Start the Quiz
+            </button>
+            <button onClick={browseResults} className="w-full text-center text-xs font-semibold text-[#1A1A1A]/40 hover:text-[#3E9E28] transition-colors mt-3">
+              Browse past results →
             </button>
           </div>
         )}
@@ -295,20 +351,50 @@ export default function QuizTake() {
         )}
 
         {/* ── RESULTS ── */}
-        {phase === 'done' && result && (
+        {phase === 'done' && (
           <>
+            {/* Results browser: anyone can flip through every saved attempt. */}
+            {(attempts.length > 0 || localResult) && (
+              <div className="mb-4">
+                <label className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/50 mb-1 block">Viewing results for</label>
+                <select
+                  value={viewedId}
+                  onChange={(e) => setViewedId(e.target.value)}
+                  className="w-full bg-white border border-[#E3E3DF] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#3E9E28]"
+                >
+                  {localResult && <option value="local">{localResult.student_name} — just now ({localResult.score}/{localResult.total})</option>}
+                  {attempts.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.student_name} — {new Date(a.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })} ({a.score}/{a.total})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {!viewed && (
+              <div className="glass-panel text-center py-10">
+                <p className="text-sm text-[#5C5C5C]">Nobody has taken this quiz yet.</p>
+                <button onClick={() => setPhase('start')} className="btn btn-primary mt-4 !py-2 !px-5 !text-sm">Be the first</button>
+              </div>
+            )}
+
+            {viewed && (
+            <>
             <div className="glass-panel text-center mb-6">
               <Trophy size={30} className="mx-auto text-[#3E9E28] mb-2" />
               <p className="text-4xl font-extrabold tabular-nums" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                {result.score}<span className="text-[#1A1A1A]/30">/{result.total}</span>
+                {viewed.score}<span className="text-[#1A1A1A]/30">/{viewed.total}</span>
               </p>
               <p className="text-sm text-[#5C5C5C] mt-1">
-                {studentName} · {Math.round((result.score / Math.max(1, result.total)) * 100)}%
-                {timedOut && <span className="text-red-600 font-semibold"> · time ran out</span>}
+                {viewed.student_name} · {Math.round((viewed.score / Math.max(1, viewed.total)) * 100)}%
+                {viewed.timed_out && <span className="text-red-600 font-semibold"> · time ran out</span>}
               </p>
-              <p className="text-xs text-[#1A1A1A]/40 mt-1">Saved {new Date().toLocaleString()}</p>
+              <p className="text-xs text-[#1A1A1A]/40 mt-1">{new Date(viewed.created_at).toLocaleString()}</p>
               <div className="flex justify-center gap-3 mt-4 flex-wrap">
-                <button onClick={begin} className="btn !py-2 !px-4 !text-sm"><RotateCcw size={14} /> Retake quiz</button>
+                {studentName
+                  ? <button onClick={begin} className="btn !py-2 !px-4 !text-sm"><RotateCcw size={14} /> Retake quiz</button>
+                  : <button onClick={() => setPhase('start')} className="btn !py-2 !px-4 !text-sm"><RotateCcw size={14} /> Take the quiz</button>}
                 <button onClick={() => navigate('/')} className="btn btn-primary !py-2 !px-4 !text-sm">Back to students</button>
               </div>
             </div>
@@ -318,7 +404,7 @@ export default function QuizTake() {
             </p>
             <div className="space-y-3">
               {quiz.questions.map((qq, i) => {
-                const a = answers[i];
+                const a = viewed.answers[i];
                 const picked = a?.selected;
                 const right = picked === qq.correct;
                 return (
@@ -377,6 +463,8 @@ export default function QuizTake() {
                 );
               })}
             </div>
+            </>
+            )}
           </>
         )}
       </div>
