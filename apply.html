@@ -81,6 +81,23 @@
 
   main{padding:64px 0 100px}
 
+  /* ── cohort calendar ── */
+  .cal{margin-bottom:64px}
+  .cal .sec-eyebrow{font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--green-deep);margin:0 0 10px}
+  .cal h2{margin-bottom:26px}
+  .cal-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+  .cal-item{border:1px solid var(--rule);border-radius:14px;padding:22px 24px;background:#fff}
+  .cal-item.next{border-color:var(--green-deep);background:#F5FBF3}
+  .cal-when{font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--graphite);display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .cal-tag{font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    padding:4px 11px;border-radius:999px;background:var(--warm);color:var(--graphite);border:1px solid var(--rule)}
+  .cal-tag.live{background:#FFF6E8;color:#8A5A00;border-color:#F0DDBB}
+  .cal-tag.enroll{background:var(--green-deep);color:#fff;border-color:var(--green-deep)}
+  .cal-item h3{font-size:1.02rem;margin:0 0 6px}
+  .cal-item p{color:var(--graphite);margin:0;font-size:.92rem}
+
   /* ── teachers & guest lecturers ── */
   .teachers{margin-bottom:64px}
   .teachers .sec-eyebrow{font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
@@ -332,8 +349,9 @@
         <h2>The October Film Cohort is full</h2>
         <p>All twenty seats are taken, and <strong>nothing has been charged.</strong> That's the
            whole room — we don't add chairs.</p>
-        <p>The next cohort is Winter. Come to Film Bar AI on a Tuesday and tell us you want a seat,
-           or join the WhatsApp group and we'll announce it there first.</p>
+        <p>The next cohort is the Winter 2027 Jobs Cohort — January 2027, exact dates to be
+           scheduled. Come to Film Bar AI on a Tuesday and tell us you want a seat, or join the
+           WhatsApp group and we'll announce the dates there first.</p>
         <div class="cta-row">
           <a class="btn btn-inline" href="https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5" target="_blank" rel="noopener">Join the WhatsApp community</a>
           <a class="btn btn-alt btn-inline" href="https://aimakersgeneration.com/">Back to the main site</a>
@@ -348,8 +366,9 @@
         <h2>Enrollment is closed</h2>
         <p>The October Film Cohort began Saturday, October 3 at 1:00 PM, and enrollment closed with
            it. <strong>Nothing has been charged.</strong></p>
-        <p>The next cohort is Winter. Come to Film Bar AI on a Tuesday and tell us you want a seat,
-           or join the WhatsApp group and we'll announce it there first.</p>
+        <p>The next cohort is the Winter 2027 Jobs Cohort — January 2027, exact dates to be
+           scheduled. Come to Film Bar AI on a Tuesday and tell us you want a seat, or join the
+           WhatsApp group and we'll announce the dates there first.</p>
         <div class="cta-row">
           <a class="btn btn-inline" href="https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5" target="_blank" rel="noopener">Join the WhatsApp community</a>
           <a class="btn btn-alt btn-inline" href="https://aimakersgeneration.com/">Back to the main site</a>
@@ -359,6 +378,33 @@
 
     <!-- ─────────── the form ─────────── -->
     <div class="screen show" id="screen-form">
+
+      <!-- ─────────── cohort calendar ─────────── -->
+      <section class="cal" aria-labelledby="cal-head">
+        <p class="sec-eyebrow">The cohort calendar</p>
+        <h2 id="cal-head">Where we are, and what's next</h2>
+        <ol class="cal-list">
+          <li class="cal-item">
+            <div class="cal-when">Jul 18 – Sep 5, 2026 <span class="cal-tag live">In session now</span></div>
+            <h3>Summer 2026 Jobs Cohort</h3>
+            <p>Currently running — eight Saturdays focused on AI industry careers: a polished résumé,
+               a matching LinkedIn profile, a portfolio website, salary negotiation, and interview
+               preparation. Enrollment for this cohort is closed.</p>
+          </li>
+          <li class="cal-item next">
+            <div class="cal-when">Oct 3 – 24, 2026 <span class="cal-tag enroll">Enrolling now</span></div>
+            <h3>October 2026 Film Cohort</h3>
+            <p>Next up — the four-week AI filmmaking intensive on this page. Four Saturdays to level
+               your AI film output up to an elite film industry professional standard.</p>
+          </li>
+          <li class="cal-item">
+            <div class="cal-when">January 2027 · Exact dates to be scheduled <span class="cal-tag">Up after that</span></div>
+            <h3>Winter 2027 Jobs Cohort</h3>
+            <p>The next jobs cohort — AI industry careers, résumé to interview prep. Dates will be
+               announced; join the WhatsApp community and we'll tell you there first.</p>
+          </li>
+        </ol>
+      </section>
 
       <!-- ─────────── your teachers ─────────── -->
       <section class="teachers" aria-labelledby="teachers-head">
