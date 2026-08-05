@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import { ensureStudentProfile } from "../_lib/student-roster.js";
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://xnejbxdvqmzlaljkgwaf.supabase.co";
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -51,11 +52,13 @@ async function markPaid(supabase, session) {
     .eq("id", applicationId)
     .eq("stripe_session_id", session.id)
     .eq("status", "pending")
-    .select("id, email");
+    .select("id, email, full_name, preferred_name, city, current_work, ai_experience, coding_experience, something_made, eight_week_goal, goal, final_project, portfolio_url");
 
   if (error) throw new Error(error.message);
   if (data?.length) {
     console.log(`Enrollment ${applicationId} marked paid (${data[0].email}).`);
+    // Payment is enrollment — put them on the public /students roster now.
+    await ensureStudentProfile(supabase, data[0]);
   }
 }
 

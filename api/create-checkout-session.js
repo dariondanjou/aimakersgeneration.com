@@ -5,9 +5,13 @@ const SUPABASE_URL = process.env.SUPABASE_URL || "https://xnejbxdvqmzlaljkgwaf.s
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Authoritative, server-side. The browser never tells us the price.
-const COHORT = "summer-2026";
+const COHORT = "october-2026-film";
 const TUITION_CENTS = 80000; // $800.00, paid in full. No deposits, no installments.
 const TOTAL_SEATS = 20;
+
+// Enrollment closes when Session 1 begins: Saturday, October 3, 2026, 1:00 PM
+// Eastern (EDT, UTC-4). After this instant the API refuses to start a checkout.
+const ENROLLMENT_DEADLINE_MS = Date.UTC(2026, 9, 3, 17, 0, 0); // 2026-10-03T13:00 EDT
 
 // A private, unadvertised discount page (discount.html, served at /discount) posts this code.
 // Nothing on the site links to that page — you only reach it via a direct URL. The code
@@ -36,11 +40,11 @@ const REQUIRED_CONSENTS = [
 
 const ALLOWED = {
   heard_about: ["Film Bar AI", "Workshop Wednesday", "Instagram", "TikTok", "LinkedIn", "Facebook", "X", "WhatsApp group", "A friend", "Other"],
-  ai_experience: ["Never used them", "Tried ChatGPT a few times", "Use AI tools weekly", "Use them daily in my work", "I build with them"],
+  ai_experience: ["Never used them", "I've generated a few clips", "I make AI videos regularly", "AI video is part of my work", "I finish complete AI films"],
   coding_experience: ["Never", "A little", "Comfortable", "Professionally"],
-  goal: ["Get a job", "Grow in my current role", "Launch a business", "Build a portfolio", "I'm not sure yet"],
-  final_project: ["Mock interview", "Pitch deck", "Help me decide"],
-  can_attend: ["Yes, all 8", "I'd miss 1", "I'd miss 2+"],
+  goal: ["Break into film work", "Level up my filmmaking", "Launch a studio or channel", "Build a film portfolio", "I'm not sure yet"],
+  final_project: ["Short film", "Commercial spec", "Music video", "Help me decide"],
+  can_attend: ["Yes, all 4", "I'd miss 1", "I'd miss 2+"],
 };
 
 const isEmail = (v) => typeof v === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -113,10 +117,18 @@ export default async function handler(req, res) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
   try {
+    // --- enrollment deadline: the cohort starts Oct 3 at 1 PM ET ---
+    if (Date.now() >= ENROLLMENT_DEADLINE_MS) {
+      return res.status(409).json({
+        error: "Enrollment for the October Film Cohort closed on October 3 at 1:00 PM. Nothing has been charged.",
+        closed: true,
+      });
+    }
+
     // --- seat cap: check BEFORE taking any money ---
     if ((await seatsTaken(supabase)) >= TOTAL_SEATS) {
       return res.status(409).json({
-        error: "The Summer cohort is full — all twenty seats are taken. Nothing has been charged.",
+        error: "The October Film Cohort is full — all twenty seats are taken. Nothing has been charged.",
         full: true,
       });
     }
@@ -185,9 +197,9 @@ export default async function handler(req, res) {
           unit_amount: amountCents,
           product_data: {
             name: isDiscount
-              ? "AIMG Summer 2026 Cohort — Tuition (10% discount)"
-              : "AIMG Summer 2026 Cohort — Tuition",
-            description: "Eight Saturdays, 1–4 PM, July 18 – September 5, 2026. RICE Center, Atlanta. Paid in full; no deposits or installments.",
+              ? "AIMG October 2026 Film Cohort — Tuition (10% discount)"
+              : "AIMG October 2026 Film Cohort — Tuition",
+            description: "Four-week AI filmmaking intensive. Four Saturdays, 1–4 PM, October 3–24, 2026. RICE Center, Atlanta. Paid in full; no deposits or installments.",
           },
         },
       }],

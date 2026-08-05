@@ -1,0 +1,36 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//AI Makers Generation//October 2026 Film Cohort//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VTIMEZONE
+TZID:America/New_York
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0500
+TZOFFSETTO:-0400
+TZNAME:EDT
+DTSTART:20260308T020000
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0400
+TZOFFSETTO:-0500
+TZNAME:EST
+DTSTART:20261101T020000
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:october-2026-film-session-1@aimakersgeneration.com
+DTSTAMP:20260805T120000Z
+DTSTART;TZID=America/New_York:20261003T130000
+DTEND;TZID=America/New_York:20261003T160000
+SUMMARY:AIMG October Film Cohort — Session 1
+LOCATION:Russell Innovation Center for Entrepreneurs, Atlanta, GA
+DESCRIPTION:Session 1 of the AI Makers Generation October 2026 Film Cohort. Your tuition is already paid — bring your charged laptop and be ready to make film work.\n\nFour Saturdays: Oct 3, Oct 10, Oct 17, Oct 24. Attendance at all four is required.\n\nhttps://aimakersgeneration.com/
+URL:https://aimakersgeneration.com/
+BEGIN:VALARM
+TRIGGER:-P1D
+ACTION:DISPLAY
+DESCRIPTION:AIMG October Film Cohort Session 1 is tomorrow, 1–4 PM. Bring a charged laptop.
+END:VALARM
+END:VEVENT
+END:VCALENDAR

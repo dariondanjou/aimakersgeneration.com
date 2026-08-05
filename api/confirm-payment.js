@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import { ensureStudentProfile } from "./_lib/student-roster.js";
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://xnejbxdvqmzlaljkgwaf.supabase.co";
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -57,10 +58,14 @@ export default async function handler(req, res) {
       })
       .eq("id", applicationId)
       .eq("stripe_session_id", sessionId)
-      .select("preferred_name, full_name, email")
+      .select("preferred_name, full_name, email, city, current_work, ai_experience, coding_experience, something_made, eight_week_goal, goal, final_project, portfolio_url")
       .maybeSingle();
 
     if (error) throw new Error(error.message);
+
+    // Payment is enrollment — make sure they're on the public /students roster.
+    // (No-op if the webhook already created it; never blocks the "You're in" screen.)
+    if (data) await ensureStudentProfile(supabase, data);
 
     const name = data?.preferred_name || data?.full_name?.split(" ")[0] || null;
     return res.status(200).json({ paid: true, name });

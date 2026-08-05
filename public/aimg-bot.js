@@ -21,7 +21,7 @@
   var ACCENT_HOVER = isCohorts ? "#0c6633" : "#2f7d1f";
 
   var GREETING =
-    "Hey — I'm the AI MAKERS BOT 👋\n\nAsk me anything about Film Bar AI (every Tuesday), the Summer 2026 cohort, Workshop Wednesdays, or how to get involved with AI MAKERS GENERATION.";
+    "Hey — I'm the AI MAKERS BOT 👋\n\nAsk me anything about Film Bar AI (every Tuesday), the October Film Cohort, Workshop Wednesdays, or how to get involved with AI MAKERS GENERATION.";
 
   var SUGGESTIONS = [
     "When's the next Film Bar AI?",
