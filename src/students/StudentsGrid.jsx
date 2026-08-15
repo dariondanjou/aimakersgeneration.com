@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { GraduationCap, BookOpen, Target, Backpack, ChevronDown, ListChecks, Sparkles, Activity, Check, PartyPopper } from 'lucide-react';
+import { GraduationCap, BookOpen, Target, Backpack, ChevronDown, ListChecks, Sparkles, Activity, Check, PartyPopper, Linkedin, TrendingUp, Users } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 const fmtDate = (d) => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
@@ -157,6 +157,165 @@ function QuizzesSection() {
 // session unfold: who is still busy (and on which question), who has finished
 // (with their score), and who hasn't started. Activity older than the session
 // window is ignored, so the dashboard goes quiet between sessions.
+// ── LinkedIn connections across the cohort ──────────────────────────────────
+// One small sparkline per student (weeks 1–8, each on its own scale so a
+// 30-connection climb reads as clearly as a 6,000 one) plus cohort totals.
+// Counts are self-reported on each profile; the section re-draws itself as
+// students log new weeks. Students without a LinkedIn on file are left out.
+const LI_WEEKS = [1, 2, 3, 4, 5, 6, 7, 8];
+
+function ConnectionSparkline({ points, name }) {
+  const W = 220, H = 64, padX = 6, padT = 8, padB = 8;
+  const rec = points.filter((p) => p.connections != null);
+  if (rec.length === 0) return null;
+  const vals = rec.map((p) => p.connections);
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const span = Math.max(hi - lo, Math.max(4, Math.round(hi * 0.04)));
+  const yMin = Math.max(0, lo - span * 0.15), yMax = hi + span * 0.15;
+  const xFor = (w) => padX + ((w - 1) / 7) * (W - padX * 2);
+  const yFor = (v) => padT + (1 - (v - yMin) / (yMax - yMin)) * (H - padT - padB);
+  const d = rec.map((p, i) => `${i ? 'L' : 'M'} ${xFor(p.week).toFixed(1)} ${yFor(p.connections).toFixed(1)}`).join(' ');
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`${name}: LinkedIn connections by week`}
+      style={{ display: 'block', height: 'auto' }}>
+      {/* recessive week ticks along the baseline */}
+      {LI_WEEKS.map((w) => (
+        <line key={w} x1={xFor(w)} y1={H - padB + 2} x2={xFor(w)} y2={H - padB + 5} stroke="#E3E3DF" strokeWidth="1" />
+      ))}
+      {rec.length > 1 && <path d={d} fill="none" stroke="#0F7B3F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />}
+      {rec.map((p) => (
+        <circle key={p.week} cx={xFor(p.week)} cy={yFor(p.connections)} r="4" fill="#0F7B3F" stroke="#FFFFFF" strokeWidth="2">
+          <title>{`Week ${p.week} · ${p.connections.toLocaleString()} connections`}</title>
+        </circle>
+      ))}
+    </svg>
+  );
+}
+
+function LinkedInTrajectorySection({ students }) {
+  const [stats, setStats] = useState(null);
+  const [profiles, setProfiles] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const [{ data: st }, { data: pr }] = await Promise.all([
+        supabase.from('student_linkedin_stats').select('student_id, week, connections'),
+        supabase.from('students').select('id, linkedin_url'),
+      ]);
+      if (cancelled) return;
+      setStats(st || []);
+      setProfiles(pr || []);
+    };
+    load();
+    // Re-pull every minute so the trajectories keep growing as students log weeks.
+    const t = setInterval(load, 60000);
+    return () => { cancelled = true; clearInterval(t); };
+  }, []);
+
+  if (stats === null) return null;
+
+  const withLinkedIn = new Set(profiles.filter((p) => p.linkedin_url).map((p) => p.id));
+  const rows = students
+    .filter((s) => withLinkedIn.has(s.id))
+    .map((s) => {
+      const byWeek = new Map(stats.filter((x) => x.student_id === s.id).map((x) => [x.week, x.connections]));
+      const points = LI_WEEKS.map((w) => ({ week: w, connections: byWeek.has(w) ? byWeek.get(w) : null }));
+      const rec = points.filter((p) => p.connections != null);
+      const first = rec[0]?.connections ?? null;
+      const last = rec[rec.length - 1] ?? null;
+      return {
+        ...s, points, recorded: rec.length,
+        firstWeek: rec[0]?.week ?? null, latest: last?.connections ?? null, latestWeek: last?.week ?? null,
+        growth: rec.length > 1 ? last.connections - first : null,
+      };
+    })
+    // Most connections first; students who haven't logged yet sink to the end.
+    .sort((a, b) => (b.latest ?? -1) - (a.latest ?? -1));
+
+  if (rows.length === 0) return null;
+
+  const logging = rows.filter((r) => r.latest != null);
+  const total = logging.reduce((a, r) => a + r.latest, 0);
+  const gained = logging.reduce((a, r) => a + (r.growth || 0), 0);
+  const firstName = (n) => (n || '').split(' ')[0];
+
+  return (
+    <div className="mb-14">
+      <div className="text-center mb-6">
+        <p className="text-xs uppercase tracking-[0.18em] font-semibold text-[#0A66C2] mb-2 flex items-center justify-center gap-2">
+          <Linkedin size={16} /> LinkedIn Growth
+        </p>
+        <h2 className="text-2xl sm:text-3xl uppercase">Connections, week by week</h2>
+        <p className="text-[#5C5C5C] mt-2 max-w-xl mx-auto text-sm">
+          Every student logs their connection count each week on their profile. Each line is one student's
+          trajectory across the eight weeks — the whole cohort's climb, at a glance.
+        </p>
+      </div>
+
+      {/* Cohort headline tiles */}
+      <div className="flex flex-wrap gap-3 justify-center mb-6">
+        {[
+          { icon: <Users size={12} />, label: 'Cohort connections', value: total.toLocaleString(), accent: '#0F7B3F' },
+          { icon: <TrendingUp size={12} />, label: 'Gained this cohort', value: `${gained >= 0 ? '+' : ''}${gained.toLocaleString()}`, accent: '#3E9E28' },
+          { icon: <Linkedin size={12} />, label: 'Students logging', value: `${logging.length} / ${rows.length}`, accent: '#0A66C2' },
+        ].map((t) => (
+          <div key={t.label} className="rounded-xl border border-[#E3E3DF] bg-white px-5 py-3 min-w-[150px]">
+            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1">
+              {t.icon} {t.label}
+            </div>
+            <div className="text-2xl font-extrabold tabular-nums" style={{ color: t.accent, fontFamily: 'Poppins, sans-serif' }}>
+              {t.value}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Small multiples: one sparkline per student */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {rows.map((r) => (
+          <Link key={r.id} to={`/${r.slug}`}
+            className="glass-panel !p-4 hover:-translate-y-0.5 hover:border-[#3E9E28]/50 transition-all">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-9 h-9 rounded-full bg-[#F4F4F2] border-2 border-[#3E9E28]/30 overflow-hidden flex items-center justify-center text-sm font-bold text-[#3E9E28] shrink-0">
+                {r.avatar_url
+                  ? <img src={r.avatar_url} alt={r.full_name} className="w-full h-full object-cover" />
+                  : (r.full_name?.[0]?.toUpperCase() || '?')}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold truncate">{r.full_name}</p>
+                <p className="text-[11px] text-[#1A1A1A]/40 uppercase tracking-wider">
+                  {r.latest != null ? `Week ${r.latestWeek}` : 'Not logged yet'}
+                </p>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-lg font-extrabold tabular-nums leading-none" style={{ color: '#0F7B3F', fontFamily: 'Poppins, sans-serif' }}>
+                  {r.latest != null ? r.latest.toLocaleString() : '—'}
+                </p>
+                {r.growth != null && (
+                  <p className={`text-[11px] font-semibold tabular-nums mt-0.5 ${r.growth >= 0 ? 'text-[#3E9E28]' : 'text-red-600'}`}>
+                    {r.growth >= 0 ? '+' : ''}{r.growth.toLocaleString()} since W{r.firstWeek}
+                  </p>
+                )}
+              </div>
+            </div>
+            {r.recorded > 0 ? (
+              <ConnectionSparkline points={r.points} name={firstName(r.full_name)} />
+            ) : (
+              <div className="h-16 rounded-lg border border-dashed border-[#E3E3DF] flex items-center justify-center text-xs text-[#1A1A1A]/35">
+                No weeks logged yet
+              </div>
+            )}
+            <div className="flex justify-between text-[10px] uppercase tracking-wider text-[#1A1A1A]/35 mt-1">
+              <span>W1</span><span>W8</span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const SESSION_WINDOW_MS = 3 * 60 * 60 * 1000;
 const POLL_MS = 5000;
 
@@ -367,6 +526,8 @@ export default function StudentsGrid() {
             ))}
           </div>
         )}
+
+        <LinkedInTrajectorySection students={students} />
 
         <CurriculumSection />
 

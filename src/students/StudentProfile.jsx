@@ -94,9 +94,11 @@ const pad = (n) => String(n).padStart(2, '0');
 function Countdown({ dueAt, now }) {
   const ms = new Date(dueAt).getTime() - now;
   if (ms <= 0) {
+    // Past due, but the drop zone stays open — anything that goes in now is marked late.
     return (
-      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1A1A1A]/40 bg-[#1A1A1A]/5 border border-[#1A1A1A]/10 rounded-full px-3 py-1">
-        <Clock size={13} /> Deadline passed
+      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-3 py-1"
+        title="The deadline has passed — you can still turn it in, it'll be marked late">
+        <Clock size={13} /> Past due · late OK
       </span>
     );
   }
@@ -135,22 +137,43 @@ const formatAssigned = (d) =>
 // its assignment; the week's checklist circle only checks once at least one
 // submission scans as relevant. Rows from before the scan migration have no
 // scan_status — treat those as verified so old submissions keep counting.
-function verificationState(subs) {
+// A submission is late when the server stamped it so (the `late` column,
+// set from the assignment deadline at insert time); rows from before that
+// column existed fall back to comparing created_at with the deadline.
+function isLateSubmission(sub, assignment) {
+  if (sub.late != null) return sub.late === true;
+  if (!assignment?.due_at) return false;
+  return new Date(sub.created_at).getTime() > new Date(assignment.due_at).getTime();
+}
+
+// 'late' = verified, but only by work that went in after the deadline.
+function verificationState(subs, assignment) {
   if (subs.length === 0) return 'empty';
-  if (subs.some((s) => s.scan_status === 'relevant' || s.scan_status === undefined)) return 'verified';
+  const relevant = subs.filter((s) => s.scan_status === 'relevant' || s.scan_status === undefined);
+  if (relevant.length > 0) {
+    return relevant.every((s) => isLateSubmission(s, assignment)) ? 'late' : 'verified';
+  }
   if (subs.some((s) => s.scan_status === 'pending')) return 'pending';
   if (subs.some((s) => s.scan_status === 'error')) return 'error';
   return 'flagged';
 }
 
 // The checklist circle: empty → spinner while scanning → green check when a
-// relevant upload exists; red "!" when everything uploaded scanned off-topic.
+// relevant upload exists (amber check when it only came in late); red "!"
+// when everything uploaded scanned off-topic.
 function ScanCircle({ state, size = 26 }) {
   const style = { width: size, height: size };
   const base = 'rounded-full flex items-center justify-center shrink-0';
   if (state === 'verified') {
     return (
       <span className={`${base} bg-[#0F7B3F]`} style={style} title="Verified — a relevant submission is in">
+        <Check size={Math.round(size * 0.62)} className="text-white" strokeWidth={3} />
+      </span>
+    );
+  }
+  if (state === 'late') {
+    return (
+      <span className={`${base} bg-amber-500`} style={style} title="Verified — turned in after the deadline (late)">
         <Check size={Math.round(size * 0.62)} className="text-white" strokeWidth={3} />
       </span>
     );
@@ -220,12 +243,31 @@ function ScanChip({ sub, onScan, scanning }) {
   );
 }
 
+// Small amber tag next to a submission that went in after the deadline.
+function LateTag() {
+  return (
+    <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-1.5 py-px shrink-0"
+      title="Turned in after the deadline">
+      Late
+    </span>
+  );
+}
+
 const STATE_LINES = {
   verified: 'Homework verified — the circle is checked. Nice work.',
+  late: 'Homework verified — it came in after the deadline, so it counts as late.',
   pending: 'Upload received — checking it against the assignment…',
   flagged: "The upload didn't look related to this assignment. Try another file.",
   error: 'The automated check hit an error — retry the scan below.',
 };
+
+// Text colour for the one-line status under the assignment title.
+const stateTextClass = (state) =>
+  state === 'verified' ? 'text-[#0F7B3F]'
+    : state === 'late' ? 'text-amber-700'
+      : state === 'flagged' ? 'text-red-600'
+        : state === 'error' ? 'text-amber-600'
+          : 'text-[#1A1A1A]/60';
 
 // ── "This Week" panel: the current assignment highlighted at the top ────────
 function ThisWeekPanel({
@@ -236,12 +278,14 @@ function ThisWeekPanel({
   const [drag, setDrag] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const closed = assignment ? new Date(assignment.due_at).getTime() <= now : true;
+  // Past the deadline the drop zone stays open — the outline turns amber and
+  // whatever goes in is marked late (stamped server-side).
+  const pastDue = assignment ? new Date(assignment.due_at).getTime() <= now : true;
   const mine = assignment ? submissions.filter((s) => s.assignment_id === assignment.id) : [];
-  const state = verificationState(mine);
+  const state = verificationState(mine, assignment);
 
   const handleFiles = async (files) => {
-    if (!files?.length || busy || closed) return;
+    if (!files?.length || busy || !assignment) return;
     setBusy(true);
     await onSubmitFiles(assignment, files);
     setBusy(false);
@@ -251,7 +295,7 @@ function ThisWeekPanel({
   // Paste anywhere on the page (outside a text field) to submit — files from
   // the clipboard upload directly; pasted links/text become a submission.
   useEffect(() => {
-    if (!isOwner || !assignment || closed) return;
+    if (!isOwner || !assignment) return;
     const onPaste = (e) => {
       const t = e.target;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
@@ -271,17 +315,19 @@ function ThisWeekPanel({
     window.addEventListener('paste', onPaste);
     return () => window.removeEventListener('paste', onPaste);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOwner, assignment?.id, closed, busy]);
+  }, [isOwner, assignment?.id, busy]);
 
   if (!assignment) return null;
 
   const stateLine = state === 'empty'
-    ? (closed ? 'No submission went in before the deadline.' : 'Nothing uploaded yet — drop your homework in below.')
+    ? (pastDue
+      ? 'Nothing went in before the deadline — you can still turn it in below; it will be marked late.'
+      : 'Nothing uploaded yet — drop your homework in below.')
     : STATE_LINES[state];
   const verifiedNote = mine.find((s) => s.scan_status === 'relevant')?.scan_note;
 
   return (
-    <div className="glass-panel mb-5 !border-[#3E9E28]/40">
+    <div className={`glass-panel mb-5 ${pastDue ? "!border-amber-400/70" : "!border-[#3E9E28]/40"}`}>
       <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
         <h2 className="text-sm uppercase tracking-wider flex items-center gap-2">
           <ListChecks size={16} className="text-[#3E9E28]" /> This Week
@@ -301,15 +347,10 @@ function ThisWeekPanel({
           {assignment.description && (
             <p className="text-sm text-[#5C5C5C] mt-1">{assignment.description}</p>
           )}
-          <p className={`text-sm mt-1.5 font-semibold ${
-            state === 'verified' ? 'text-[#0F7B3F]'
-              : state === 'flagged' ? 'text-red-600'
-                : state === 'error' ? 'text-amber-600'
-                  : 'text-[#1A1A1A]/60'
-          }`}>
+          <p className={`text-sm mt-1.5 font-semibold ${stateTextClass(state)}`}>
             {stateLine}
           </p>
-          {state === 'verified' && verifiedNote && (
+          {(state === 'verified' || state === 'late') && verifiedNote && (
             <p className="text-xs text-[#5C5C5C] mt-0.5">{verifiedNote}</p>
           )}
           <p className="text-xs text-[#1A1A1A]/50 mt-1.5">
@@ -318,23 +359,33 @@ function ThisWeekPanel({
         </div>
       </div>
 
-      {isOwner && !closed && (
+      {isOwner && (
         <div
           onClick={() => !busy && fileRef.current?.click()}
           onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
           onDragLeave={(e) => { e.preventDefault(); if (!e.currentTarget.contains(e.relatedTarget)) setDrag(false); }}
           onDrop={(e) => { e.preventDefault(); setDrag(false); handleFiles(Array.from(e.dataTransfer.files || [])); }}
           className={`mt-4 rounded-xl border-2 border-dashed px-4 py-6 text-center cursor-pointer transition-colors ${
-            drag ? 'border-[#3E9E28] bg-[#3E9E28]/5' : 'border-[#E3E3DF] hover:border-[#3E9E28]/50'
+            pastDue
+              ? (drag ? 'border-amber-500 bg-amber-100/70' : 'border-amber-400 bg-amber-50/60 hover:border-amber-500')
+              : (drag ? 'border-[#3E9E28] bg-[#3E9E28]/5' : 'border-[#E3E3DF] hover:border-[#3E9E28]/50')
           }`}
         >
           <input ref={fileRef} type="file" multiple className="hidden" disabled={busy}
             onChange={(e) => handleFiles(Array.from(e.target.files || []))} />
           {busy ? (
-            <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#0F7B3F]">
-              <span className="w-4 h-4 border-2 border-t-[#3E9E28] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
+            <span className={`inline-flex items-center gap-2 text-sm font-semibold ${pastDue ? 'text-amber-700' : 'text-[#0F7B3F]'}`}>
+              <span className={`w-4 h-4 border-2 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin ${pastDue ? 'border-t-amber-500' : 'border-t-[#3E9E28]'}`} />
               Uploading &amp; scanning…
             </span>
+          ) : pastDue ? (
+            <>
+              <Upload size={20} className="mx-auto mb-2 text-amber-600" />
+              <p className="text-sm font-semibold text-amber-800">Deadline passed — you can still turn it in (marked late)</p>
+              <p className="text-xs text-amber-800/70 mt-1">
+                Drag &amp; drop, paste, or click to add your homework. Late work is still scanned and verified; it just carries a Late tag.
+              </p>
+            </>
           ) : (
             <>
               <Upload size={20} className="mx-auto mb-2 text-[#3E9E28]" />
@@ -355,6 +406,7 @@ function ThisWeekPanel({
               <a href={sub.url} target="_blank" rel="noreferrer" className="truncate hover:underline">
                 {sub.file_name || 'Submission'}
               </a>
+              {isLateSubmission(sub, assignment) && <LateTag />}
               <ScanChip sub={sub} onScan={onScan} scanning={scanningIds.has(sub.id)} />
             </li>
           ))}
@@ -368,7 +420,7 @@ function ThisWeekPanel({
         </label>
         <div className="flex flex-wrap gap-3">
           {assignments.map((a) => {
-            const st = verificationState(submissions.filter((s) => s.assignment_id === a.id));
+            const st = verificationState(submissions.filter((s) => s.assignment_id === a.id), a);
             const isCurrent = a.id === assignment.id;
             return (
               <div key={a.id} className={`flex flex-col items-center gap-1 ${isCurrent ? '' : 'opacity-75'}`}>
@@ -386,16 +438,22 @@ function ThisWeekPanel({
 }
 
 // ── One homework assignment row ─────────────────────────────────────────────
+// Each week's card is its own drop zone (drag & drop, or the upload button).
+// After the deadline it stays open: the outline turns amber and anything that
+// goes in is marked late. On-time work locks once the deadline passes; late
+// submissions can still be swapped out.
 function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCurrent, onSubmitFiles, onScan, scanningIds }) {
   const fileRef = useRef(null);
   const [busy, setBusy] = useState(false);
-  const closed = new Date(assignment.due_at).getTime() <= now;
+  const [drag, setDrag] = useState(false);
+  const pastDue = new Date(assignment.due_at).getTime() <= now;
   const mine = submissions.filter((s) => s.assignment_id === assignment.id);
-  const state = verificationState(mine);
+  const state = verificationState(mine, assignment);
+  // Past due and not verified on time → the amber "still open, but late" look.
+  const lateOpen = pastDue && state !== 'verified';
 
-  const handleUpload = async (e) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
+  const handleFiles = async (files) => {
+    if (!files?.length || busy) return;
     setBusy(true);
     await onSubmitFiles(assignment, files);
     setBusy(false);
@@ -409,11 +467,29 @@ function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCur
     onChanged();
   };
 
+  const dropHandlers = isOwner ? {
+    onDragOver: (e) => { e.preventDefault(); setDrag(true); },
+    onDragLeave: (e) => { e.preventDefault(); if (!e.currentTarget.contains(e.relatedTarget)) setDrag(false); },
+    onDrop: (e) => { e.preventDefault(); setDrag(false); handleFiles(Array.from(e.dataTransfer.files || [])); },
+  } : {};
+
+  const frame = drag
+    ? (pastDue ? 'border-amber-500 border-dashed bg-amber-100/70' : 'border-[#3E9E28] border-dashed bg-[#3E9E28]/5')
+    : lateOpen ? 'border-amber-400 bg-amber-50/50'
+      : isCurrent ? 'border-[#3E9E28]/60 bg-white shadow-[0_0_0_3px_rgba(62,158,40,0.08)]'
+        : pastDue ? 'border-[#E3E3DF] bg-[#F4F4F2]/50' : 'border-[#E3E3DF] bg-white';
+
   return (
-    <div className={`border rounded-xl p-4 ${
-      isCurrent ? 'border-[#3E9E28]/60 bg-white shadow-[0_0_0_3px_rgba(62,158,40,0.08)]'
-        : closed ? 'border-[#E3E3DF] bg-[#F4F4F2]/50' : 'border-[#E3E3DF] bg-white'
-    }`}>
+    <div className={`relative border rounded-xl p-4 transition-colors ${frame}`} {...dropHandlers}>
+      {drag && (
+        <div className={`absolute inset-0 rounded-xl flex items-center justify-center pointer-events-none z-10 ${
+          pastDue ? 'bg-amber-50/90' : 'bg-white/90'
+        }`}>
+          <span className={`inline-flex items-center gap-2 text-sm font-semibold ${pastDue ? 'text-amber-800' : 'text-[#0F7B3F]'}`}>
+            <Upload size={16} /> {pastDue ? 'Drop to turn in late' : 'Drop to turn in'}
+          </span>
+        </div>
+      )}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-2.5 min-w-0">
           <div className="mt-0.5"><ScanCircle state={state} size={22} /></div>
@@ -433,6 +509,11 @@ function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCur
                 <CheckCircle2 size={14} /> Verified
               </span>
             )}
+            {state === 'late' && (
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700">
+                <CheckCircle2 size={14} /> Verified · late
+              </span>
+            )}
           </div>
           {assignment.description && (
             <p className="text-sm text-[#5C5C5C] mt-1.5">{assignment.description}</p>
@@ -440,18 +521,30 @@ function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCur
           <p className="text-xs text-[#1A1A1A]/50 mt-1.5">
             Assigned {formatAssigned(assignment.assigned_on)} · Due {formatDue(assignment.due_at)}
           </p>
+          {lateOpen && isOwner && (
+            <p className="text-xs font-semibold text-amber-700 mt-1.5">
+              {mine.length === 0
+                ? 'Deadline passed — you can still turn this in; it will be marked late.'
+                : 'Deadline passed — anything you add now is marked late.'}
+            </p>
+          )}
           </div>
         </div>
         <div className="flex flex-col items-end gap-2 shrink-0">
           <Countdown dueAt={assignment.due_at} now={now} />
-          {isOwner && !closed && (
+          {isOwner && (
             <>
-              <input ref={fileRef} type="file" multiple className="hidden" onChange={handleUpload} disabled={busy} />
-              <button onClick={() => fileRef.current?.click()} disabled={busy} className="btn !py-1.5 !px-3.5 !text-xs">
+              <input ref={fileRef} type="file" multiple className="hidden"
+                onChange={(e) => handleFiles(Array.from(e.target.files || []))} disabled={busy} />
+              <button onClick={() => fileRef.current?.click()} disabled={busy}
+                className={`btn !py-1.5 !px-3.5 !text-xs ${pastDue ? '!bg-amber-500 hover:!bg-amber-600 !border-amber-500 !text-white' : ''}`}
+                title={pastDue ? 'The deadline has passed — this goes in marked late' : undefined}>
                 {busy
-                  ? <span className="w-3.5 h-3.5 border-2 border-t-[#3E9E28] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
+                  ? <span className="w-3.5 h-3.5 border-2 border-t-current border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
                   : <Upload size={13} />}
-                {mine.length > 0 ? 'Add another file' : 'Upload homework'}
+                {pastDue
+                  ? (mine.length > 0 ? 'Add another (late)' : 'Turn in late')
+                  : (mine.length > 0 ? 'Add another file' : 'Upload homework')}
               </button>
             </>
           )}
@@ -460,27 +553,31 @@ function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCur
 
       {mine.length > 0 && (
         <ul className="mt-3 space-y-1.5">
-          {mine.map((sub) => (
-            <li key={sub.id} className="flex items-center gap-2 text-sm group/sub">
-              <FileText size={15} className="text-[#3E9E28] shrink-0" />
-              <a href={sub.url} target="_blank" rel="noreferrer" className="truncate hover:underline">
-                {sub.file_name || 'Submission'}
-              </a>
-              <span className="text-xs text-[#1A1A1A]/40 shrink-0">
-                {new Date(sub.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </span>
-              <ScanChip sub={sub} onScan={onScan} scanning={scanningIds.has(sub.id)} />
-              {isOwner && !closed && (
-                <button
-                  onClick={() => handleDelete(sub)}
-                  className="text-[#1A1A1A]/0 group-hover/sub:text-[#1A1A1A]/40 hover:!text-red-500 transition-colors shrink-0"
-                  title="Remove submission"
-                >
-                  <Trash2 size={14} />
-                </button>
-              )}
-            </li>
-          ))}
+          {mine.map((sub) => {
+            const late = isLateSubmission(sub, assignment);
+            return (
+              <li key={sub.id} className="flex items-center gap-2 text-sm group/sub">
+                <FileText size={15} className={`shrink-0 ${late ? 'text-amber-600' : 'text-[#3E9E28]'}`} />
+                <a href={sub.url} target="_blank" rel="noreferrer" className="truncate hover:underline">
+                  {sub.file_name || 'Submission'}
+                </a>
+                <span className="text-xs text-[#1A1A1A]/40 shrink-0">
+                  {new Date(sub.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </span>
+                {late && <LateTag />}
+                <ScanChip sub={sub} onScan={onScan} scanning={scanningIds.has(sub.id)} />
+                {isOwner && (!pastDue || late) && (
+                  <button
+                    onClick={() => handleDelete(sub)}
+                    className="text-[#1A1A1A]/0 group-hover/sub:text-[#1A1A1A]/40 hover:!text-red-500 transition-colors shrink-0"
+                    title="Remove submission"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
@@ -1401,6 +1498,7 @@ export default function StudentProfile() {
           </h2>
           <p className="text-xs text-[#5C5C5C] mb-4">
             Homework is handed out each Saturday session and due the following Saturday at 1:00 PM ET, weeks 2–8.
+            Missed one? You can still turn it in after the deadline — it just goes in marked late.
           </p>
           <div className="space-y-3">
             {assignments.map((a) => (
