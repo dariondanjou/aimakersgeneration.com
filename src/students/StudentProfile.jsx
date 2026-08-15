@@ -93,15 +93,9 @@ const pad = (n) => String(n).padStart(2, '0');
 
 function Countdown({ dueAt, now }) {
   const ms = new Date(dueAt).getTime() - now;
-  if (ms <= 0) {
-    // Past due, but the drop zone stays open — anything that goes in now is marked late.
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-3 py-1"
-        title="The deadline has passed — you can still turn it in, it'll be marked late">
-        <Clock size={13} /> Past due · late OK
-      </span>
-    );
-  }
+  // Past due: no chip — the drop zone stays open and the upload button itself
+  // reads "Upload homework – late".
+  if (ms <= 0) return null;
   const days = Math.floor(ms / 86400000);
   const hours = Math.floor((ms % 86400000) / 3600000);
   const mins = Math.floor((ms % 3600000) / 60000);
@@ -266,25 +260,29 @@ function LateTag() {
 // list for the session it was handed out in (from /api/curriculum?public=1),
 // falling back to the assignment's prose description if the curriculum
 // hasn't loaded or has no bullets for that week.
+// Split a prose description into sentence bullets (used when the curriculum
+// has no bullet list for that week).
+const sentenceBullets = (text) =>
+  (text || '')
+    .split(/(?<=[.!?])\s+(?=[A-Z(“"])/)
+    .map((t) => t.trim())
+    .filter(Boolean);
+
 function DueList({ items, description, compact = false }) {
-  if (items?.length) {
-    return (
-      <div className={compact ? 'mt-1.5' : 'mt-2'}>
-        <p className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1 flex items-center gap-1.5">
-          <ListChecks size={11} className="text-[#3E9E28]" /> What's due
-        </p>
-        <ul className="space-y-1">
-          {items.map((t, i) => (
-            <li key={i} className="text-sm text-[#1A1A1A]/80 leading-relaxed flex gap-2">
-              <span className="text-[#3E9E28] font-bold shrink-0">—</span> {t}
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  }
-  if (description) return <p className={`text-sm text-[#5C5C5C] ${compact ? 'mt-1' : 'mt-1.5'}`}>{description}</p>;
-  return null;
+  const bullets = items?.length ? items : sentenceBullets(description);
+  if (bullets.length === 0) return null;
+  return (
+    <div className={compact ? 'mt-1.5' : 'mt-2'}>
+      <p className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1 flex items-center gap-1.5">
+        <ListChecks size={11} className="text-[#3E9E28]" /> What's due
+      </p>
+      <ul className="list-disc pl-5 space-y-1 marker:text-[#3E9E28]">
+        {bullets.map((t, i) => (
+          <li key={i} className="text-sm text-[#1A1A1A]/80 leading-relaxed pl-0.5">{t}</li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 const STATE_LINES = {
@@ -574,7 +572,7 @@ function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCur
                   ? <span className="w-3.5 h-3.5 border-2 border-t-current border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
                   : <Upload size={13} />}
                 {pastDue
-                  ? (mine.length > 0 ? 'Add another (late)' : 'Turn in late')
+                  ? (mine.length > 0 ? 'Add another file – late' : 'Upload homework – late')
                   : (mine.length > 0 ? 'Add another file' : 'Upload homework')}
               </button>
             </>
