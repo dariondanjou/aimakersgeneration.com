@@ -205,14 +205,22 @@ function ScanCircle({ state, size = 26 }) {
   );
 }
 
-// Per-file scan status chip shown next to each submission.
-function ScanChip({ sub, onScan, scanning }) {
+// Per-file scan status chip shown next to each submission. A verified item
+// reads "Verified · on time" or "Verified · late" — late meaning this
+// particular file went in after its own week's deadline (`late` prop).
+function ScanChip({ sub, onScan, scanning, late = false }) {
   const s = sub.scan_status;
   if (s === undefined) return null; // scan migration not applied yet
   if (s === 'relevant') {
-    return (
-      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0F7B3F] shrink-0" title={sub.scan_note || undefined}>
-        <CheckCircle2 size={12} /> Verified
+    return late ? (
+      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 shrink-0"
+        title={sub.scan_note ? `${sub.scan_note} — turned in after the deadline` : 'Turned in after the deadline'}>
+        <CheckCircle2 size={12} /> Verified · late
+      </span>
+    ) : (
+      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0F7B3F] shrink-0"
+        title={sub.scan_note ? `${sub.scan_note} — turned in before the deadline` : 'Turned in before the deadline'}>
+        <CheckCircle2 size={12} /> Verified · on time
       </span>
     );
   }
@@ -243,7 +251,8 @@ function ScanChip({ sub, onScan, scanning }) {
   );
 }
 
-// Small amber tag next to a submission that went in after the deadline.
+// Small amber tag next to a not-yet-verified submission that went in after
+// the deadline (verified ones carry on time / late in their chip instead).
 function LateTag() {
   return (
     <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-1.5 py-px shrink-0"
@@ -254,7 +263,7 @@ function LateTag() {
 }
 
 const STATE_LINES = {
-  verified: 'Homework verified — the circle is checked. Nice work.',
+  verified: 'Homework verified — turned in on time. Nice work.',
   late: 'Homework verified — it came in after the deadline, so it counts as late.',
   pending: 'Upload received — checking it against the assignment…',
   flagged: "The upload didn't look related to this assignment. Try another file.",
@@ -406,8 +415,8 @@ function ThisWeekPanel({
               <a href={sub.url} target="_blank" rel="noreferrer" className="truncate hover:underline">
                 {sub.file_name || 'Submission'}
               </a>
-              {isLateSubmission(sub, assignment) && <LateTag />}
-              <ScanChip sub={sub} onScan={onScan} scanning={scanningIds.has(sub.id)} />
+              {isLateSubmission(sub, assignment) && sub.scan_status !== 'relevant' && <LateTag />}
+              <ScanChip sub={sub} onScan={onScan} scanning={scanningIds.has(sub.id)} late={isLateSubmission(sub, assignment)} />
             </li>
           ))}
         </ul>
@@ -506,7 +515,7 @@ function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCur
             )}
             {state === 'verified' && (
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#0F7B3F]">
-                <CheckCircle2 size={14} /> Verified
+                <CheckCircle2 size={14} /> Verified · on time
               </span>
             )}
             {state === 'late' && (
@@ -564,8 +573,8 @@ function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCur
                 <span className="text-xs text-[#1A1A1A]/40 shrink-0">
                   {new Date(sub.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </span>
-                {late && <LateTag />}
-                <ScanChip sub={sub} onScan={onScan} scanning={scanningIds.has(sub.id)} />
+                {late && sub.scan_status !== 'relevant' && <LateTag />}
+                <ScanChip sub={sub} onScan={onScan} scanning={scanningIds.has(sub.id)} late={late} />
                 {isOwner && (!pastDue || late) && (
                   <button
                     onClick={() => handleDelete(sub)}
