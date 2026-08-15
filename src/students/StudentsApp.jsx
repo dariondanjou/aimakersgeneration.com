@@ -3,6 +3,7 @@ import StudentsGrid from './StudentsGrid.jsx';
 import StudentProfile from './StudentProfile.jsx';
 import QuizBuilder from './QuizBuilder.jsx';
 import QuizTake from './QuizTake.jsx';
+import Deck from '../Deck.jsx';
 
 // Public student showcase, served at /students (see vercel.json + vite.config).
 // Deliberately auth-free: anyone who visits can browse AND edit profiles —
@@ -40,6 +41,8 @@ export default function StudentsApp() {
             <Route path="/" element={<StudentsGrid />} />
             <Route path="/quiz-builder" element={<QuizBuilder />} />
             <Route path="/quiz/:id" element={<QuizTake />} />
+            {/* Read-only session slide decks — every week, past and upcoming */}
+            <Route path="/deck/:week" element={<Deck publicView />} />
             <Route path="/:slug" element={<StudentProfile />} />
           </Routes>
         </main>

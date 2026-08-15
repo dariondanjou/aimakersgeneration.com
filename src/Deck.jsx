@@ -7,6 +7,11 @@ import AdminKeyForm from './AdminKeyForm';
 // Full-screen presentable slide deck for one cohort session, styled after the
 // AIMG workshop decks: near-black slides, chartreuse #CCFF00 accent, Inter,
 // stacked ALL-CAPS titles. Navigate with ←/→/Space/click; Esc exits.
+//
+// Two homes: the admin app (/community/admin/deck/:week — presenter view,
+// admin-gated) and the public /students app (/students/deck/:week — the same
+// deck, read-only, no sign-in, so students can revisit any week's slides).
+// `publicView` picks the endpoint and where "back" goes.
 const INK = '#0B0B0B';
 const ACCENT = '#CCFF00';
 const FOOT = 'AI MAKERS GENERATION · Build the future. Share the knowledge.';
@@ -146,7 +151,7 @@ function Slide({ s }) {
   }
 }
 
-export default function Deck({ session }) {
+export default function Deck({ session, publicView = false }) {
   const { week } = useParams();
   const navigate = useNavigate();
   const [deck, setDeck] = useState(null);
@@ -172,10 +177,13 @@ export default function Deck({ session }) {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch(`/api/decks?week=${encodeURIComponent(week)}`, { headers: adminHeaders(session) });
+      const url = publicView
+        ? `/api/decks?public=1&week=${encodeURIComponent(week)}`
+        : `/api/decks?week=${encodeURIComponent(week)}`;
+      const res = await fetch(url, publicView ? undefined : { headers: adminHeaders(session) });
       const data = await res.json();
       if (res.ok) { setDeck(data); setNeedsKey(false); setKeyError(null); return; }
-      if (res.status === 401 || res.status === 403) {
+      if (!publicView && (res.status === 401 || res.status === 403)) {
         setKeyError(res.status === 403 ? 'Wrong password — try again.' : null);
         setNeedsKey(true);
         return;
@@ -184,7 +192,7 @@ export default function Deck({ session }) {
     } catch {
       setError("Couldn't reach the server.");
     }
-  }, [week, session?.access_token]);
+  }, [week, session?.access_token, publicView]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -196,6 +204,10 @@ export default function Deck({ session }) {
     return () => document.body.classList.remove('aimg-presenting');
   }, []);
 
+  // Where "back"/Esc lands: the admin dashboard, or the students home.
+  const backTo = publicView ? '/' : '/admin';
+  const backLabel = publicView ? 'Students' : 'Admin';
+
   const slides = deck?.slides || [];
   const next = useCallback(() => setIdx(i => Math.min(i + 1, slides.length - 1)), [slides.length]);
   const prev = useCallback(() => setIdx(i => Math.max(i - 1, 0)), []);
@@ -205,14 +217,23 @@ export default function Deck({ session }) {
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); next(); }
       else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
       else if (e.key === 'f' || e.key === 'F') { e.preventDefault(); toggleFull(); }
-      else if (e.key === 'Escape' && !document.fullscreenElement) navigate('/admin');
+      else if (e.key === 'Escape' && !document.fullscreenElement) navigate(backTo);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [next, prev, navigate, toggleFull]);
+  }, [next, prev, navigate, toggleFull, backTo]);
 
   if (needsKey) return <AdminKeyForm title="Session Deck" onUnlock={load} error={keyError} />;
-  if (error) return <div className="flex-1 flex items-center justify-center text-[#5C5C5C]">{error}</div>;
+  if (error) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 text-[#5C5C5C] p-6 text-center">
+        <p>{error}</p>
+        <button onClick={() => navigate(backTo)} className="btn !text-sm !py-2 !px-4 inline-flex items-center gap-2">
+          <ArrowLeft size={14} /> Back to {backLabel.toLowerCase()}
+        </button>
+      </div>
+    );
+  }
   if (!deck) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -229,10 +250,17 @@ export default function Deck({ session }) {
       </div>
       {/* chrome */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 20px', color: '#666', fontSize: 12, borderTop: '1px solid #1E1E1E' }}>
-        <button onClick={() => navigate('/admin')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
-          <ArrowLeft size={14} /> Admin
-        </button>
-        <span style={{ letterSpacing: '0.1em' }}>{FOOT}</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
+          <button onClick={() => navigate(backTo)} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, whiteSpace: 'nowrap' }}>
+            <ArrowLeft size={14} /> {backLabel}
+          </button>
+          {publicView && deck?.title && (
+            <span style={{ color: '#AAA', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={deck.title}>
+              Week {deck.week} · {deck.title}
+            </span>
+          )}
+        </span>
+        <span className="deck-foot" style={{ letterSpacing: '0.1em' }}>{FOOT}</span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <button onClick={prev} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}><ChevronLeft size={16} /></button>
           <span style={{ color: '#CCFF00', fontVariantNumeric: 'tabular-nums' }}>{idx + 1} / {slides.length}</span>

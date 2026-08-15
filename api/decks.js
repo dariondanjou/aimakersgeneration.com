@@ -4,6 +4,7 @@ import { requireAdmin, serviceClient } from "./_lib/admin-auth.js";
 // Cohort session slide decks.
 // GET            → list: [{week, title, session_date, generated_at, dirty}]
 // GET ?week=N    → { week, slides, generated_at }
+// GET ?public=1[&week=N] → no auth: read-only decks for the /students pages
 // POST {week: N} → regenerate week N's deck from its (edited) curriculum page.
 //                  Only slides affected by the edits/notes change; the model
 //                  is instructed to keep everything else identical. On
@@ -26,7 +27,54 @@ Titles are ALL-CAPS and may contain \\n for stacked lines. Bullets are short,
 punchy, presentation-grade — never paragraphs. Decks are text-only: never add
 an "image" field, and drop any "image" or "imgPrompt" field you encounter.`;
 
+// Public, read-only view for the /students pages (no auth). Students can
+// open every session's deck — past, current and upcoming — and revisit past
+// weeks' slides whenever they like.
+// GET ?public=1         → { decks: [{week, title, session_date, generated_at, slide_count}] }
+// GET ?public=1&week=N  → { week, title, session_date, slides, generated_at }
+async function publicHandler(req, res) {
+  const supabase = serviceClient();
+  const week = parseInt(req.query?.week, 10);
+  if (Number.isInteger(week)) {
+    const [{ data: deck, error: e1 }, { data: cw, error: e2 }] = await Promise.all([
+      supabase.from("cohort_decks").select("week, slides, generated_at").eq("week", week).maybeSingle(),
+      supabase.from("curriculum_weeks").select("week, title, session_date").eq("week", week).maybeSingle(),
+    ]);
+    if (e1 || e2) return res.status(500).json({ error: (e1 || e2).message });
+    if (!deck || !Array.isArray(deck.slides) || deck.slides.length === 0) {
+      return res.status(404).json({ error: "This week's slide deck isn't published yet." });
+    }
+    // Decks are text-only; strip any legacy image fields before they leave.
+    const slides = deck.slides.map((sl) => Object.fromEntries(Object.entries(sl).filter(([k]) => k !== "image" && k !== "imgPrompt")));
+    return res.status(200).json({
+      week: deck.week,
+      title: cw?.title || `Week ${week}`,
+      session_date: cw?.session_date || null,
+      slides,
+      generated_at: deck.generated_at,
+    });
+  }
+  const [{ data: decks, error: e1 }, { data: weeks, error: e2 }] = await Promise.all([
+    supabase.from("cohort_decks").select("week, generated_at, slides"),
+    supabase.from("curriculum_weeks").select("week, title, session_date"),
+  ]);
+  if (e1 || e2) return res.status(500).json({ error: (e1 || e2).message });
+  const byWeek = new Map((decks || []).map(d => [d.week, d]));
+  return res.status(200).json({
+    decks: (weeks || []).sort((a, b) => a.week - b.week).map(w => {
+      const d = byWeek.get(w.week);
+      const n = Array.isArray(d?.slides) ? d.slides.length : 0;
+      return {
+        week: w.week, title: w.title, session_date: w.session_date,
+        generated_at: n ? d.generated_at : null, slide_count: n,
+      };
+    }),
+  });
+}
+
 export default async function handler(req, res) {
+  if (req.method === "GET" && req.query?.public) return publicHandler(req, res);
+
   const denied = await requireAdmin(req);
   if (denied) return res.status(denied.status).json({ error: denied.error });
 

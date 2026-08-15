@@ -425,3 +425,9 @@ body::-webkit-scrollbar-thumb,
   background-repeat: no-repeat !important;
   background-position: center !important;
 }
+
+/* Slide deck viewer footer: the tagline is dropped on narrow screens so the
+   back button, week title and slide counter never collide. */
+@media (max-width: 760px) {
+  .deck-foot { display: none; }
+}

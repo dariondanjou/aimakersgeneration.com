@@ -1,13 +1,14 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import {
   ArrowLeft, Camera, Check, X, Plus, ExternalLink, Target, Flag,
   Image as ImageIcon, Link as LinkIcon, Upload, FileText, Clock, CheckCircle2, Trash2,
   MapPin, Briefcase, CalendarClock, Linkedin, TrendingUp, Users, Sparkles,
-  ListChecks, RefreshCw, AlertTriangle,
+  ListChecks, RefreshCw, AlertTriangle, Presentation,
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { getSocialPlatform, getSocialTooltip } from '../socialPlatforms';
+import CohortMaterialsSection from './CohortMaterials.jsx';
 
 // ── Inline click-to-edit field (same pattern as the community ProfilePage) ──
 function InlineField({ value, onSave, placeholder, isOwner, multiline = false, className = '' }) {
@@ -247,6 +248,16 @@ function ScanChip({ sub, onScan, scanning, late = false }) {
 
 // Small amber tag next to a not-yet-verified submission that went in after
 // the deadline (verified ones carry on time / late in their chip instead).
+// Inline link to the slide deck of the session a homework was handed out in.
+function DeckLink({ week }) {
+  if (!week) return null;
+  return (
+    <Link to={`/deck/${week}`} className="inline-flex items-center gap-1 font-semibold text-[#0F7B3F] hover:text-[#3E9E28] transition-colors" title={`Open the Week ${week} slide deck`}>
+      <Presentation size={12} /> Week {week} slides
+    </Link>
+  );
+}
+
 function LateTag() {
   return (
     <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-1.5 py-px shrink-0"
@@ -388,6 +399,7 @@ function ThisWeekPanel({
             <span className={`font-semibold ${pastDue ? 'text-amber-700' : 'text-[#1A1A1A]/70'}`}>
               Due {formatDue(assignment.due_at)}
             </span>
+            {' '}· <DeckLink week={assignment.week_assigned} />
           </p>
         </div>
       </div>
@@ -555,6 +567,7 @@ function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCur
             <span className={`font-semibold ${pastDue ? 'text-amber-700' : 'text-[#1A1A1A]/70'}`}>
               Due {formatDue(assignment.due_at)}
             </span>
+            {' '}· <DeckLink week={assignment.week_assigned} />
           </p>
           {pastDue && (
             <p className="text-xs font-semibold text-amber-700 mt-1.5">
@@ -1541,6 +1554,9 @@ export default function StudentProfile() {
             </>
           )}
         </div>
+
+        {/* ── Curriculum + every session's slide deck (past weeks stay open) ── */}
+        <CohortMaterialsSection variant="profile" />
 
         {/* ── Weekly homework ── */}
         <div className="glass-panel">
