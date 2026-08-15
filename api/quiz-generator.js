@@ -48,7 +48,7 @@ const QUIZ_SCHEMA = {
 const SYSTEM = `You write multiple-choice quiz questions for AI MAKERS GENERATION, an Atlanta cohort of AI creatives and career-changers (beginner-to-intermediate; smart adults, not engineers).
 
 Rules:
-- Every question must be answerable from the topic descriptions provided (current AI industry news) plus common knowledge. Never invent facts beyond them.
+- Every question must be answerable from the topic descriptions provided (current AI industry news, or foundational AI-industry knowledge) plus common knowledge. Never invent facts beyond them.
 - Exactly 4 options per question: one clearly correct, three plausible but wrong. No "all of the above" / "none of the above".
 - Vary which position holds the correct answer roughly evenly across the quiz.
 - Mix difficulty: ~1/3 easy recall, ~1/3 applied understanding, ~1/3 tricky distinctions.
@@ -75,16 +75,41 @@ function validateQuestions(qs, count) {
   return cleaned.slice(0, count);
 }
 
+// Models lean on one answer slot no matter what the prompt says (quiz #2's
+// first draft had 12/20 answers in position B). Rotate each question's options
+// (and their notes) so the correct answer lands on an evenly spread position:
+// every block of four questions covers A, B, C, D once, in a varying order.
+export function balanceAnswerPositions(questions) {
+  const targets = [];
+  for (let b = 0; b < questions.length; b += 4) {
+    const start = (b / 4) % 4;
+    const step = (b / 4) % 2 === 0 ? 1 : 3;
+    for (let k = 0; k < 4; k++) targets.push((start + k * step) % 4);
+  }
+  return questions.map((q, i) => {
+    const target = targets[i];
+    const shift = (target - q.correct + 4) % 4;
+    if (shift === 0) return q;
+    const rot = (arr) => arr.map((_, j) => arr[(j - shift + 4) % 4]);
+    return { ...q, options: rot(q.options), option_notes: rot(q.option_notes), correct: target };
+  });
+}
+
 async function callClaude(client, userPrompt) {
-  const response = await client.messages.create({
+  // Streamed under the hood (the SDK requires it for large max_tokens); we
+  // still just wait for the final message.
+  const response = await client.messages.stream({
     model: "claude-opus-4-8",
-    max_tokens: 16000,
+    // Thinking counts toward max_tokens; a 20-question quiz with option notes
+    // is ~12k tokens of JSON on its own, so leave real headroom.
+    max_tokens: 40000,
     thinking: { type: "adaptive" },
     output_config: { format: { type: "json_schema", schema: QUIZ_SCHEMA } },
     system: SYSTEM,
     messages: [{ role: "user", content: userPrompt }],
-  });
+  }).finalMessage();
   if (response.stop_reason === "refusal") throw new Error("Model declined the request");
+  if (response.stop_reason === "max_tokens") throw new Error("The model ran out of room writing the quiz — try fewer questions or topics");
   const textBlock = [...response.content].reverse().find((b) => b.type === "text");
   return JSON.parse(textBlock?.text || "{}").questions || [];
 }
@@ -111,10 +136,10 @@ export default async function handler(req, res) {
       const topicList = topics
         .map((t) => `- ${t.term}: ${t.description}`)
         .join("\n");
-      const questions = validateQuestions(
+      const questions = balanceAnswerPositions(validateQuestions(
         await callClaude(client, `Write exactly ${count} multiple-choice questions covering these topics:\n\n${topicList}`),
         count,
-      );
+      ));
 
       const { data: quiz, error } = await supabase
         .from("quizzes")
@@ -129,6 +154,8 @@ export default async function handler(req, res) {
             // With free navigation the only sane countdown is the whole quiz;
             // sequential quizzes count down per question.
             timer_mode: params?.allow_back ? "total" : "per_question",
+            // Which topic list the quiz was built from (drives glossary tooltips on review).
+            ...(typeof params?.term_list === "string" && /^[a-z0-9-]{1,40}$/.test(params.term_list) ? { term_list: params.term_list } : {}),
           },
           questions,
         })

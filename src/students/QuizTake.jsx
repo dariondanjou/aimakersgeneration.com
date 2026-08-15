@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Clock, Check, X, RotateCcw, Trophy } from 'lucide-react';
 import { supabase } from '../supabaseClient';
+import { TERM_LISTS, termListById } from './termLists';
 
 // Take a published quiz. The student picks their name from the roster, then:
 //  - sequential mode (no going back): one question at a time, each with its
@@ -13,9 +14,24 @@ import { supabase } from '../supabaseClient';
 
 const TICK_MS = 250;
 
-// Same monthly AI-terms list the Quiz Builder draws topics from; used here as
-// a glossary so review-page tooltips can explain terms like "VLOP".
-const TERMS_URL = '/data/ai-terms-july-2026.json';
+// Every topic list the Quiz Builder can draw from, merged into one glossary so
+// review-page tooltips can explain terms like "VLOP" or "RLHF" whichever list
+// the quiz was built from. The quiz's own list is loaded first so its
+// definitions win on duplicate terms.
+
+async function loadGlossaryTerms(preferredListId) {
+  const ordered = [termListById(preferredListId), ...TERM_LISTS.filter((l) => l.id !== termListById(preferredListId).id)];
+  const results = await Promise.all(ordered.map((l) => fetch(l.url).then((r) => r.json()).then((j) => j.terms || []).catch(() => [])));
+  const seen = new Set();
+  const merged = [];
+  for (const t of results.flat()) {
+    const key = t.term.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(t);
+  }
+  return merged;
+}
 
 // Floating tooltip for post-quiz review: hover (desktop) or tap (mobile) any
 // answer option to see why it's right or wrong.
@@ -162,8 +178,8 @@ export default function QuizTake() {
       setQuiz(q);
       setStudents(roster || []);
       setLoading(false);
+      loadGlossaryTerms(q?.params?.term_list).then(setTerms).catch(() => {});
     })();
-    fetch(TERMS_URL).then((r) => r.json()).then((j) => setTerms(j.terms || [])).catch(() => {});
   }, [id]);
 
   const glossary = useMemo(() => buildGlossary(terms), [terms]);

@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Sparkles, Check, RefreshCw, Send, MessageSquare, X } from 'lucide-react';
+import { ArrowLeft, Sparkles, Check, RefreshCw, Send, MessageSquare, FileText, ListChecks } from 'lucide-react';
+import { supabase } from '../supabaseClient';
+import { TERM_LISTS, DEFAULT_TERM_LIST, termListById } from './termLists';
 
-// Quiz builder: pick topics from the monthly AI-terms list, set parameters,
-// generate a multiple-choice quiz with AI, review it question by question
-// (keep / update-with-comment / replace), regenerate until happy, publish.
-// Published quizzes appear at the bottom of /students under QUIZZES.
-
-const TERMS_URL = '/data/ai-terms-july-2026.json';
+// Quiz builder: pick a topic list (monthly news or mainstream AI knowledge),
+// check topics, set parameters, generate a multiple-choice quiz with AI,
+// review it question by question (keep / update-with-comment / replace),
+// regenerate until happy, publish. Drafts persist server-side, so you can
+// leave and come back to review one before it goes live. Published quizzes
+// appear at the bottom of /students under QUIZZES, numbered in order.
 
 const TAG_STYLES = {
   keep: 'bg-[#3E9E28]/10 border-[#3E9E28]/40 text-[#0F7B3F]',
@@ -51,8 +53,10 @@ function Toggle({ label, hint, checked, onChange }) {
 
 export default function QuizBuilder() {
   const navigate = useNavigate();
+  const [listId, setListId] = useState(DEFAULT_TERM_LIST.id);
   const [terms, setTerms] = useState([]);
   const [selected, setSelected] = useState(() => new Set());
+  const [drafts, setDrafts] = useState([]);
   const [params, setParams] = useState({ question_count: 20, timed: true, time_per_question: 60, allow_back: false });
   const [phase, setPhase] = useState('setup'); // setup | review | published
   const [busy, setBusy] = useState(false);
@@ -62,9 +66,35 @@ export default function QuizBuilder() {
   const [title, setTitle] = useState('');
   const [publishedNumber, setPublishedNumber] = useState(null);
 
+  // Load the chosen topic list (switching lists clears the selection).
   useEffect(() => {
-    fetch(TERMS_URL).then((r) => r.json()).then((j) => setTerms(j.terms || [])).catch(() => setError('Could not load the topics list.'));
-  }, []);
+    let cancelled = false;
+    setTerms([]);
+    setSelected(new Set());
+    fetch(termListById(listId).url)
+      .then((r) => r.json())
+      .then((j) => { if (!cancelled) setTerms(j.terms || []); })
+      .catch(() => { if (!cancelled) setError('Could not load the topics list.'); });
+    return () => { cancelled = true; };
+  }, [listId]);
+
+  // Unpublished drafts (newest first) so a quiz can be reviewed later.
+  const loadDrafts = () => supabase
+    .from('quizzes')
+    .select('id, created_at, topics, params, questions')
+    .eq('status', 'draft')
+    .order('created_at', { ascending: false })
+    .limit(8)
+    .then(({ data }) => setDrafts(data || []));
+  useEffect(() => { loadDrafts(); }, []);
+
+  const openDraft = (d) => {
+    setQuiz({ quiz_id: d.id, params: d.params, questions: d.questions });
+    setTags({});
+    setTitle('');
+    setPhase('review');
+    window.scrollTo(0, 0);
+  };
 
   const toggleTerm = (term) => {
     setSelected((prev) => {
@@ -95,8 +125,8 @@ export default function QuizBuilder() {
 
   const generate = async () => {
     const topics = terms.filter((t) => selected.has(t.term)).map((t) => ({ term: t.term, description: t.description }));
-    const j = await callApi({ action: 'generate', topics, params });
-    if (j) { setQuiz(j); setTags({}); setPhase('review'); window.scrollTo(0, 0); }
+    const j = await callApi({ action: 'generate', topics, params: { ...params, term_list: listId } });
+    if (j) { setQuiz(j); setTags({}); setPhase('review'); window.scrollTo(0, 0); loadDrafts(); }
   };
 
   const regenerate = async () => {
@@ -109,7 +139,7 @@ export default function QuizBuilder() {
 
   const publish = async () => {
     const j = await callApi({ action: 'publish', quiz_id: quiz.quiz_id, title: title.trim() || undefined });
-    if (j) { setPublishedNumber(j.quiz_number); setPhase('published'); window.scrollTo(0, 0); }
+    if (j) { setPublishedNumber(j.quiz_number); setPhase('published'); window.scrollTo(0, 0); loadDrafts(); }
   };
 
   const setTag = (i, tag) => setTags((prev) => {
@@ -146,6 +176,55 @@ export default function QuizBuilder() {
         {/* ── SETUP ── */}
         {phase === 'setup' && (
           <>
+            {drafts.length > 0 && (
+              <div className="glass-panel mb-5 !border-amber-300">
+                <h2 className="text-sm uppercase tracking-wider flex items-center gap-2 mb-1">
+                  <FileText size={15} className="text-amber-500" /> Drafts waiting for review
+                </h2>
+                <p className="text-xs text-[#5C5C5C] mb-3">Generated but not published yet. Open one to check or update its questions, then publish.</p>
+                <ul className="space-y-2">
+                  {drafts.map((d) => {
+                    const listLabel = TERM_LISTS.find((l) => l.id === d.params?.term_list)?.label;
+                    return (
+                      <li key={d.id} className="flex items-center justify-between gap-3 rounded-lg border border-[#E3E3DF] bg-white px-3 py-2">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold truncate">
+                            {(d.questions || []).length} questions · {(d.topics || []).length} topics{listLabel ? ` · ${listLabel}` : ''}
+                          </p>
+                          <p className="text-[11px] text-[#1A1A1A]/40">
+                            Generated {new Date(d.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                            {d.params?.timed ? ` · ${d.params.time_per_question}s/question` : ' · untimed'}
+                          </p>
+                        </div>
+                        <button onClick={() => openDraft(d)} className="btn !py-1.5 !px-3.5 !text-xs shrink-0">
+                          <ListChecks size={13} /> Review
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
+            <div className="glass-panel mb-5">
+              <h2 className="text-sm uppercase tracking-wider mb-1">Topic list</h2>
+              <p className="text-xs text-[#5C5C5C] mb-3">Which 99-term list should the quiz draw from?</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {TERM_LISTS.map((l) => (
+                  <button key={l.id} type="button" onClick={() => setListId(l.id)}
+                    className={`text-left rounded-xl border px-4 py-3 transition-colors ${listId === l.id ? 'border-[#3E9E28] bg-[#3E9E28]/10' : 'border-[#E3E3DF] bg-white hover:border-[#3E9E28]/50'}`}>
+                    <span className="flex items-center gap-2 text-sm font-semibold">
+                      <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${listId === l.id ? 'border-[#3E9E28] bg-[#3E9E28]' : 'border-[#1A1A1A]/25'}`}>
+                        {listId === l.id && <Check size={10} className="text-white" strokeWidth={3} />}
+                      </span>
+                      {l.label}
+                    </span>
+                    <span className="text-xs text-[#5C5C5C] block mt-1 pl-6">{l.hint}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="glass-panel mb-5">
               <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
                 <h2 className="text-sm uppercase tracking-wider">Topics ({selected.size} selected)</h2>
@@ -286,7 +365,7 @@ export default function QuizBuilder() {
           <div className="glass-panel text-center py-10">
             <div className="w-14 h-14 rounded-full bg-[#0F7B3F] text-white flex items-center justify-center mx-auto mb-4"><Check size={28} /></div>
             <h2 className="text-xl mb-2">Quiz #{publishedNumber} is live</h2>
-            <p className="text-sm text-[#5C5C5C] mb-6">It's now listed under QUIZZES at the bottom of the students page.</p>
+            <p className="text-sm text-[#5C5C5C] mb-6">It's now listed under QUIZZES at the bottom of the students page, right after the earlier quizzes.</p>
             <div className="flex justify-center gap-3 flex-wrap">
               <button onClick={() => navigate('/')} className="btn">See it on the students page</button>
               <button onClick={() => { setPhase('setup'); setQuiz(null); setSelected(new Set()); setTitle(''); }} className="btn btn-primary">

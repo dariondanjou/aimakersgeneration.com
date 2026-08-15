@@ -1,0 +1,504 @@
+{
+  "title": "99 AI Terms Everyone Should Know — Mainstream AI Industry Knowledge",
+  "description": "99 companies, people, models, products, concepts, and moments that make up mainstream knowledge of the AI industry — the names and ideas that come up in the news, at work, and in conversation. Includes the women who shaped the field. Compiled August 2026 for AI MAKERS GENERATION Quiz #2.",
+  "generated": "2026-08-15",
+  "period": "foundational / evergreen (through 2026)",
+  "count": 99,
+  "terms": [
+    {
+      "term": "Artificial intelligence (AI)",
+      "type": "concept",
+      "description": "Computer systems that perform tasks normally needing human intelligence — understanding language, recognizing images, making decisions. The term was coined for the 1956 Dartmouth workshop by John McCarthy."
+    },
+    {
+      "term": "Machine learning",
+      "type": "concept",
+      "description": "The branch of AI where systems learn patterns from data instead of following hand-written rules. Almost everything called 'AI' today — from spam filters to ChatGPT — is machine learning."
+    },
+    {
+      "term": "Deep learning",
+      "type": "concept",
+      "description": "Machine learning using neural networks with many layers. Its 2012 breakthrough on the ImageNet image-recognition contest (AlexNet) kicked off the modern AI boom."
+    },
+    {
+      "term": "Neural network",
+      "type": "concept",
+      "description": "A model loosely inspired by the brain: layers of simple 'neurons' whose connection strengths (weights) are tuned during training. Large language models are enormous neural networks."
+    },
+    {
+      "term": "Large language model (LLM)",
+      "type": "concept",
+      "description": "A neural network trained on vast amounts of text to predict the next token, which lets it write, summarize, translate, and reason in natural language. GPT-4, Claude, Gemini, and Llama are LLMs."
+    },
+    {
+      "term": "Transformer",
+      "type": "concept",
+      "description": "The neural-network architecture behind nearly all modern language models, introduced by Google researchers in the 2017 paper 'Attention Is All You Need.' The 'T' in GPT stands for Transformer."
+    },
+    {
+      "term": "Generative AI",
+      "type": "concept",
+      "description": "AI that creates new content — text, images, audio, video, code — rather than just classifying or predicting. ChatGPT, Midjourney, and Sora are generative AI."
+    },
+    {
+      "term": "Prompt",
+      "type": "concept",
+      "description": "The instruction or question you give an AI model. 'Prompt engineering' is the craft of wording prompts (with context, examples, and constraints) to get better results."
+    },
+    {
+      "term": "Token",
+      "type": "concept",
+      "description": "The unit of text a language model reads and writes — roughly three-quarters of a word in English. Models are priced and limited by tokens; a 'context window' is how many tokens a model can consider at once."
+    },
+    {
+      "term": "Hallucination",
+      "type": "concept",
+      "description": "When an AI model states something false with confidence — an invented citation, a made-up fact. It happens because models predict plausible text, not verified truth; grounding and retrieval reduce it."
+    },
+    {
+      "term": "Fine-tuning",
+      "type": "concept",
+      "description": "Further training an existing model on a smaller, specific dataset so it behaves a certain way or knows a domain — cheaper than training from scratch."
+    },
+    {
+      "term": "Retrieval-augmented generation (RAG)",
+      "type": "concept",
+      "description": "Giving a model relevant documents (retrieved from a search or database) alongside the prompt so its answers are grounded in real sources. The standard way companies connect LLMs to their own data."
+    },
+    {
+      "term": "AI agent",
+      "type": "concept",
+      "description": "An AI system that doesn't just answer but acts — planning steps, using tools (browsers, code, APIs), and working toward a goal with limited supervision. 'Agentic AI' was the industry's defining theme of 2025."
+    },
+    {
+      "term": "Multimodal",
+      "type": "concept",
+      "description": "A model that works across more than one kind of input or output — text, images, audio, video. GPT-4o, Gemini, and Claude can look at a photo and talk about it."
+    },
+    {
+      "term": "Artificial general intelligence (AGI)",
+      "type": "concept",
+      "description": "A hypothetical AI able to do essentially any intellectual task a human can. OpenAI's stated mission is to build it; when (or whether) it arrives is the industry's biggest debate."
+    },
+    {
+      "term": "AI alignment",
+      "type": "concept",
+      "description": "Making sure AI systems pursue the goals and values their creators and users intend — safely and honestly. Anthropic was founded around this problem."
+    },
+    {
+      "term": "Turing test",
+      "type": "concept",
+      "description": "Alan Turing's 1950 proposal: if a machine's conversation is indistinguishable from a human's, call it intelligent. Modern chatbots have arguably passed it, which is why researchers now use harder benchmarks."
+    },
+    {
+      "term": "Algorithmic bias",
+      "type": "concept",
+      "description": "When an AI system produces unfair outcomes for certain groups because of skewed training data or design — e.g., facial recognition that misidentifies darker-skinned women far more often, as Joy Buolamwini's research showed."
+    },
+    {
+      "term": "Deepfake",
+      "type": "concept",
+      "description": "Realistic AI-generated or AI-altered video, audio, or images of real people. A major concern for elections, fraud, and harassment; watermarking and detection tools try to keep up."
+    },
+    {
+      "term": "Computer vision",
+      "type": "concept",
+      "description": "AI that interprets images and video — recognizing faces, reading X-rays, guiding self-driving cars. Fei-Fei Li's ImageNet dataset made the field's deep-learning breakthrough possible."
+    },
+    {
+      "term": "Natural language processing (NLP)",
+      "type": "concept",
+      "description": "The AI subfield for understanding and generating human language — translation, sentiment analysis, chatbots. LLMs made NLP mainstream."
+    },
+    {
+      "term": "Reinforcement learning",
+      "type": "concept",
+      "description": "Training by trial, error, and reward. It taught AlphaGo to play Go, and 'RLHF' — reinforcement learning from human feedback — is how ChatGPT-style assistants learn to be helpful and polite."
+    },
+    {
+      "term": "Reasoning models",
+      "type": "concept",
+      "description": "Models that 'think' step by step before answering (chain-of-thought), trading speed for accuracy on hard problems. OpenAI's o1 (2024), DeepSeek-R1, and extended-thinking modes in Claude and Gemini popularized the approach."
+    },
+    {
+      "term": "Open-weight models",
+      "type": "concept",
+      "description": "Models whose trained weights are published for anyone to download and run — Meta's Llama, Mistral, DeepSeek, Alibaba's Qwen — versus closed models accessed only through an API (GPT, Claude, Gemini)."
+    },
+    {
+      "term": "Scaling laws",
+      "type": "concept",
+      "description": "The finding that model performance improves predictably as you add more data, more parameters, and more compute — the bet behind the industry's giant training runs and data-center spending."
+    },
+    {
+      "term": "GPU",
+      "type": "hardware",
+      "description": "Graphics processing unit — the chip designed for video games that turned out to be ideal for training neural networks. NVIDIA's H100 and Blackwell GPUs are the picks and shovels of the AI gold rush."
+    },
+    {
+      "term": "Training data",
+      "type": "concept",
+      "description": "The text, images, and code a model learns from — much of it scraped from the public web. Who owns it, and whether using it is fair use, is at the center of the industry's copyright battles."
+    },
+    {
+      "term": "Vibe coding",
+      "type": "concept",
+      "description": "Building software by describing what you want to an AI in plain English and accepting the code it writes — a term coined by Andrej Karpathy in early 2025 that captured how non-programmers began shipping apps."
+    },
+    {
+      "term": "Model Context Protocol (MCP)",
+      "type": "concept",
+      "description": "An open standard introduced by Anthropic in late 2024 for connecting AI assistants to tools and data sources — a 'USB-C for AI' adopted across the industry, including by OpenAI and Google."
+    },
+    {
+      "term": "OpenAI",
+      "type": "company",
+      "description": "The San Francisco lab behind ChatGPT, GPT-4, DALL·E, and Sora. Founded in 2015 as a nonprofit (co-founders included Sam Altman and Elon Musk), it became the most valuable AI startup and Microsoft's key partner."
+    },
+    {
+      "term": "Anthropic",
+      "type": "company",
+      "description": "The AI safety-focused company behind Claude, founded in 2021 by siblings Dario and Daniela Amodei and other former OpenAI researchers. Known for Constitutional AI, its Responsible Scaling Policy, and Claude Code."
+    },
+    {
+      "term": "Google DeepMind",
+      "type": "company",
+      "description": "Google's AI lab, formed by merging London-based DeepMind (AlphaGo, AlphaFold) with Google Brain in 2023. Led by Demis Hassabis; makes the Gemini models."
+    },
+    {
+      "term": "Microsoft",
+      "type": "company",
+      "description": "OpenAI's biggest backer (over $13 billion invested) and the company that put GPT models into Bing, Office, and Windows under the 'Copilot' brand. Its Azure cloud hosts much of the AI industry."
+    },
+    {
+      "term": "Meta AI",
+      "type": "company",
+      "description": "Facebook's parent company's AI arm, led for years by Yann LeCun's research group. Best known for releasing the open-weight Llama models and, in 2025, for spending billions to build a 'superintelligence' team."
+    },
+    {
+      "term": "NVIDIA",
+      "type": "company",
+      "description": "The chipmaker whose GPUs train and run almost all frontier AI. The AI boom made it, at times, the most valuable company in the world; CEO Jensen Huang's leather jacket became an industry icon."
+    },
+    {
+      "term": "Amazon",
+      "type": "company",
+      "description": "Runs the world's largest cloud (AWS), invested $8 billion in Anthropic, sells its own AI chips (Trainium), and rebuilt Alexa around generative AI."
+    },
+    {
+      "term": "Apple",
+      "type": "company",
+      "description": "The famously slow-to-AI iPhone maker; launched 'Apple Intelligence' in 2024 with on-device models, ChatGPT integration in Siri, and a stated privacy-first approach."
+    },
+    {
+      "term": "xAI",
+      "type": "company",
+      "description": "Elon Musk's AI company, founded in 2023, maker of the Grok chatbot integrated into X (formerly Twitter). Built the giant 'Colossus' training cluster in Memphis."
+    },
+    {
+      "term": "Mistral AI",
+      "type": "company",
+      "description": "Paris-based startup founded in 2023 by former Meta and DeepMind researchers; Europe's flagship AI lab, known for capable open-weight models and the Le Chat assistant."
+    },
+    {
+      "term": "Hugging Face",
+      "type": "company",
+      "description": "The 'GitHub of AI' — the hub where the community shares open models, datasets, and demos. Co-founded by Clément Delangue; the go-to place to download open-weight models."
+    },
+    {
+      "term": "Perplexity",
+      "type": "company",
+      "description": "The 'answer engine' startup that popularized AI search: it answers questions in prose with cited sources instead of ten blue links, putting pressure on Google."
+    },
+    {
+      "term": "Midjourney",
+      "type": "company",
+      "description": "The independent lab (originally run through Discord) whose image generator became the go-to for striking AI art — and the source of many viral fakes, like the 'Pope in a puffer jacket.'"
+    },
+    {
+      "term": "Stability AI",
+      "type": "company",
+      "description": "The company that released Stable Diffusion in 2022, the open-source image model that let anyone generate images on their own computer — and set off a wave of artist lawsuits."
+    },
+    {
+      "term": "DeepSeek",
+      "type": "company",
+      "description": "The Chinese lab whose R1 reasoning model in January 2025 matched top U.S. models at a fraction of the reported cost — briefly wiping about $600 billion off NVIDIA's market value in one day (the 'DeepSeek moment')."
+    },
+    {
+      "term": "Alibaba Qwen",
+      "type": "company",
+      "description": "The Chinese e-commerce giant's family of open-weight models — one of the most downloaded on Hugging Face and a sign that frontier AI is no longer just an American story."
+    },
+    {
+      "term": "Waymo",
+      "type": "company",
+      "description": "Alphabet's self-driving car company — the first to run fully driverless robotaxi services to the public in cities like Phoenix, San Francisco, Los Angeles, and Austin."
+    },
+    {
+      "term": "Tesla",
+      "type": "company",
+      "description": "Elon Musk's carmaker, whose 'Full Self-Driving' software, Optimus humanoid robot, and robotaxi ambitions make it as much an AI story as a car story."
+    },
+    {
+      "term": "ElevenLabs",
+      "type": "company",
+      "description": "The leading AI voice company — realistic text-to-speech, voice cloning, and dubbing in dozens of languages, used by publishers, studios, and creators."
+    },
+    {
+      "term": "Cursor",
+      "type": "product",
+      "description": "The AI-first code editor from startup Anysphere that became the fastest-growing developer tool in history and made 'AI pair programming' the default way many engineers work."
+    },
+    {
+      "term": "ChatGPT",
+      "type": "product",
+      "description": "OpenAI's chatbot, launched November 30, 2022. It reached 100 million users in two months — the fastest consumer app ever at the time — and made generative AI a household topic."
+    },
+    {
+      "term": "GPT-4",
+      "type": "model",
+      "description": "OpenAI's March 2023 model that made ChatGPT dramatically smarter — passing the bar exam in the top 10% — and set the bar every rival measured against. Successors include GPT-4o and GPT-5."
+    },
+    {
+      "term": "Claude",
+      "type": "product",
+      "description": "Anthropic's AI assistant, named after Claude Shannon, the father of information theory. Known for long documents, careful writing, and coding; the model families are Haiku, Sonnet, and Opus."
+    },
+    {
+      "term": "Gemini",
+      "type": "product",
+      "description": "Google's flagship model family and assistant (formerly Bard), built to be multimodal from the start and woven into Search, Android, Gmail, and Workspace."
+    },
+    {
+      "term": "Llama",
+      "type": "model",
+      "description": "Meta's family of open-weight language models, first released in 2023. Free to download and modify, Llama became the foundation of much of the open-source AI ecosystem."
+    },
+    {
+      "term": "GitHub Copilot",
+      "type": "product",
+      "description": "The AI coding assistant Microsoft's GitHub launched in 2021 on OpenAI models — the first mass-market generative AI product, autocompleting code inside the editor."
+    },
+    {
+      "term": "DALL·E",
+      "type": "product",
+      "description": "OpenAI's text-to-image system (2021–2022) that showed the world an AI could draw 'an avocado armchair' from a sentence; a pun on Salvador Dalí and WALL·E."
+    },
+    {
+      "term": "Stable Diffusion",
+      "type": "model",
+      "description": "The open-source image-generation model released in 2022 by Stability AI with researchers at LMU Munich. Being free and runnable at home made image generation ubiquitous — and controversial."
+    },
+    {
+      "term": "Sora",
+      "type": "product",
+      "description": "OpenAI's text-to-video model, previewed in February 2024 with startlingly realistic clips; the Sora app later let people insert themselves into AI videos."
+    },
+    {
+      "term": "Grok",
+      "type": "product",
+      "description": "xAI's chatbot built into X, marketed as edgier and 'less woke' than rivals — and repeatedly in the news for offensive outputs."
+    },
+    {
+      "term": "Siri and Alexa",
+      "type": "product",
+      "description": "The first-generation voice assistants (Apple's Siri, 2011; Amazon's Alexa, 2014) whose limits made ChatGPT's fluency so striking — both were rebuilt around large language models."
+    },
+    {
+      "term": "AlphaGo",
+      "type": "model",
+      "description": "DeepMind's Go-playing AI that beat world champion Lee Sedol 4–1 in March 2016 — a decade earlier than experts predicted. Its 'Move 37' became shorthand for machine creativity."
+    },
+    {
+      "term": "AlphaFold",
+      "type": "model",
+      "description": "DeepMind's system that solved the 50-year-old protein-folding problem, predicting the structures of nearly every known protein. It won Demis Hassabis and John Jumper the 2024 Nobel Prize in Chemistry."
+    },
+    {
+      "term": "IBM Watson",
+      "type": "product",
+      "description": "The IBM system that beat 'Jeopardy!' champions in 2011 — an early AI celebrity whose overhyped push into medicine became a cautionary tale."
+    },
+    {
+      "term": "Deep Blue",
+      "type": "event",
+      "description": "IBM's chess computer that beat world champion Garry Kasparov in 1997 — the first time a machine defeated a reigning champion in a match, and a landmark of classical (pre-deep-learning) AI."
+    },
+    {
+      "term": "ImageNet",
+      "type": "benchmark",
+      "description": "The huge labeled-image dataset created by Fei-Fei Li's team (2009). The 2012 ImageNet contest, won by a deep neural network (AlexNet), is widely considered the start of the deep-learning revolution."
+    },
+    {
+      "term": "\"Attention Is All You Need\"",
+      "type": "event",
+      "description": "The 2017 Google paper that introduced the Transformer architecture. Its eight authors have since founded startups like Cohere, Character.AI, and Adept; nearly every modern LLM descends from it."
+    },
+    {
+      "term": "Sam Altman",
+      "type": "person",
+      "description": "CEO of OpenAI and the public face of the AI boom. In November 2023 the board fired him and, five days later, brought him back after employees revolted — the industry's most dramatic weekend."
+    },
+    {
+      "term": "Dario Amodei",
+      "type": "person",
+      "description": "Co-founder and CEO of Anthropic; former OpenAI research VP. Known for essays like 'Machines of Loving Grace' and for warning that AI could eliminate half of entry-level white-collar jobs."
+    },
+    {
+      "term": "Daniela Amodei",
+      "type": "person",
+      "description": "Co-founder and President of Anthropic (with her brother Dario), running the company's operations and policy. One of the most powerful executives in AI."
+    },
+    {
+      "term": "Demis Hassabis",
+      "type": "person",
+      "description": "Co-founder and CEO of Google DeepMind, former chess prodigy and game designer. Shared the 2024 Nobel Prize in Chemistry for AlphaFold; knighted in 2024."
+    },
+    {
+      "term": "Jensen Huang",
+      "type": "person",
+      "description": "Co-founder and CEO of NVIDIA, whose bet on GPUs for AI made him one of the world's richest people and the industry's most-watched keynote speaker."
+    },
+    {
+      "term": "Elon Musk",
+      "type": "person",
+      "description": "OpenAI co-founder turned rival: founded xAI, sued OpenAI over its for-profit shift, and pushes AI through Tesla, Neuralink, and X. A loud voice both hyping and warning about AI."
+    },
+    {
+      "term": "Geoffrey Hinton",
+      "type": "person",
+      "description": "The 'Godfather of AI' whose work on neural networks won the 2018 Turing Award and the 2024 Nobel Prize in Physics. He left Google in 2023 to speak freely about AI's risks."
+    },
+    {
+      "term": "Yann LeCun",
+      "type": "person",
+      "description": "Turing Award winner, pioneer of convolutional neural networks, and Meta's longtime chief AI scientist — a vocal skeptic that LLMs alone lead to human-level intelligence."
+    },
+    {
+      "term": "Yoshua Bengio",
+      "type": "person",
+      "description": "The third of the Turing Award 'godfathers of deep learning'; founder of Mila in Montreal and today one of the most prominent scientists calling for AI safety regulation."
+    },
+    {
+      "term": "Fei-Fei Li",
+      "type": "person",
+      "description": "Stanford professor called the 'godmother of AI.' Created ImageNet, co-directs Stanford's Human-Centered AI institute, and founded World Labs to build 'spatial intelligence' models."
+    },
+    {
+      "term": "Timnit Gebru",
+      "type": "person",
+      "description": "AI ethics researcher who co-led Google's Ethical AI team until her 2020 ouster over a paper on the risks of large language models ('Stochastic Parrots'). Founded the DAIR institute."
+    },
+    {
+      "term": "Joy Buolamwini",
+      "type": "person",
+      "description": "MIT researcher and founder of the Algorithmic Justice League. Her 'Gender Shades' study exposed racial and gender bias in facial recognition and pushed IBM, Microsoft, and Amazon to change course."
+    },
+    {
+      "term": "Mira Murati",
+      "type": "person",
+      "description": "Former CTO of OpenAI who oversaw ChatGPT and DALL·E (and was briefly interim CEO in 2023). Left in 2024 to found Thinking Machines Lab, which raised a record $2 billion seed round."
+    },
+    {
+      "term": "Kate Crawford",
+      "type": "person",
+      "description": "Scholar of AI's social and environmental costs; author of 'Atlas of AI' and co-founder of the AI Now Institute at NYU."
+    },
+    {
+      "term": "Margaret Mitchell",
+      "type": "person",
+      "description": "AI ethics researcher who co-founded Google's Ethical AI team with Timnit Gebru (and was also fired), now Chief Ethics Scientist at Hugging Face."
+    },
+    {
+      "term": "Rumman Chowdhury",
+      "type": "person",
+      "description": "Data scientist who led Twitter's ML ethics team, founded Humane Intelligence, and served as the U.S. Science Envoy for AI — a leading voice on auditing and red-teaming AI systems."
+    },
+    {
+      "term": "Daphne Koller",
+      "type": "person",
+      "description": "Stanford AI professor, MacArthur 'genius' fellow, co-founder of Coursera, and founder and CEO of insitro, which uses machine learning to discover drugs."
+    },
+    {
+      "term": "Emily M. Bender",
+      "type": "person",
+      "description": "Computational linguist who coined the phrase 'stochastic parrots' to describe LLMs, and a leading critic of AI hype."
+    },
+    {
+      "term": "Lisa Su",
+      "type": "person",
+      "description": "CEO of AMD, NVIDIA's main GPU rival, who turned the company around and made it a serious contender in AI chips. Time's 2024 CEO of the Year."
+    },
+    {
+      "term": "Andrew Ng",
+      "type": "person",
+      "description": "Co-founder of Google Brain and Coursera, former Baidu chief scientist, and the teacher whose online courses introduced millions of people to machine learning."
+    },
+    {
+      "term": "Ilya Sutskever",
+      "type": "person",
+      "description": "OpenAI co-founder and former chief scientist, a central figure in the 2023 board drama; left in 2024 to found Safe Superintelligence Inc."
+    },
+    {
+      "term": "Alan Turing",
+      "type": "person",
+      "description": "British mathematician who broke the Enigma code and laid the foundations of computing and AI — the Turing test and the Turing Award are named for him."
+    },
+    {
+      "term": "Satya Nadella",
+      "type": "person",
+      "description": "Microsoft CEO who bet the company on OpenAI, remade Microsoft around Copilot, and became a kingmaker in the AI industry."
+    },
+    {
+      "term": "Mark Zuckerberg",
+      "type": "person",
+      "description": "Meta CEO who made the open-weight Llama models a strategy, spent billions on data centers and talent, and set 'personal superintelligence' as Meta's goal."
+    },
+    {
+      "term": "ChatGPT launch (Nov 30, 2022)",
+      "type": "event",
+      "description": "The 'iPhone moment' of AI: a research preview that hit a million users in five days and 100 million in two months, triggering a global race among tech companies."
+    },
+    {
+      "term": "AlphaGo vs. Lee Sedol (2016)",
+      "type": "event",
+      "description": "The five-game match in Seoul where DeepMind's AlphaGo beat the Go world champion 4–1, watched by 200 million people — the moment AI stopped being a lab curiosity for much of Asia."
+    },
+    {
+      "term": "OpenAI board crisis (Nov 2023)",
+      "type": "event",
+      "description": "OpenAI's board abruptly fired Sam Altman; Microsoft offered him a job; over 700 of 770 employees threatened to quit; Altman returned as CEO within five days with a new board."
+    },
+    {
+      "term": "2024 Nobel Prizes for AI",
+      "type": "event",
+      "description": "Geoffrey Hinton and John Hopfield won the Physics Nobel for neural-network foundations; Demis Hassabis, John Jumper, and David Baker won Chemistry for AlphaFold and protein design."
+    },
+    {
+      "term": "DeepSeek moment (Jan 2025)",
+      "type": "event",
+      "description": "The week China's DeepSeek released R1: it topped the App Store, sent NVIDIA down about 17% in a day, and forced a rethink of how much money frontier AI really requires."
+    },
+    {
+      "term": "EU AI Act",
+      "type": "policy",
+      "description": "The European Union's landmark AI law (adopted 2024) — the world's first comprehensive one — regulating AI by risk level, banning some uses (like social scoring) and imposing rules on general-purpose models."
+    },
+    {
+      "term": "AI copyright lawsuits",
+      "type": "policy",
+      "description": "The wave of suits over training on copyrighted work — The New York Times v. OpenAI and Microsoft, authors v. Anthropic (settled for $1.5 billion in 2025), artists v. Stability AI — testing whether AI training is fair use."
+    },
+    {
+      "term": "Hollywood AI strikes (2023)",
+      "type": "policy",
+      "description": "The writers' (WGA) and actors' (SAG-AFTRA) strikes that won the first union contracts limiting how studios can use AI to write scripts or replicate performers' likenesses."
+    },
+    {
+      "term": "AI chip export controls",
+      "type": "policy",
+      "description": "U.S. rules restricting sales of advanced AI chips (like NVIDIA's top GPUs) to China — the frontline of the U.S.–China AI rivalry and a constant headline for NVIDIA."
+    }
+  ]
+}
