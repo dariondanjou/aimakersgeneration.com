@@ -7,6 +7,7 @@ import { createClient } from "@supabase/supabase-js";
 //   regenerate — takes the draft plus per-question review tags (keep / update
 //                with comment / replace) and produces the revised quiz.
 //   publish    — assigns the next QUIZ # and flips status to published.
+//   discard    — archives an unpublished draft so it leaves the review list.
 // All quizzes table writes go through here with the service role — the table
 // is read-only to the browser.
 
@@ -192,10 +193,23 @@ export default async function handler(req, res) {
         count,
       );
 
+      const balanced = balanceAnswerPositions(questions);
       const { error: upErr } = await supabase
-        .from("quizzes").update({ questions }).eq("id", quiz_id);
+        .from("quizzes").update({ questions: balanced }).eq("id", quiz_id);
       if (upErr) throw new Error(upErr.message);
-      return res.json({ quiz_id, params: quiz.params, questions });
+      return res.json({ quiz_id, params: quiz.params, questions: balanced });
+    }
+
+    // ── discard ──────────────────────────────────────────────────────────
+    if (action === "discard") {
+      const { quiz_id } = req.body;
+      const { data: quiz, error: qErr } = await supabase
+        .from("quizzes").select("id, status").eq("id", quiz_id).maybeSingle();
+      if (qErr || !quiz) return res.status(404).json({ error: "Quiz not found" });
+      if (quiz.status !== "draft") return res.status(400).json({ error: "Only drafts can be discarded" });
+      const { error: upErr } = await supabase.from("quizzes").update({ status: "archived" }).eq("id", quiz_id);
+      if (upErr) throw new Error(upErr.message);
+      return res.json({ quiz_id, status: "archived" });
     }
 
     // ── publish ──────────────────────────────────────────────────────────

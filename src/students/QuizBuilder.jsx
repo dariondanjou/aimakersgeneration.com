@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Sparkles, Check, RefreshCw, Send, MessageSquare, FileText, ListChecks } from 'lucide-react';
+import { ArrowLeft, Sparkles, Check, RefreshCw, Send, MessageSquare, FileText, ListChecks, Trash2 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { TERM_LISTS, DEFAULT_TERM_LIST, termListById } from './termLists';
 
@@ -87,6 +87,12 @@ export default function QuizBuilder() {
     .limit(8)
     .then(({ data }) => setDrafts(data || []));
   useEffect(() => { loadDrafts(); }, []);
+
+  const discardDraft = async (d) => {
+    if (!confirm('Discard this draft? It will disappear from the review list.')) return;
+    const j = await callApi({ action: 'discard', quiz_id: d.id });
+    if (j) loadDrafts();
+  };
 
   const openDraft = (d) => {
     setQuiz({ quiz_id: d.id, params: d.params, questions: d.questions });
@@ -196,9 +202,15 @@ export default function QuizBuilder() {
                             {d.params?.timed ? ` · ${d.params.time_per_question}s/question` : ' · untimed'}
                           </p>
                         </div>
-                        <button onClick={() => openDraft(d)} className="btn !py-1.5 !px-3.5 !text-xs shrink-0">
-                          <ListChecks size={13} /> Review
-                        </button>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button onClick={() => openDraft(d)} className="btn !py-1.5 !px-3.5 !text-xs">
+                            <ListChecks size={13} /> Review
+                          </button>
+                          <button onClick={() => discardDraft(d)} disabled={busy} title="Discard this draft"
+                            className="p-1.5 rounded-full text-[#1A1A1A]/35 hover:text-red-600 hover:bg-red-50 transition-colors">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </li>
                     );
                   })}
