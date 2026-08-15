@@ -262,6 +262,31 @@ function LateTag() {
   );
 }
 
+// The specific homework due for a week: the curriculum's bulleted homework
+// list for the session it was handed out in (from /api/curriculum?public=1),
+// falling back to the assignment's prose description if the curriculum
+// hasn't loaded or has no bullets for that week.
+function DueList({ items, description, compact = false }) {
+  if (items?.length) {
+    return (
+      <div className={compact ? 'mt-1.5' : 'mt-2'}>
+        <p className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1 flex items-center gap-1.5">
+          <ListChecks size={11} className="text-[#3E9E28]" /> What's due
+        </p>
+        <ul className="space-y-1">
+          {items.map((t, i) => (
+            <li key={i} className="text-sm text-[#1A1A1A]/80 leading-relaxed flex gap-2">
+              <span className="text-[#3E9E28] font-bold shrink-0">—</span> {t}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+  if (description) return <p className={`text-sm text-[#5C5C5C] ${compact ? 'mt-1' : 'mt-1.5'}`}>{description}</p>;
+  return null;
+}
+
 const STATE_LINES = {
   verified: 'Homework verified — turned in on time. Nice work.',
   late: 'Homework verified — it came in after the deadline, so it counts as late.',
@@ -281,7 +306,7 @@ const stateTextClass = (state) =>
 // ── "This Week" panel: the current assignment highlighted at the top ────────
 function ThisWeekPanel({
   assignment, assignments, submissions, isOwner, now,
-  onSubmitFiles, onSubmitText, onScan, scanningIds,
+  onSubmitFiles, onSubmitText, onScan, scanningIds, dueByWeek = {},
 }) {
   const fileRef = useRef(null);
   const [drag, setDrag] = useState(false);
@@ -353,9 +378,7 @@ function ThisWeekPanel({
             </span>
             <h3 className="text-base">{assignment.title}</h3>
           </div>
-          {assignment.description && (
-            <p className="text-sm text-[#5C5C5C] mt-1">{assignment.description}</p>
-          )}
+          <DueList items={dueByWeek[assignment.week_assigned]} description={assignment.description} compact />
           <p className={`text-sm mt-1.5 font-semibold ${stateTextClass(state)}`}>
             {stateLine}
           </p>
@@ -432,7 +455,8 @@ function ThisWeekPanel({
             const st = verificationState(submissions.filter((s) => s.assignment_id === a.id), a);
             const isCurrent = a.id === assignment.id;
             return (
-              <div key={a.id} className={`flex flex-col items-center gap-1 ${isCurrent ? '' : 'opacity-75'}`}>
+              <div key={a.id} className={`flex flex-col items-center gap-1 ${isCurrent ? '' : 'opacity-75'}`}
+                title={`HW${a.number} · ${a.title} · due ${formatDue(a.due_at)}`}>
                 <ScanCircle state={st} size={26} />
                 <span className={`text-[10px] uppercase tracking-wider ${isCurrent ? 'text-[#0F7B3F] font-bold' : 'text-[#1A1A1A]/40'}`}>
                   HW{a.number}
@@ -451,7 +475,7 @@ function ThisWeekPanel({
 // After the deadline it stays open: the outline turns amber and anything that
 // goes in is marked late. On-time work locks once the deadline passes; late
 // submissions can still be swapped out.
-function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCurrent, onSubmitFiles, onScan, scanningIds }) {
+function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCurrent, onSubmitFiles, onScan, scanningIds, dueItems }) {
   const fileRef = useRef(null);
   const [busy, setBusy] = useState(false);
   const [drag, setDrag] = useState(false);
@@ -524,9 +548,7 @@ function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCur
               </span>
             )}
           </div>
-          {assignment.description && (
-            <p className="text-sm text-[#5C5C5C] mt-1.5">{assignment.description}</p>
-          )}
+          <DueList items={dueItems} description={assignment.description} />
           <p className="text-xs text-[#1A1A1A]/50 mt-1.5">
             Assigned {formatAssigned(assignment.assigned_on)} · Due {formatDue(assignment.due_at)}
           </p>
@@ -880,6 +902,21 @@ export default function StudentProfile() {
   const [submissions, setSubmissions] = useState([]);
   const [media, setMedia] = useState([]);
   const [linkedinStats, setLinkedinStats] = useState([]);
+  // week_assigned → the curriculum's specific homework bullets for that session.
+  const [dueByWeek, setDueByWeek] = useState({});
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/curriculum?public=1')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.weeks) return;
+        const map = {};
+        for (const w of data.weeks) if (Array.isArray(w.homework) && w.homework.length) map[w.week] = w.homework;
+        setDueByWeek(map);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
   const [isUploading, setIsUploading] = useState(false);
   const [addingLink, setAddingLink] = useState(false);
   const [newLinkUrl, setNewLinkUrl] = useState('');
@@ -1248,6 +1285,7 @@ export default function StudentProfile() {
           onSubmitText={submitHomeworkText}
           onScan={scanSubmission}
           scanningIds={scanningIds}
+          dueByWeek={dueByWeek}
         />
 
         {/* ── LinkedIn (first section below the header) ── */}
@@ -1522,6 +1560,7 @@ export default function StudentProfile() {
                 onSubmitFiles={submitHomeworkFiles}
                 onScan={scanSubmission}
                 scanningIds={scanningIds}
+                dueItems={dueByWeek[a.week_assigned]}
               />
             ))}
             {assignments.length === 0 && (
