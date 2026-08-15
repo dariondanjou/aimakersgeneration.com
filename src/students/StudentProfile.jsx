@@ -384,7 +384,10 @@ function ThisWeekPanel({
             <p className="text-xs text-[#5C5C5C] mt-0.5">{verifiedNote}</p>
           )}
           <p className="text-xs text-[#1A1A1A]/50 mt-1.5">
-            Assigned {formatAssigned(assignment.assigned_on)} · Due {formatDue(assignment.due_at)}
+            Assigned {formatAssigned(assignment.assigned_on)} ·{' '}
+            <span className={`font-semibold ${pastDue ? 'text-amber-700' : 'text-[#1A1A1A]/70'}`}>
+              Due {formatDue(assignment.due_at)}
+            </span>
           </p>
         </div>
       </div>
@@ -548,13 +551,16 @@ function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCur
           </div>
           <DueList items={dueItems} description={assignment.description} />
           <p className="text-xs text-[#1A1A1A]/50 mt-1.5">
-            Assigned {formatAssigned(assignment.assigned_on)} · Due {formatDue(assignment.due_at)}
+            Assigned {formatAssigned(assignment.assigned_on)} ·{' '}
+            <span className={`font-semibold ${pastDue ? 'text-amber-700' : 'text-[#1A1A1A]/70'}`}>
+              Due {formatDue(assignment.due_at)}
+            </span>
           </p>
-          {lateOpen && isOwner && (
+          {pastDue && (
             <p className="text-xs font-semibold text-amber-700 mt-1.5">
               {mine.length === 0
                 ? 'Deadline passed — you can still turn this in; it will be marked late.'
-                : 'Deadline passed — anything you add now is marked late.'}
+                : 'Deadline passed — anything added now is marked late.'}
             </p>
           )}
           </div>
