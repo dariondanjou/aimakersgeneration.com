@@ -1,7 +1,8 @@
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import { Bot, LogIn, Github, MessageSquare, Terminal, Plus, X, Upload, LogOut, Mail, ChevronDown, User, Settings as GearIcon, ShieldCheck } from 'lucide-react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Bot, LogIn, Github, MessageSquare, Terminal, Plus, X, Upload, Mail } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { supabase, supabaseUrl, supabaseAnonKey } from './supabaseClient';
+import './shell/aimg-nav.js';
 import Dashboard from './Dashboard';
 import ProfilePage from './ProfilePage';
 import Settings from './Settings';
@@ -284,108 +285,57 @@ const COMMUNITY_BASE = '/community';
 const oauthRedirect = () => `${window.location.origin}${COMMUNITY_BASE}`;
 const WHATSAPP_URL = 'https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5';
 
-// The community navigation — shown in the shared header when signed in. Home
-// first, then the sections. These drive the Dashboard's active tab.
+// The community sections — a secondary tab bar under the shared site nav
+// (<aimg-nav>, src/shell/aimg-nav.js), signed-in only. Home first, then the
+// sections. These drive the Dashboard's active tab and the ?tab= URL param.
 const COMMUNITY_TABS = [
   { key: 'home', label: 'Home' },
+  { key: 'boards', label: 'Boards' },
   { key: 'news', label: 'AI News' },
   { key: 'resources', label: 'AI Resources' },
   { key: 'calendar', label: 'Calendar' },
   { key: 'people', label: 'People' },
 ];
+const TAB_KEYS = new Set(COMMUNITY_TABS.map((t) => t.key));
+const tabFromSearch = (search) => {
+  const t = new URLSearchParams(search).get('tab');
+  return TAB_KEYS.has(t) ? t : 'home';
+};
 
-// Carried over from the main marketing site (index.html .nav): the AIMG logo
-// mark + wordmark and the same link set, so the makers' area reads as one
-// cohesive site.
-// Logged-in identity: avatar + name at top right, with a Profile / Settings /
-// Sign out menu that opens on hover or click. Name/photo come from the maker's
-// community profile if set, otherwise the OAuth metadata (e.g. Google), else email.
-function UserMenu({ session }) {
-  const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const [profile, setProfile] = useState(null);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    supabase.from('profiles').select('username, avatar_url, first_name, last_name').eq('id', session.user.id).maybeSingle()
-      .then(({ data }) => { if (!cancelled) setProfile(data); });
-    return () => { cancelled = true; };
-  }, [session.user.id]);
-
-  useEffect(() => {
-    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, []);
-
-  const m = session.user.user_metadata || {};
-  const name = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim()
-    || m.full_name || m.name || profile?.username || session.user.email || 'Maker';
-  const avatar = profile?.avatar_url || m.avatar_url || m.picture || null;
-  const initial = (name || '?').trim().charAt(0).toUpperCase() || '?';
-  const go = (path) => { setOpen(false); navigate(path); };
-
-  return (
-    <div className="user-menu" ref={ref} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
-      <button className="user-menu-trigger" onClick={() => setOpen((o) => !o)} aria-haspopup="true" aria-expanded={open}>
-        <span className="user-avatar">
-          {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : initial}
-        </span>
-        <span className="user-name">{name}</span>
-        <ChevronDown size={14} />
-      </button>
-      {open && (
-        <div className="user-menu-dropdown" role="menu">
-          <button role="menuitem" onClick={() => go(`/profile/${session.user.id}`)}><User size={15} /> My profile</button>
-          <button role="menuitem" onClick={() => go('/settings')}><GearIcon size={15} /> Settings</button>
-          {/* Visible to everyone; the roster API rejects non-admins. */}
-          <button role="menuitem" onClick={() => go('/admin')}><ShieldCheck size={15} /> Admin</button>
-          <div className="user-menu-divider" />
-          <button role="menuitem" className="danger" onClick={() => supabase.auth.signOut()}><LogOut size={15} /> Sign out</button>
-        </div>
-      )}
-    </div>
-  );
+// ?next=<path> — where to send a maker after they sign in. Same-site paths
+// only ("/x", never "//evil.com" or "/\\evil.com").
+const NEXT_KEY = 'aimg-auth-next';
+const safeNext = (v) => (typeof v === 'string' && /^\/(?![/\\])/.test(v) ? v : null);
+function takeNext() {
+  const fromUrl = safeNext(new URLSearchParams(window.location.search).get('next'));
+  let stashed = null;
+  try { stashed = safeNext(sessionStorage.getItem(NEXT_KEY)); sessionStorage.removeItem(NEXT_KEY); } catch { /* storage blocked */ }
+  return fromUrl || stashed;
 }
 
-function SiteHeader({ session, activeTab, setActiveTab }) {
+function CommunityTabs({ activeTab, setActiveTab }) {
   const navigate = useNavigate();
-  const goTab = (key) => { setActiveTab(key); navigate('/'); };
+  const { pathname } = useLocation();
+  const onDashboard = pathname === '/' || pathname === '';
   return (
-    <header className="site-nav">
-      <div className="site-nav-in">
-        <a className="site-mark" href="/" title="aimakersgeneration.com">
-          <img src="/brand/aimg-mark-256.png" width="256" height="254" alt="" />
-          AIMG
-        </a>
-        <nav className="site-nav-links">
-          {session ? (
-            <>
-              <div className="community-tabs">
-                {COMMUNITY_TABS.map((t) => (
-                  <button
-                    key={t.key}
-                    className={`linklike community-tab${activeTab === t.key ? ' active' : ''}`}
-                    onClick={() => goTab(t.key)}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-              <a href="/apply" className="site-cta nav-hide-sm">Apply to the Cohort</a>
-              <UserMenu session={session} />
-            </>
-          ) : (
-            <>
-              <a href="/" className="nav-hide-sm">Home</a>
-              <Link to="/">Makers</Link>
-              <a href="/apply" className="site-cta">Apply to the Cohort</a>
-            </>
-          )}
-        </nav>
+    <nav className="community-subnav" aria-label="Community sections">
+      <div className="community-subnav-in">
+        {COMMUNITY_TABS.map((t) => {
+          const current = onDashboard && activeTab === t.key;
+          return (
+            <button
+              key={t.key}
+              type="button"
+              className={`community-subtab${current ? ' active' : ''}`}
+              aria-current={current ? 'page' : undefined}
+              onClick={() => { setActiveTab(t.key); if (!onDashboard) navigate(t.key === 'home' ? '/' : `/?tab=${t.key}`); }}
+            >
+              {t.label}
+            </button>
+          );
+        })}
       </div>
-    </header>
+    </nav>
   );
 }
 
@@ -416,9 +366,11 @@ function CommunityGate() {
 
   // Email + password login (Supabase email provider — no extra tables; users
   // land in auth.users and reuse the existing profiles table like OAuth users).
-  const [email, setEmail] = useState('');
+  // ?email=<addr>&mode=signup (from the enrollment success screen) prefills
+  // the form and opens straight into "Create an account".
+  const [email, setEmail] = useState(() => new URLSearchParams(window.location.search).get('email') || '');
   const [password, setPassword] = useState('');
-  const [mode, setMode] = useState('signin'); // 'signin' | 'signup'
+  const [mode, setMode] = useState(() => (new URLSearchParams(window.location.search).get('mode') === 'signup' ? 'signup' : 'signin')); // 'signin' | 'signup'
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);        // { type: 'error' | 'ok', text }
 
@@ -438,7 +390,8 @@ function CommunityGate() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        // <App>'s onAuthStateChange takes over and swaps in the dashboard.
+        // <App>'s onAuthStateChange takes over: it swaps in the dashboard, or
+        // follows ?next= if the maker was sent here to sign in.
       }
     } catch (err) {
       const m = err?.message || 'Something went wrong. Please try again.';
@@ -502,12 +455,18 @@ function CommunityGate() {
         {/* Right: auth card */}
         <div className="glass-panel flex flex-col items-stretch gap-2 w-full max-w-sm mx-auto relative z-10">
           <h3 className="text-xs uppercase tracking-[0.14em] font-semibold text-[#3E9E28] mb-0.5 text-center">Connect to the Network</h3>
-          <p className="text-sm text-[#5C5C5C] mb-2 text-center">Log in to see maker profiles.</p>
+          <p className="text-sm text-[#5C5C5C] mb-2 text-center">Sign in to post on the boards, build your portfolio, and meet other makers.</p>
 
           {providers.map(({ id, label, Icon }) => (
             <button
               key={id}
-              onClick={() => supabase.auth.signInWithOAuth({ provider: id, options: { redirectTo: oauthRedirect() } })}
+              onClick={() => {
+                // OAuth returns to /community without our query string, so
+                // carry ?next= across the round trip in sessionStorage.
+                const next = safeNext(new URLSearchParams(window.location.search).get('next'));
+                try { if (next) sessionStorage.setItem(NEXT_KEY, next); } catch { /* storage blocked */ }
+                supabase.auth.signInWithOAuth({ provider: id, options: { redirectTo: oauthRedirect() } });
+              }}
               className="btn btn-social"
             >
               <Icon size={18} /> {label}
@@ -602,11 +561,14 @@ function ResetPassword({ onDone }) {
   );
 }
 
-function App() {
+// Everything inside the router (needs useNavigate/useLocation).
+function CommunityShell() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [session, setSession] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [recovering, setRecovering] = useState(false);
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState(() => tabFromSearch(window.location.search));
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -624,32 +586,86 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Signed in with a pending ?next= (email sign-in) or a stashed one (OAuth
+  // round trip): go there.
+  useEffect(() => {
+    if (!session || recovering) return;
+    const next = takeNext();
+    if (!next) return;
+    if ((next === '/community' || next.startsWith('/community/')) && !/[?#]/.test(next)) {
+      navigate(next.slice('/community'.length) || '/', { replace: true });
+    } else {
+      window.location.replace(next);
+    }
+  }, [session, recovering, navigate]);
+
+  // Keep ?tab= in sync with the dashboard's active tab (Home = no param).
+  // Only `tab` is ours: every other param is kept, except the Boards view's own
+  // ?board=/&thread= (managed by Boards.jsx), dropped when leaving Boards.
+  const onDashboard = location.pathname === '/' || location.pathname === '';
+  useEffect(() => {
+    if (!onDashboard) return;
+    const u = new URL(window.location.href);
+    if (activeTab === 'home') u.searchParams.delete('tab');
+    else u.searchParams.set('tab', activeTab);
+    if (activeTab !== 'boards') { u.searchParams.delete('board'); u.searchParams.delete('thread'); }
+    // Sign-in helpers (?email=&mode=signup, ?next=) are spent once signed in.
+    if (session) ['email', 'mode', 'next'].forEach((k) => u.searchParams.delete(k));
+    if (u.href !== window.location.href) window.history.replaceState(window.history.state, '', u.href);
+  }, [activeTab, onDashboard, session]);
+
+  // The shared nav links to /community/… with plain hrefs; route those
+  // client-side instead of reloading the app.
+  useEffect(() => {
+    const onNav = (e) => {
+      const dest = e.detail?.url;
+      if (!dest || dest.origin !== window.location.origin) return;
+      const p = dest.pathname;
+      if (p !== '/community' && !p.startsWith('/community/')) return;
+      e.preventDefault();
+      const inner = p.slice('/community'.length) || '/';
+      if (inner === '/') setActiveTab(tabFromSearch(dest.search));
+      navigate(inner + (inner === '/' ? '' : dest.search));
+    };
+    document.addEventListener('aimg-navigate', onNav);
+    return () => document.removeEventListener('aimg-navigate', onNav);
+  }, [navigate]);
+
   const handleDataChange = () => setRefreshKey(k => k + 1);
 
+  const navActive = onDashboard && activeTab === 'boards' ? 'boards' : 'community';
+
+  return (
+    <div className="site-shell">
+      <aimg-nav active={navActive} live-auth=""></aimg-nav>
+      {session && !recovering && <CommunityTabs activeTab={activeTab} setActiveTab={setActiveTab} />}
+      <main className="main-content">
+        {recovering ? (
+          <ResetPassword onDone={() => setRecovering(false)} />
+        ) : (
+          <Routes>
+            <Route path="/" element={session ? <Dashboard session={session} refreshKey={refreshKey} activeTab={activeTab} setActiveTab={setActiveTab} /> : <CommunityGate />} />
+            <Route path="/profile/:id" element={session ? <ProfilePage session={session} /> : <CommunityGate />} />
+            <Route path="/settings" element={session ? <Settings session={session} /> : <CommunityGate />} />
+            {/* No sign-in wall: each admin page asks for the shared admin
+                password, verified server-side by the /api endpoints. */}
+            <Route path="/admin" element={<Admin session={session} />} />
+            <Route path="/admin/curriculum" element={<Curriculum session={session} />} />
+            <Route path="/admin/deck/:week" element={<Deck session={session} />} />
+          </Routes>
+        )}
+      </main>
+
+      {/* Chat is now the shared floating AI MAKERS BOT widget (see app.html /aimg-bot.js),
+          consistent with the landing page. The old docked ChatWindow was removed. */}
+    </div>
+  );
+}
+
+function App() {
   return (
     <Router basename={COMMUNITY_BASE}>
-      <div className="site-shell">
-        <SiteHeader session={session} activeTab={activeTab} setActiveTab={setActiveTab} />
-        <main className="main-content">
-          {recovering ? (
-            <ResetPassword onDone={() => setRecovering(false)} />
-          ) : (
-            <Routes>
-              <Route path="/" element={session ? <Dashboard session={session} refreshKey={refreshKey} activeTab={activeTab} setActiveTab={setActiveTab} /> : <CommunityGate />} />
-              <Route path="/profile/:id" element={session ? <ProfilePage session={session} /> : <CommunityGate />} />
-              <Route path="/settings" element={session ? <Settings session={session} /> : <CommunityGate />} />
-              {/* No sign-in wall: each admin page asks for the shared admin
-                  password, verified server-side by the /api endpoints. */}
-              <Route path="/admin" element={<Admin session={session} />} />
-              <Route path="/admin/curriculum" element={<Curriculum session={session} />} />
-              <Route path="/admin/deck/:week" element={<Deck session={session} />} />
-            </Routes>
-          )}
-        </main>
-
-        {/* Chat is now the shared floating AI MAKERS BOT widget (see app.html /aimg-bot.js),
-            consistent with the landing page. The old docked ChatWindow was removed. */}
-      </div>
+      <CommunityShell />
     </Router>
   );
 }

@@ -49,16 +49,11 @@
   .eyebrow{font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
            color:var(--green);margin:0 0 16px}
 
-  .nav{background:#000}
-  .nav-in{max-width:1120px;margin:0 auto;padding:20px 24px;display:flex;align-items:center;
-    justify-content:space-between;gap:30px;flex-wrap:wrap}
-  .mark{font-family:var(--display);font-weight:800;font-size:1.32rem;letter-spacing:-.04em;
-        color:#fff;text-decoration:none;display:flex;align-items:center;gap:11px;flex:none}
-  .mark img{height:34px;width:auto;flex:none}
+  /* the header bar itself is the shared <aimg-nav variant="slim"> (src/shell/aimg-nav.js);
+     the page title below is slotted into it */
   .nav-title{text-align:right;min-width:0;display:flex;align-items:center;justify-content:flex-end}
   .nav-title h1{color:var(--green);font-size:clamp(1.25rem,2.4vw,1.9rem);text-wrap:balance;margin:0}
   @media(max-width:700px){
-    .nav-in{gap:16px}
     .nav-title{text-align:left;flex-basis:100%}
     .nav-title h1{font-size:1.4rem}
   }
@@ -230,8 +225,6 @@
   .consent .opt.accept-all{border:1.5px solid var(--green-deep);background:#EFF8EB;margin-bottom:4px}
   .consent .opt.accept-all span{font-size:.96rem}
 
-  .inline-url{display:flex;flex-direction:column;gap:12px}
-
   .submit-row{border-top:1px solid var(--rule);padding-top:36px}
   .pay-summary{
     display:flex;justify-content:space-between;align-items:baseline;gap:20px;
@@ -287,21 +280,17 @@
   footer a{color:#9DA398}
   footer a:hover{color:var(--green)}
 </style>
+<script type="module" src="/src/shell/aimg-nav.js"></script>
 </head>
 <body>
 
 <a class="skip" href="#form">Skip to the form</a>
 
-<nav class="nav">
-  <div class="nav-in">
-    <a class="mark" href="https://aimakersgeneration.com/">
-      <img src="/brand/aimg-mark-256.png" width="256" height="254" alt="">AI MAKERS GENERATION
-    </a>
-    <div class="nav-title">
-      <h1>ENROLL IN THE OCTOBER 2026 AI FILM COHORT</h1>
-    </div>
+<aimg-nav variant="slim">
+  <div class="nav-title" slot="title">
+    <h1>ENROLL IN THE OCTOBER 2026 AI FILM COHORT</h1>
   </div>
-</nav>
+</aimg-nav>
 
 <header class="top">
   <div class="hero-media">
@@ -381,8 +370,11 @@
            Center for Entrepreneurs. Bring your laptop, charged.</p>
         <p>Before then, come meet the room — Film Bar AI is free, every Tuesday, 6–10 PM at
            Halidom Eatery.</p>
+        <p><strong>Next, create your AIMG account</strong> — it's where your portfolio, your
+           homework, and the cohort boards live.</p>
         <div class="cta-row">
-          <a class="btn btn-inline" href="https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5" target="_blank" rel="noopener">Join the WhatsApp community</a>
+          <a class="btn btn-inline" id="paid-account" href="https://aimakersgeneration.com/community?mode=signup">Create your AIMG account</a>
+          <a class="btn btn-alt btn-inline" href="https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5" target="_blank" rel="noopener">Join the WhatsApp community</a>
           <a class="btn btn-alt btn-inline" href="/aimg-film-cohort-session-1.ics" download>Add Oct 3 to calendar</a>
         </div>
       </div>
@@ -820,16 +812,10 @@
               <input id="current_work" name="current_work" type="text" required>
             </div>
             <div class="f">
-              <label class="lbl" for="portfolio_url">Do you have a reel, portfolio, or channel online today?
-                <span class="hint">A link to anything you've made — YouTube, Vimeo, Instagram, a website.</span>
+              <label class="lbl" for="portfolio_url">Share a link to your current AI film work <span class="req" aria-hidden="true">*</span>
+                <span class="hint">An AI film, clip, or reel you've made — YouTube, Vimeo, Instagram, Drive, a website. Every seat goes to someone already making work.</span>
               </label>
-              <div class="inline-url">
-                <input id="portfolio_url" name="portfolio_url" type="url" placeholder="https://">
-                <label class="opt" for="no_portfolio">
-                  <input type="checkbox" id="no_portfolio" name="no_portfolio">
-                  <span>Not yet — that's part of why I'm here</span>
-                </label>
-              </div>
+              <input id="portfolio_url" name="portfolio_url" type="url" placeholder="https://" required>
             </div>
           </div>
         </fieldset>
@@ -1074,6 +1060,18 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  /* "Create your AIMG account" on the paid screen: the community lives on the
+     main domain, and the sign-up form is prefilled with the enrollment email. */
+  function setAccountLink(email) {
+    var a = document.getElementById('paid-account');
+    if (!a) return;
+    var base = /(^|\.)aimakersgeneration\.com$/.test(location.hostname) ? 'https://aimakersgeneration.com' : '';
+    var q = 'mode=signup';
+    if (typeof email === 'string' && email.indexOf('@') > 0) q += '&email=' + encodeURIComponent(email);
+    a.href = base + '/community?' + q;
+  }
+  setAccountLink(null);
+
   /* ── returning from Stripe ── */
   var params = new URLSearchParams(window.location.search);
   var sessionId = params.get('session_id');
@@ -1093,6 +1091,7 @@
       .then(function (r) { return r.json(); })
       .then(function (data) {
         if (data.paid) {
+          setAccountLink(data.email);
           if (data.name) {
             document.getElementById('paid-heading').textContent = "You're in, " + data.name + '.';
           }
@@ -1140,14 +1139,6 @@
       });
     });
   }
-
-  /* ── "not yet" and a portfolio URL are mutually exclusive ── */
-  var noPortfolio = document.getElementById('no_portfolio');
-  var portfolio   = document.getElementById('portfolio_url');
-  noPortfolio.addEventListener('change', function () {
-    if (noPortfolio.checked) { portfolio.value = ''; portfolio.disabled = true; }
-    else { portfolio.disabled = false; }
-  });
 
   function fail(msg) {
     errBox.textContent = msg;

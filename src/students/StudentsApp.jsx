@@ -1,9 +1,10 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import StudentsGrid from './StudentsGrid.jsx';
 import StudentProfile from './StudentProfile.jsx';
 import QuizBuilder from './QuizBuilder.jsx';
 import QuizTake from './QuizTake.jsx';
 import Deck from '../Deck.jsx';
+import '../shell/aimg-nav.js'; // the shared site nav: <aimg-nav>
 
 // Public student showcase, served at /students (see vercel.json + vite.config).
 // Deliberately auth-free: anyone who visits can browse AND edit profiles —
@@ -11,31 +12,11 @@ import Deck from '../Deck.jsx';
 // database still protects email/user_id/slug and homework deadlines).
 const STUDENTS_BASE = '/students';
 
-function SiteHeader() {
-  return (
-    <header className="site-nav">
-      <div className="site-nav-in">
-        <a className="site-mark" href="/" title="aimakersgeneration.com">
-          <img src="/brand/aimg-mark-256.png" width="256" height="254" alt="" />
-          AIMG
-        </a>
-        <nav className="site-nav-links">
-          <a href="/" className="nav-hide-sm">Home</a>
-          <Link to="/" className="community-tab active" style={{ color: 'var(--green-deep)', fontWeight: 700 }}>Students</Link>
-          <a href="/about" className="nav-hide-sm">Who we are</a>
-          <a href="/community" className="nav-hide-sm">Makers</a>
-          <a href="/apply" className="site-cta">Learn About Our Cohorts</a>
-        </nav>
-      </div>
-    </header>
-  );
-}
-
 export default function StudentsApp() {
   return (
     <Router basename={STUDENTS_BASE}>
       <div className="site-shell">
-        <SiteHeader />
+        <aimg-nav active="makers" live-auth=""></aimg-nav>
         <main className="main-content">
           <Routes>
             <Route path="/" element={<StudentsGrid />} />
