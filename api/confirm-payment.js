@@ -58,7 +58,7 @@ export default async function handler(req, res) {
       })
       .eq("id", applicationId)
       .eq("stripe_session_id", sessionId)
-      .select("preferred_name, full_name, email, city, current_work, ai_experience, coding_experience, something_made, eight_week_goal, goal, final_project, portfolio_url")
+      .select("cohort, preferred_name, full_name, email, city, current_work, ai_experience, coding_experience, something_made, eight_week_goal, goal, final_project, portfolio_url")
       .maybeSingle();
 
     if (error) throw new Error(error.message);
@@ -68,7 +68,8 @@ export default async function handler(req, res) {
     if (data) await ensureStudentProfile(supabase, data);
 
     const name = data?.preferred_name || data?.full_name?.split(" ")[0] || null;
-    return res.status(200).json({ paid: true, name });
+    // email prefills "Create your AIMG account" on the success screen.
+    return res.status(200).json({ paid: true, name, email: data?.email || null });
   } catch (err) {
     console.error("confirm-payment:", err);
     return res.status(500).json({ error: "We couldn't confirm that payment." });

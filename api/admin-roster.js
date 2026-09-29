@@ -32,7 +32,9 @@ async function getVerifiedUser(req) {
   return data.user;
 }
 
-// The cohort roster for admins: every application joined to its students row.
+// The cohort roster for admins: every application joined to its students row
+// in the SAME cohort (one person can have a Summer and an October profile).
+// Every row carries `cohort` so the admin page can list cohorts separately.
 // Unlike chat.js's calendar check (where an unset ADMIN_USER_IDS lets any
 // member manage events), an empty allowlist DENIES here — this response
 // carries applicant PII (email, phone).
@@ -56,25 +58,27 @@ export default async function handler(req, res) {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   const [studentsRes, appsRes] = await Promise.all([
     supabase.from("students")
-      .select("slug, full_name, email, user_id, sort_order")
+      .select("cohort, slug, full_name, email, user_id, sort_order")
       .order("sort_order", { ascending: true }),
     supabase.from("cohort_applications")
-      .select("full_name, preferred_name, email, phone, city, status, created_at, paid_at")
+      .select("cohort, full_name, preferred_name, email, phone, city, status, created_at, paid_at")
       .order("created_at", { ascending: true }),
   ]);
   if (studentsRes.error || appsRes.error) {
     return res.status(500).json({ error: (studentsRes.error || appsRes.error).message });
   }
 
-  const studentByEmail = new Map(
+  const key = (email, cohort) => `${cohort || ""}|${email.toLowerCase()}`;
+  const studentByKey = new Map(
     (studentsRes.data || [])
       .filter(s => s.email)
-      .map(s => [s.email.toLowerCase(), s])
+      .map(s => [key(s.email, s.cohort), s])
   );
 
   const roster = (appsRes.data || []).map(a => {
-    const s = a.email ? studentByEmail.get(a.email.toLowerCase()) : null;
+    const s = a.email ? studentByKey.get(key(a.email, a.cohort)) : null;
     return {
+      cohort: a.cohort || null,
       full_name: s?.full_name || a.full_name,
       preferred_name: a.preferred_name,
       email: a.email,
@@ -89,12 +93,13 @@ export default async function handler(req, res) {
   });
 
   // Roster rows added by hand, with no matching application.
-  const appEmails = new Set(
-    (appsRes.data || []).map(a => a.email?.toLowerCase()).filter(Boolean)
+  const appKeys = new Set(
+    (appsRes.data || []).filter(a => a.email).map(a => key(a.email, a.cohort))
   );
   for (const s of studentsRes.data || []) {
-    if (!s.email || !appEmails.has(s.email.toLowerCase())) {
+    if (!s.email || !appKeys.has(key(s.email, s.cohort))) {
       roster.push({
+        cohort: s.cohort || null,
         full_name: s.full_name,
         preferred_name: null,
         email: s.email,

@@ -1,21 +1,32 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { GraduationCap, BookOpen, ListChecks, Sparkles, Activity, Check, PartyPopper, Linkedin, TrendingUp, Users } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import CohortMaterialsSection from './CohortMaterials.jsx';
+import { COHORTS, CURRENT_COHORT, cohortById } from '../cohorts';
+
+// The public roster at /students. Read-only for everyone: each card links to
+// the student's portfolio, which only its owner (or an admin) can edit.
+// One cohort is shown at a time (?cohort=<id>, default CURRENT_COHORT) and
+// every section below the roster — LinkedIn growth, curriculum, quizzes, the
+// live quiz dashboard — is scoped to that cohort; students from different
+// programs never appear in the same list.
 
 // ── Published quizzes, listed at the bottom of the page ─────────────────────
-function QuizzesSection() {
+function QuizzesSection({ cohort }) {
   const [quizzes, setQuizzes] = useState([]);
 
   useEffect(() => {
+    let cancelled = false;
     supabase
       .from('quizzes')
       .select('id, quiz_number, title, params, questions, published_at')
       .eq('status', 'published')
+      .eq('cohort', cohort.id)
       .order('quiz_number', { ascending: true })
-      .then(({ data }) => setQuizzes(data || []));
-  }, []);
+      .then(({ data }) => { if (!cancelled) setQuizzes(data || []); });
+    return () => { cancelled = true; };
+  }, [cohort.id]);
 
   return (
     <div className="max-w-3xl mx-auto w-full pb-16">
@@ -54,7 +65,7 @@ function QuizzesSection() {
         </div>
       )}
       <p className="text-center mt-6">
-        <Link to="/quiz-builder" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1A1A1A]/40 hover:text-[#3E9E28] transition-colors">
+        <Link to={`/quiz-builder?cohort=${encodeURIComponent(cohort.id)}`} className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1A1A1A]/40 hover:text-[#3E9E28] transition-colors">
           <Sparkles size={13} /> Build a new quiz
         </Link>
       </p>
@@ -68,13 +79,14 @@ function QuizzesSection() {
 // (with their score), and who hasn't started. Activity older than the session
 // window is ignored, so the dashboard goes quiet between sessions.
 // ── LinkedIn connections across the cohort ──────────────────────────────────
-// One small sparkline per student (weeks 1–8, each on its own scale so a
-// 30-connection climb reads as clearly as a 6,000 one) plus cohort totals.
-// Counts are self-reported on each profile; the section re-draws itself as
-// students log new weeks. Students without a LinkedIn on file are left out.
-const LI_WEEKS = [1, 2, 3, 4, 5, 6, 7, 8];
+// One small sparkline per student (one point per cohort week, each on its own
+// scale so a 30-connection climb reads as clearly as a 6,000 one) plus cohort
+// totals. Counts are self-reported on each profile; the section re-draws
+// itself as students log new weeks. Students without a LinkedIn on file are
+// left out. Only rendered for cohorts with `linkedin: true`.
+const weekList = (n) => Array.from({ length: n }, (_, i) => i + 1);
 
-function ConnectionSparkline({ points, name }) {
+function ConnectionSparkline({ points, name, weeks }) {
   const W = 220, H = 64, padX = 6, padT = 8, padB = 8;
   const rec = points.filter((p) => p.connections != null);
   if (rec.length === 0) return null;
@@ -82,14 +94,14 @@ function ConnectionSparkline({ points, name }) {
   const lo = Math.min(...vals), hi = Math.max(...vals);
   const span = Math.max(hi - lo, Math.max(4, Math.round(hi * 0.04)));
   const yMin = Math.max(0, lo - span * 0.15), yMax = hi + span * 0.15;
-  const xFor = (w) => padX + ((w - 1) / 7) * (W - padX * 2);
+  const xFor = (w) => padX + ((w - 1) / Math.max(1, weeks.length - 1)) * (W - padX * 2);
   const yFor = (v) => padT + (1 - (v - yMin) / (yMax - yMin)) * (H - padT - padB);
   const d = rec.map((p, i) => `${i ? 'L' : 'M'} ${xFor(p.week).toFixed(1)} ${yFor(p.connections).toFixed(1)}`).join(' ');
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`${name}: LinkedIn connections by week`}
       style={{ display: 'block', height: 'auto' }}>
       {/* recessive week ticks along the baseline */}
-      {LI_WEEKS.map((w) => (
+      {weeks.map((w) => (
         <line key={w} x1={xFor(w)} y1={H - padB + 2} x2={xFor(w)} y2={H - padB + 5} stroke="#E3E3DF" strokeWidth="1" />
       ))}
       {rec.length > 1 && <path d={d} fill="none" stroke="#0F7B3F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />}
@@ -102,16 +114,21 @@ function ConnectionSparkline({ points, name }) {
   );
 }
 
-function LinkedInTrajectorySection({ students }) {
+function LinkedInTrajectorySection({ students, cohort }) {
   const [stats, setStats] = useState(null);
   const [profiles, setProfiles] = useState([]);
+  const LI_WEEKS = weekList(cohort.weeks);
+  const ids = students.map((s) => s.id);
+  const idsKey = ids.join(',');
 
   useEffect(() => {
+    if (ids.length === 0) { setStats([]); setProfiles([]); return undefined; }
     let cancelled = false;
     const load = async () => {
+      // Only this cohort's students — never another program's numbers.
       const [{ data: st }, { data: pr }] = await Promise.all([
-        supabase.from('student_linkedin_stats').select('student_id, week, connections'),
-        supabase.from('students').select('id, linkedin_url'),
+        supabase.from('student_linkedin_stats').select('student_id, week, connections').in('student_id', ids),
+        supabase.from('students').select('id, linkedin_url').in('id', ids),
       ]);
       if (cancelled) return;
       setStats(st || []);
@@ -121,7 +138,8 @@ function LinkedInTrajectorySection({ students }) {
     // Re-pull every minute so the trajectories keep growing as students log weeks.
     const t = setInterval(load, 60000);
     return () => { cancelled = true; clearInterval(t); };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idsKey]);
 
   if (stats === null) return null;
 
@@ -159,7 +177,7 @@ function LinkedInTrajectorySection({ students }) {
         <h2 className="text-2xl sm:text-3xl uppercase">Connections, week by week</h2>
         <p className="text-[#5C5C5C] mt-2 max-w-xl mx-auto text-sm">
           Every student logs their connection count each week on their profile. Each line is one student's
-          trajectory across the eight weeks — the whole cohort's climb, at a glance.
+          trajectory across the {cohort.weeks} weeks — the whole cohort's climb, at a glance.
         </p>
       </div>
 
@@ -210,14 +228,14 @@ function LinkedInTrajectorySection({ students }) {
               </div>
             </div>
             {r.recorded > 0 ? (
-              <ConnectionSparkline points={r.points} name={firstName(r.full_name)} />
+              <ConnectionSparkline points={r.points} name={firstName(r.full_name)} weeks={LI_WEEKS} />
             ) : (
               <div className="h-16 rounded-lg border border-dashed border-[#E3E3DF] flex items-center justify-center text-xs text-[#1A1A1A]/35">
                 No weeks logged yet
               </div>
             )}
             <div className="flex justify-between text-[10px] uppercase tracking-wider text-[#1A1A1A]/35 mt-1">
-              <span>W1</span><span>W8</span>
+              <span>W1</span><span>W{cohort.weeks}</span>
             </div>
           </Link>
         ))}
@@ -237,7 +255,7 @@ function timeAgo(iso, now) {
   return `${Math.round(m / 60)}h ago`;
 }
 
-function QuizLiveDashboard({ students }) {
+function QuizLiveDashboard({ students, cohort }) {
   const [rows, setRows] = useState([]);
   const [quiz, setQuiz] = useState(null);
   const [now, setNow] = useState(() => Date.now());
@@ -245,12 +263,25 @@ function QuizLiveDashboard({ students }) {
 
   useEffect(() => {
     let alive = true;
+    let cohortQuizIds = null;
     const poll = async () => {
       if (document.hidden) return;
+      // Only sessions of this cohort's quizzes count.
+      if (cohortQuizIds === null) {
+        const { data: qs } = await supabase.from('quizzes').select('id').eq('cohort', cohort.id);
+        if (!alive) return;
+        cohortQuizIds = (qs || []).map((q) => q.id);
+      }
+      if (cohortQuizIds.length === 0) {
+        quizRef.current = null;
+        setRows([]); setQuiz(null); setNow(Date.now());
+        return;
+      }
       const since = new Date(Date.now() - SESSION_WINDOW_MS).toISOString();
       const { data } = await supabase
         .from('quiz_progress')
         .select('quiz_id, student_name, status, current_question, answered, total, score, started_at, updated_at')
+        .in('quiz_id', cohortQuizIds)
         .gte('updated_at', since)
         .order('updated_at', { ascending: false });
       if (!alive) return;
@@ -273,7 +304,7 @@ function QuizLiveDashboard({ students }) {
     poll();
     const t = setInterval(poll, POLL_MS);
     return () => { alive = false; clearInterval(t); };
-  }, []);
+  }, [cohort.id]);
 
   const taking = rows.filter((r) => r.status === 'taking').sort((a, b) => a.student_name.localeCompare(b.student_name));
   const done = rows.filter((r) => r.status === 'completed')
@@ -373,81 +404,131 @@ function QuizLiveDashboard({ students }) {
   );
 }
 
-export default function StudentsGrid() {
+// Segmented control: one pill per cohort, newest first.
+function CohortSwitcher({ value, onChange }) {
+  return (
+    <div role="tablist" aria-label="Cohort"
+      className="inline-flex flex-wrap justify-center gap-1 rounded-full border border-[#E3E3DF] bg-white p-1">
+      {COHORTS.map((c) => {
+        const active = c.id === value;
+        return (
+          <button key={c.id} type="button" role="tab" aria-selected={active}
+            onClick={() => onChange(c.id)}
+            className={`rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+              active ? 'bg-[#3E9E28] text-white' : 'text-[#1A1A1A]/50 hover:text-[#0F7B3F]'
+            }`}>
+            {c.short}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Everything for one cohort. Keyed by cohort id, so switching cohorts resets
+// all of its state instead of briefly showing the other roster.
+function CohortRoster({ cohort }) {
   const [students, setStudents] = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
     supabase
       .from('students')
-      .select('id, slug, full_name, headline, goal, avatar_url, city')
+      .select('id, slug, full_name, headline, goal, avatar_url, city, cohort')
+      .eq('cohort', cohort.id)
       .order('sort_order', { ascending: true })
       .order('full_name', { ascending: true })
-      .then(({ data }) => setStudents(data || []));
-  }, []);
+      .then(({ data }) => { if (!cancelled) setStudents(data || []); });
+    return () => { cancelled = true; };
+  }, [cohort.id]);
 
   if (students === null) {
     return (
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex items-center justify-center py-16">
         <div className="w-8 h-8 border-4 border-t-[#3E9E28] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
+    <>
+      {students.length === 0 ? (
+        <p className="text-center text-[#5C5C5C] italic pb-10">The cohort roster is coming soon.</p>
+      ) : (
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 pb-10">
+          {students.map((s) => (
+            <Link
+              key={s.id}
+              to={`/${s.slug}`}
+              className="glass-panel flex flex-col items-center text-center !p-6 hover:-translate-y-1 hover:shadow-lg hover:border-[#3E9E28]/50 transition-all"
+            >
+              <div className="w-24 h-24 rounded-full bg-[#F4F4F2] border-4 border-[#3E9E28]/30 overflow-hidden flex items-center justify-center text-3xl font-bold text-[#3E9E28] mb-4">
+                {s.avatar_url
+                  ? <img src={s.avatar_url} alt={s.full_name} className="w-full h-full object-cover" />
+                  : (s.full_name?.[0]?.toUpperCase() || '?')}
+              </div>
+              <h2 className="text-lg">{s.full_name}</h2>
+              <p className="text-sm text-[#3E9E28] font-semibold mt-1">
+                {s.headline || cohort.headline}
+              </p>
+              {s.city && <p className="text-xs text-[#1A1A1A]/40 mt-0.5">{s.city}</p>}
+              {s.goal && (
+                <p className="text-sm text-[#5C5C5C] mt-3 line-clamp-3">{s.goal}</p>
+              )}
+              <span className="mt-4 text-xs font-semibold uppercase tracking-wider text-[#1A1A1A]/40">
+                View profile →
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {cohort.linkedin && <LinkedInTrajectorySection students={students} cohort={cohort} />}
+
+      {/* Curriculum outline + every session's slide deck (past weeks included) */}
+      <CohortMaterialsSection cohort={cohort.id} />
+
+      <QuizzesSection cohort={cohort} />
+
+      <QuizLiveDashboard students={students} cohort={cohort} />
+    </>
+  );
+}
+
+export default function StudentsGrid() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const cohort = cohortById(searchParams.get('cohort')) || cohortById(CURRENT_COHORT);
+
+  const selectCohort = (id) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('cohort', id);
+      return next;
+    });
+  };
+
+  return (
     <div className="custom-scrollbar flex-1 overflow-y-auto p-6">
       <div className="max-w-5xl mx-auto w-full">
         <div className="text-center mb-10 mt-4">
+          <div className="mb-6">
+            <CohortSwitcher value={cohort.id} onChange={selectCohort} />
+          </div>
           <p className="text-xs uppercase tracking-[0.18em] font-semibold text-[#3E9E28] mb-2 flex items-center justify-center gap-2">
-            <GraduationCap size={16} /> Summer 2026 Cohort
+            <GraduationCap size={16} /> {cohort.label}
           </p>
           <h1 className="text-3xl sm:text-4xl uppercase">Meet the Students</h1>
           <p className="text-[#5C5C5C] mt-3 max-w-xl mx-auto">
-            Eight Saturdays, Life Changing.
+            {cohort.dates}
           </p>
-          <a href="#curriculum" className="inline-flex items-center gap-1.5 mt-4 text-xs font-semibold uppercase tracking-wider text-[#0F7B3F] hover:text-[#3E9E28] transition-colors">
-            <BookOpen size={14} /> Curriculum &amp; slide decks ↓
-          </a>
+          {cohort.materials && (
+            <a href="#curriculum" className="inline-flex items-center gap-1.5 mt-4 text-xs font-semibold uppercase tracking-wider text-[#0F7B3F] hover:text-[#3E9E28] transition-colors">
+              <BookOpen size={14} /> Curriculum &amp; slide decks ↓
+            </a>
+          )}
         </div>
 
-        {students.length === 0 ? (
-          <p className="text-center text-[#5C5C5C] italic">The cohort roster is coming soon.</p>
-        ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 pb-10">
-            {students.map((s) => (
-              <Link
-                key={s.id}
-                to={`/${s.slug}`}
-                className="glass-panel flex flex-col items-center text-center !p-6 hover:-translate-y-1 hover:shadow-lg hover:border-[#3E9E28]/50 transition-all"
-              >
-                <div className="w-24 h-24 rounded-full bg-[#F4F4F2] border-4 border-[#3E9E28]/30 overflow-hidden flex items-center justify-center text-3xl font-bold text-[#3E9E28] mb-4">
-                  {s.avatar_url
-                    ? <img src={s.avatar_url} alt={s.full_name} className="w-full h-full object-cover" />
-                    : (s.full_name?.[0]?.toUpperCase() || '?')}
-                </div>
-                <h2 className="text-lg">{s.full_name}</h2>
-                <p className="text-sm text-[#3E9E28] font-semibold mt-1">
-                  {s.headline || 'AI Maker — Summer 2026 Cohort'}
-                </p>
-                {s.city && <p className="text-xs text-[#1A1A1A]/40 mt-0.5">{s.city}</p>}
-                {s.goal && (
-                  <p className="text-sm text-[#5C5C5C] mt-3 line-clamp-3">{s.goal}</p>
-                )}
-                <span className="mt-4 text-xs font-semibold uppercase tracking-wider text-[#1A1A1A]/40">
-                  View profile →
-                </span>
-              </Link>
-            ))}
-          </div>
-        )}
-
-        <LinkedInTrajectorySection students={students} />
-
-        {/* Curriculum outline + every session's slide deck (past weeks included) */}
-        <CohortMaterialsSection />
-
-        <QuizzesSection />
-
-        <QuizLiveDashboard students={students} />
+        <CohortRoster key={cohort.id} cohort={cohort} />
       </div>
     </div>
   );

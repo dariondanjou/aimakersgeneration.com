@@ -46,6 +46,9 @@ const QUIZ_SCHEMA = {
   additionalProperties: false,
 };
 
+// Mirrors src/cohorts.js (api/ is not bundled with src/).
+const QUIZ_COHORTS = ["october-2026-film", "summer-2026"];
+
 const SYSTEM = `You write multiple-choice quiz questions for AI MAKERS GENERATION, an Atlanta cohort of AI creatives and career-changers (beginner-to-intermediate; smart adults, not engineers).
 
 Rules:
@@ -146,6 +149,8 @@ export default async function handler(req, res) {
         .from("quizzes")
         .insert({
           status: "draft",
+          // Quizzes belong to one cohort's roster; unknown ids fall back to the column default.
+          ...(QUIZ_COHORTS.includes(req.body.cohort) ? { cohort: req.body.cohort } : {}),
           topics: topics.map((t) => t.term),
           params: {
             question_count: count,

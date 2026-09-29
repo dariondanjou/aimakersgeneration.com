@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ShieldCheck, ExternalLink, CheckCircle2, GraduationCap, KeyRound, Presentation, BookOpen } from 'lucide-react';
+import { COHORTS, CURRENT_COHORT, cohortById } from './cohorts';
 
 // Cohort admin: the full roster (every application + every students row),
 // served by /api/admin-roster, which allows only the user IDs in the
 // ADMIN_USER_IDS env var. Names link to the student's public profile page.
+// One cohort at a time (?cohort=<id>, default CURRENT_COHORT) so the Summer
+// and October programs are never mixed; rows without a `cohort` (older API
+// responses) land in an "Unassigned" bucket.
+const UNASSIGNED = 'unassigned';
 const STATUS_STYLES = {
   paid: 'text-[#0F7B3F] bg-[#3E9E28]/10 border-[#3E9E28]/25',
   pending: 'text-amber-700 bg-amber-50 border-amber-200',
@@ -23,6 +28,7 @@ const fmtDate = (d) =>
 const KEY_STORAGE = 'aimg-admin-key';
 
 export default function Admin({ session }) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [roster, setRoster] = useState(null);
   const [sessions, setSessions] = useState(null);
   const [error, setError] = useState(null);
@@ -134,7 +140,24 @@ export default function Admin({ session }) {
   // The roster shows enrolled students only — pending (unpaid) applications are
   // hidden so they don't clutter the student roster. They still exist in the DB
   // and reappear here the moment they're marked paid.
-  const shown = roster.filter((r) => r.status !== 'pending');
+  const enrolled = roster.filter((r) => r.status !== 'pending');
+  const bucketOf = (r) => (cohortById(r.cohort) ? r.cohort : UNASSIGNED);
+  const countFor = (id) => enrolled.filter((r) => bucketOf(r) === id).length;
+  const hasUnassigned = countFor(UNASSIGNED) > 0;
+  const tabs = [
+    ...COHORTS.map((c) => ({ id: c.id, label: c.short })),
+    ...(hasUnassigned ? [{ id: UNASSIGNED, label: 'Unassigned' }] : []),
+  ];
+  const requested = searchParams.get('cohort');
+  const selectedId = tabs.some((t) => t.id === requested) ? requested : CURRENT_COHORT;
+  const cohort = cohortById(selectedId); // null for the Unassigned bucket
+  const selectCohort = (id) => setSearchParams((prev) => {
+    const next = new URLSearchParams(prev);
+    next.set('cohort', id);
+    return next;
+  });
+
+  const shown = enrolled.filter((r) => bucketOf(r) === selectedId);
   const paid = shown.filter((r) => r.status === 'paid').length;
 
   return (
@@ -145,19 +168,35 @@ export default function Admin({ session }) {
             <p className="text-xs uppercase tracking-[0.18em] font-semibold text-[#3E9E28] mb-1 flex items-center gap-2">
               <ShieldCheck size={15} /> Cohort Admin
             </p>
-            <h1 className="text-2xl sm:text-3xl uppercase">Summer 2026 Roster</h1>
+            <h1 className="text-2xl sm:text-3xl uppercase">{cohort ? `${cohort.label} Roster` : 'Unassigned Students'}</h1>
             <p className="text-sm text-[#5C5C5C] mt-1">
-              {paid} paid · {shown.length} on roster · 20 seats
+              {cohort ? `${cohort.dates} · ` : 'No cohort on record — fix these rows in the database · '}
+              {paid} paid · {shown.length} on roster
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/admin/curriculum" target="_blank" rel="noopener" className="btn !text-sm" title="The 8-week curriculum — inline editable">
+            {cohort?.materials && <Link to="/admin/curriculum" target="_blank" rel="noopener" className="btn !text-sm" title="The 8-week curriculum — inline editable">
               <BookOpen size={16} /> Curriculum
-            </Link>
-            <a href="/students" target="_blank" rel="noopener" className="btn !text-sm" title="The public cohort showcase">
+            </Link>}
+            <a href={cohort ? `/students?cohort=${encodeURIComponent(cohort.id)}` : '/students'} target="_blank" rel="noopener" className="btn !text-sm" title="The public cohort showcase">
               <GraduationCap size={16} /> Students overview page <ExternalLink size={13} />
             </a>
           </div>
+        </div>
+
+        <div role="tablist" aria-label="Cohort"
+          className="inline-flex flex-wrap gap-1 rounded-full border border-[#E3E3DF] bg-white p-1 mb-4">
+          {tabs.map((t) => {
+            const active = t.id === selectedId;
+            return (
+              <button key={t.id} type="button" role="tab" aria-selected={active} onClick={() => selectCohort(t.id)}
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                  active ? 'bg-[#3E9E28] text-white' : t.id === UNASSIGNED ? 'text-amber-700 hover:text-amber-800' : 'text-[#1A1A1A]/50 hover:text-[#0F7B3F]'
+                }`}>
+                {t.label} <span className={active ? 'text-white/70' : 'text-[#1A1A1A]/30'}>({countFor(t.id)})</span>
+              </button>
+            );
+          })}
         </div>
 
         <div className="glass-panel !p-0 overflow-x-auto">
@@ -224,7 +263,7 @@ export default function Admin({ session }) {
         </p>
 
         {/* Cohort sessions — click straight into the deck you're presenting */}
-        {sessions && (
+        {sessions && cohort?.materials && (
           <div className="mt-8">
             <h2 className="text-sm uppercase tracking-wider flex items-center gap-2 mb-3">
               <Presentation size={16} className="text-[#3E9E28]" /> Cohort Sessions — slide decks

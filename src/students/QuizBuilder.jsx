@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Sparkles, Check, RefreshCw, Send, MessageSquare, FileText, ListChecks, Trash2 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { TERM_LISTS, DEFAULT_TERM_LIST, termListById } from './termLists';
+import { COHORTS, CURRENT_COHORT, cohortById } from '../cohorts';
 
 // Quiz builder: pick a topic list (monthly news or mainstream AI knowledge),
 // check topics, set parameters, generate a multiple-choice quiz with AI,
@@ -10,6 +11,9 @@ import { TERM_LISTS, DEFAULT_TERM_LIST, termListById } from './termLists';
 // regenerate until happy, publish. Drafts persist server-side, so you can
 // leave and come back to review one before it goes live. Published quizzes
 // appear at the bottom of /students under QUIZZES, numbered in order.
+// Every quiz belongs to one cohort (picked at the top, default CURRENT_COHORT
+// or ?cohort=<id>) and is only listed on that cohort's page; quiz numbers
+// count up per cohort.
 
 const TAG_STYLES = {
   keep: 'bg-[#3E9E28]/10 border-[#3E9E28]/40 text-[#0F7B3F]',
@@ -53,6 +57,9 @@ function Toggle({ label, hint, checked, onChange }) {
 
 export default function QuizBuilder() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [cohortId, setCohortId] = useState(() => cohortById(searchParams.get('cohort'))?.id || CURRENT_COHORT);
+  const cohortHome = `/?cohort=${encodeURIComponent(cohortId)}`;
   const [listId, setListId] = useState(DEFAULT_TERM_LIST.id);
   const [terms, setTerms] = useState([]);
   const [selected, setSelected] = useState(() => new Set());
@@ -83,10 +90,12 @@ export default function QuizBuilder() {
     .from('quizzes')
     .select('id, created_at, topics, params, questions')
     .eq('status', 'draft')
+    .eq('cohort', cohortId)
     .order('created_at', { ascending: false })
     .limit(8)
     .then(({ data }) => setDrafts(data || []));
-  useEffect(() => { loadDrafts(); }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { loadDrafts(); }, [cohortId]);
 
   const discardDraft = async (d) => {
     if (!confirm('Discard this draft? It will disappear from the review list.')) return;
@@ -131,7 +140,7 @@ export default function QuizBuilder() {
 
   const generate = async () => {
     const topics = terms.filter((t) => selected.has(t.term)).map((t) => ({ term: t.term, description: t.description }));
-    const j = await callApi({ action: 'generate', topics, params: { ...params, term_list: listId } });
+    const j = await callApi({ action: 'generate', cohort: cohortId, topics, params: { ...params, term_list: listId } });
     if (j) { setQuiz(j); setTags({}); setPhase('review'); window.scrollTo(0, 0); loadDrafts(); }
   };
 
@@ -160,7 +169,7 @@ export default function QuizBuilder() {
   return (
     <div className="custom-scrollbar flex-1 overflow-y-auto p-4 sm:p-6">
       <div className="max-w-3xl mx-auto w-full pb-16">
-        <button onClick={() => navigate('/')} className="flex items-center gap-2 text-[#1A1A1A]/50 hover:text-[#1A1A1A] transition-colors mb-4 w-fit">
+        <button onClick={() => navigate(cohortHome)} className="flex items-center gap-2 text-[#1A1A1A]/50 hover:text-[#1A1A1A] transition-colors mb-4 w-fit">
           <ArrowLeft size={18} /> All students
         </button>
 
@@ -182,6 +191,21 @@ export default function QuizBuilder() {
         {/* ── SETUP ── */}
         {phase === 'setup' && (
           <>
+            <div className="glass-panel mb-5">
+              <h2 className="text-sm uppercase tracking-wider mb-1">Cohort</h2>
+              <p className="text-xs text-[#5C5C5C] mb-3">The quiz is listed (and numbered) on this cohort's page only.</p>
+              <div className="inline-flex flex-wrap gap-1 rounded-full border border-[#E3E3DF] bg-white p-1">
+                {COHORTS.map((c) => (
+                  <button key={c.id} type="button" onClick={() => setCohortId(c.id)} aria-pressed={cohortId === c.id}
+                    className={`rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                      cohortId === c.id ? 'bg-[#3E9E28] text-white' : 'text-[#1A1A1A]/50 hover:text-[#0F7B3F]'
+                    }`}>
+                    {c.short}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {drafts.length > 0 && (
               <div className="glass-panel mb-5 !border-amber-300">
                 <h2 className="text-sm uppercase tracking-wider flex items-center gap-2 mb-1">
@@ -379,7 +403,7 @@ export default function QuizBuilder() {
             <h2 className="text-xl mb-2">Quiz #{publishedNumber} is live</h2>
             <p className="text-sm text-[#5C5C5C] mb-6">It's now listed under QUIZZES at the bottom of the students page, right after the earlier quizzes.</p>
             <div className="flex justify-center gap-3 flex-wrap">
-              <button onClick={() => navigate('/')} className="btn">See it on the students page</button>
+              <button onClick={() => navigate(cohortHome)} className="btn">See it on the students page</button>
               <button onClick={() => { setPhase('setup'); setQuiz(null); setSelected(new Set()); setTitle(''); }} className="btn btn-primary">
                 <Sparkles size={15} /> Build another
               </button>

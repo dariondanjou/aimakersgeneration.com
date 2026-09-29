@@ -11,6 +11,10 @@ import { TERM_LISTS, termListById } from './termLists';
 //    ones fill in green) and any countdown applies to the whole quiz.
 // Every attempt — answers, per-question seconds, score, date — is stored in
 // quiz_attempts; students can retake a quiz as often as they like.
+// The name list is the quiz's own cohort roster only (quizzes.cohort), so
+// students from another program never show up. Quiz attempts and live
+// progress stay anonymous writes by design; nothing here writes to students
+// or their portfolios.
 
 const TICK_MS = 250;
 
@@ -157,6 +161,7 @@ export default function QuizTake() {
   const startedAt = useRef(null);
   const finishing = useRef(false);
 
+  const cohortHome = quiz?.cohort ? `/?cohort=${encodeURIComponent(quiz.cohort)}` : '/';
   const studentName = nameChoice === '__other__' ? otherName.trim() : nameChoice;
 
   const loadAttempts = async () => {
@@ -171,10 +176,11 @@ export default function QuizTake() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: q }, { data: roster }] = await Promise.all([
-        supabase.from('quizzes').select('*').eq('id', id).maybeSingle(),
-        supabase.from('students').select('id, full_name').order('sort_order').order('full_name'),
-      ]);
+      const { data: q } = await supabase.from('quizzes').select('*').eq('id', id).maybeSingle();
+      // Roster scoped to the quiz's cohort.
+      const { data: roster } = q?.cohort
+        ? await supabase.from('students').select('id, full_name').eq('cohort', q.cohort).order('sort_order').order('full_name')
+        : { data: [] };
       setQuiz(q);
       setStudents(roster || []);
       setLoading(false);
@@ -348,7 +354,7 @@ export default function QuizTake() {
   if (!quiz || quiz.status !== 'published') {
     return <div className="flex-1 flex flex-col items-center justify-center gap-4">
       <p className="text-[#5C5C5C]">Quiz not found.</p>
-      <button onClick={() => navigate('/')} className="btn">All students</button>
+      <button onClick={() => navigate(cohortHome)} className="btn">All students</button>
     </div>;
   }
 
@@ -357,7 +363,7 @@ export default function QuizTake() {
   return (
     <div className="custom-scrollbar flex-1 overflow-y-auto p-4 sm:p-6">
       <div className="max-w-2xl mx-auto w-full pb-16">
-        <button onClick={() => navigate('/')} className="flex items-center gap-2 text-[#1A1A1A]/50 hover:text-[#1A1A1A] transition-colors mb-4 w-fit">
+        <button onClick={() => navigate(cohortHome)} className="flex items-center gap-2 text-[#1A1A1A]/50 hover:text-[#1A1A1A] transition-colors mb-4 w-fit">
           <ArrowLeft size={18} /> All students
         </button>
 
@@ -510,7 +516,7 @@ export default function QuizTake() {
                 {studentName
                   ? <button onClick={begin} className="btn !py-2 !px-4 !text-sm"><RotateCcw size={14} /> Retake quiz</button>
                   : <button onClick={() => setPhase('start')} className="btn !py-2 !px-4 !text-sm"><RotateCcw size={14} /> Take the quiz</button>}
-                <button onClick={() => navigate('/')} className="btn btn-primary !py-2 !px-4 !text-sm">Back to students</button>
+                <button onClick={() => navigate(cohortHome)} className="btn btn-primary !py-2 !px-4 !text-sm">Back to students</button>
               </div>
             </div>
 

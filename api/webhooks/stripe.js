@@ -52,7 +52,7 @@ async function markPaid(supabase, session) {
     .eq("id", applicationId)
     .eq("stripe_session_id", session.id)
     .eq("status", "pending")
-    .select("id, email, full_name, preferred_name, city, current_work, ai_experience, coding_experience, something_made, eight_week_goal, goal, final_project, portfolio_url");
+    .select("id, cohort, email, full_name, preferred_name, city, current_work, ai_experience, coding_experience, something_made, eight_week_goal, goal, final_project, portfolio_url");
 
   if (error) throw new Error(error.message);
   if (data?.length) {

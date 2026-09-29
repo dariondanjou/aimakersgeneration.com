@@ -4,11 +4,37 @@ import {
   ArrowLeft, Camera, Check, X, Plus, ExternalLink, Target, Flag,
   Image as ImageIcon, Link as LinkIcon, Upload, FileText, Clock, CheckCircle2, Trash2,
   MapPin, Briefcase, CalendarClock, Linkedin, TrendingUp, Users, Sparkles,
-  ListChecks, RefreshCw, AlertTriangle, Presentation,
+  ListChecks, RefreshCw, AlertTriangle, Presentation, LogIn,
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { getSocialPlatform, getSocialTooltip } from '../socialPlatforms';
 import CohortMaterialsSection from './CohortMaterials.jsx';
+import { cohortById } from '../cohorts';
+import useSession from './useSession';
+
+// A student's public portfolio at /students/:slug.
+// Anyone can view it (read-only). Editing — profile fields, avatar, media,
+// links, LinkedIn weeks, homework uploads — is limited to the profile's owner
+// (students.user_id = the signed-in user; a signed-in student whose email
+// matches an unclaimed row claims it automatically) and to admins
+// (public.is_admin()). The database enforces the same rule with RLS; the UI
+// just hides the controls and explains a refused write instead of failing
+// silently. Everything cohort-specific (assignments, LinkedIn, curriculum,
+// week counts) follows the student's own cohort from src/cohorts.js.
+
+// Turn a Supabase/Storage error into something a student can act on. RLS
+// refusals (Postgres 42501, storage 403 "row-level security") mean the
+// visitor isn't the owner or their session lapsed.
+function friendlyWriteError(error) {
+  const msg = error?.message || String(error || '');
+  if (error?.code === '42501' || error?.code === 'not_owner' || /row-level security|permission denied|unauthorized|403/i.test(msg)) {
+    return "You don't have permission to change this portfolio. Sign in with the email on file for this profile (or as an admin) and try again.";
+  }
+  return msg || 'Something went wrong — please try again.';
+}
+// An UPDATE/DELETE that RLS filters out affects zero rows without raising an
+// error; treat that as a refusal so it doesn't look like it worked.
+const NOT_OWNER = { code: 'not_owner', message: 'not permitted' };
 
 // ── Inline click-to-edit field (same pattern as the community ProfilePage) ──
 function InlineField({ value, onSave, placeholder, isOwner, multiline = false, className = '' }) {
@@ -234,6 +260,15 @@ function ScanChip({ sub, onScan, scanning, late = false }) {
       </span>
     );
   }
+  // Visitors can't trigger scans — just show where it stands.
+  if (!onScan) {
+    return (
+      <span className={`inline-flex items-center gap-1 text-[11px] font-semibold shrink-0 ${s === 'error' ? 'text-amber-600' : 'text-[#1A1A1A]/50'}`}
+        title={sub.scan_note || undefined}>
+        {s === 'error' ? <><AlertTriangle size={12} /> Scan error</> : <><Clock size={12} /> Awaiting check</>}
+      </span>
+    );
+  }
   // pending (not currently scanning) or error → offer a (re)scan
   return (
     <button
@@ -249,8 +284,8 @@ function ScanChip({ sub, onScan, scanning, late = false }) {
 // Small amber tag next to a not-yet-verified submission that went in after
 // the deadline (verified ones carry on time / late in their chip instead).
 // Inline link to the slide deck of the session a homework was handed out in.
-function DeckLink({ week }) {
-  if (!week) return null;
+function DeckLink({ week, enabled = true }) {
+  if (!week || !enabled) return null;
   return (
     <Link to={`/deck/${week}`} className="inline-flex items-center gap-1 font-semibold text-[#0F7B3F] hover:text-[#3E9E28] transition-colors" title={`Open the Week ${week} slide deck`}>
       <Presentation size={12} /> Week {week} slides
@@ -315,7 +350,7 @@ const stateTextClass = (state) =>
 // ── "This Week" panel: the current assignment highlighted at the top ────────
 function ThisWeekPanel({
   assignment, assignments, submissions, isOwner, now,
-  onSubmitFiles, onSubmitText, onScan, scanningIds, dueByWeek = {},
+  onSubmitFiles, onSubmitText, onScan, scanningIds, dueByWeek = {}, deckLinks = true,
 }) {
   const fileRef = useRef(null);
   const [drag, setDrag] = useState(false);
@@ -399,7 +434,7 @@ function ThisWeekPanel({
             <span className={`font-semibold ${pastDue ? 'text-amber-700' : 'text-[#1A1A1A]/70'}`}>
               Due {formatDue(assignment.due_at)}
             </span>
-            {' '}· <DeckLink week={assignment.week_assigned} />
+            {deckLinks && <>{' '}· <DeckLink week={assignment.week_assigned} /></>}
           </p>
         </div>
       </div>
@@ -488,7 +523,7 @@ function ThisWeekPanel({
 // After the deadline it stays open: the outline turns amber and anything that
 // goes in is marked late. On-time work locks once the deadline passes; late
 // submissions can still be swapped out.
-function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCurrent, onSubmitFiles, onScan, scanningIds, dueItems }) {
+function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCurrent, onSubmitFiles, onScan, scanningIds, dueItems, deckLinks = true }) {
   const fileRef = useRef(null);
   const [busy, setBusy] = useState(false);
   const [drag, setDrag] = useState(false);
@@ -507,9 +542,10 @@ function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCur
   };
 
   const handleDelete = async (sub) => {
+    if (!isOwner) return;
     if (!confirm(`Remove "${sub.file_name || 'this submission'}"?`)) return;
-    const { error } = await supabase.from('student_submissions').delete().eq('id', sub.id);
-    if (error) alert('Could not remove it: ' + error.message);
+    const { data, error } = await supabase.from('student_submissions').delete().eq('id', sub.id).select('id');
+    if (error || !data?.length) alert('Could not remove it: ' + friendlyWriteError(error || NOT_OWNER));
     onChanged();
   };
 
@@ -567,7 +603,7 @@ function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCur
             <span className={`font-semibold ${pastDue ? 'text-amber-700' : 'text-[#1A1A1A]/70'}`}>
               Due {formatDue(assignment.due_at)}
             </span>
-            {' '}· <DeckLink week={assignment.week_assigned} />
+            {deckLinks && <>{' '}· <DeckLink week={assignment.week_assigned} /></>}
           </p>
           {pastDue && (
             <p className="text-xs font-semibold text-amber-700 mt-1.5">
@@ -632,10 +668,10 @@ function AssignmentRow({ assignment, submissions, isOwner, now, onChanged, isCur
   );
 }
 
-// ── LinkedIn connections growth chart (weeks 1–8) ───────────────────────────
+// ── LinkedIn connections growth chart (one point per cohort week) ──────────
 // Single-series line: forest green on white, recessive grid, dots on recorded
-// weeks, a direct end-label with the latest count. Fixed 1–8 week domain so the
-// timeline reads the same even before every week is filled in.
+// weeks, a direct end-label with the latest count. Fixed 1–N week domain (N =
+// the cohort's weeks) so the timeline reads the same before every week is in.
 function LinkedInGrowthChart({ points }) {
   const W = 500, H = 230;
   const padL = 40, padR = 52, padT = 18, padB = 30;
@@ -648,7 +684,7 @@ function LinkedInGrowthChart({ points }) {
   const step = Math.max(1, Math.ceil(maxConn / 4 / 10) * 10);
   const yMax = step * 4;
 
-  const xFor = (week) => padL + ((week - 1) / 7) * plotW;
+  const xFor = (week) => padL + ((week - 1) / Math.max(1, points.length - 1)) * plotW;
   const yFor = (conn) => padT + (1 - conn / yMax) * plotH;
 
   const linePath = recorded
@@ -683,8 +719,8 @@ function LinkedInGrowthChart({ points }) {
         );
       })}
 
-      {/* X axis: weeks 1–8 */}
-      {[1, 2, 3, 4, 5, 6, 7, 8].map((w) => (
+      {/* X axis: weeks 1–N */}
+      {points.map(({ week: w }) => (
         <text key={w} x={xFor(w)} y={padT + plotH + 18} textAnchor="middle" fontSize="10"
           fill="#5C5C5C" fontFamily="Inter, sans-serif">W{w}</text>
       ))}
@@ -772,7 +808,7 @@ function StatTile({ icon, label, value, accent = '#3E9E28' }) {
 }
 
 // ── LinkedIn section on the profile ─────────────────────────────────────────
-function LinkedInSection({ student, stats, isOwner, onSaveField, onSaveWeek }) {
+function LinkedInSection({ student, stats, isOwner, onSaveField, onSaveWeek, weeks = 8 }) {
   const [addingUrl, setAddingUrl] = useState(false);
   const [urlDraft, setUrlDraft] = useState('');
   const [editingPct, setEditingPct] = useState(false);
@@ -780,7 +816,7 @@ function LinkedInSection({ student, stats, isOwner, onSaveField, onSaveWeek }) {
 
   const url = student.linkedin_url;
   const byWeek = new Map(stats.map((s) => [s.week, s.connections]));
-  const points = [1, 2, 3, 4, 5, 6, 7, 8].map((w) => ({ week: w, connections: byWeek.has(w) ? byWeek.get(w) : null }));
+  const points = Array.from({ length: weeks }, (_, i) => i + 1).map((w) => ({ week: w, connections: byWeek.has(w) ? byWeek.get(w) : null }));
   const recorded = points.filter((p) => p.connections != null);
   const latest = recorded.length ? recorded[recorded.length - 1].connections : null;
   const first = recorded.length ? recorded[0].connections : null;
@@ -844,7 +880,7 @@ function LinkedInSection({ student, stats, isOwner, onSaveField, onSaveWeek }) {
       {url && (
         <>
           <p className="text-xs text-[#5C5C5C] mt-1 mb-4">
-            Your connection growth across the eight weeks. Log your current connection count each
+            Your connection growth across the {weeks} weeks. Log your current connection count each
             week{isOwner ? ' by tapping a week below' : ''} — watch the line climb.
           </p>
 
@@ -912,6 +948,7 @@ export default function StudentProfile() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const now = useNow();
+  const session = useSession();
 
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -921,7 +958,12 @@ export default function StudentProfile() {
   const [linkedinStats, setLinkedinStats] = useState([]);
   // week_assigned → the curriculum's specific homework bullets for that session.
   const [dueByWeek, setDueByWeek] = useState({});
+  const cohort = cohortById(student?.cohort);
+  // The curriculum outline (and its per-week homework bullets + decks) is the
+  // Summer program's — only cohorts with `materials` use it.
+  const hasMaterials = !!cohort?.materials;
   useEffect(() => {
+    if (!hasMaterials) { setDueByWeek({}); return undefined; }
     let cancelled = false;
     fetch('/api/curriculum?public=1')
       .then((r) => (r.ok ? r.json() : null))
@@ -933,7 +975,7 @@ export default function StudentProfile() {
       })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, []);
+  }, [hasMaterials]);
   const [isUploading, setIsUploading] = useState(false);
   const [addingLink, setAddingLink] = useState(false);
   const [newLinkUrl, setNewLinkUrl] = useState('');
@@ -945,11 +987,21 @@ export default function StudentProfile() {
   const avatarInputRef = useRef(null);
   const mediaInputRef = useRef(null);
 
-  // This page is deliberately auth-free: everyone gets the edit controls
-  // (see 20260719_students_public_editing.sql for what stays protected).
-  const isOwner = true;
+  // Ownership: the signed-in user whose id is stamped on the row, or an admin.
+  // Visitors (and other signed-in students) get the read-only portfolio.
+  const [isAdmin, setIsAdmin] = useState(false);
+  const userId = session?.user?.id || null;
+  useEffect(() => {
+    if (!userId) { setIsAdmin(false); return undefined; }
+    let cancelled = false;
+    supabase.rpc('is_admin').then(({ data, error }) => {
+      if (!cancelled) setIsAdmin(!error && data === true);
+    });
+    return () => { cancelled = true; };
+  }, [userId]);
+  const isOwner = !!session && !!student && (student.user_id === session.user.id || isAdmin);
 
-  const BASE_COLUMNS = 'id, slug, full_name, headline, bio, goal, final_project_goal, avatar_url, links, user_id, city, current_work, ai_experience, coding_experience, something_made, eight_week_goal';
+  const BASE_COLUMNS = 'id, slug, full_name, headline, bio, goal, final_project_goal, avatar_url, links, user_id, city, current_work, ai_experience, coding_experience, something_made, eight_week_goal, cohort';
   const STUDENT_COLUMNS = `${BASE_COLUMNS}, linkedin_url, linkedin_ai_pct`;
   const loadStudent = async () => {
     // Prefer the full column set. If the LinkedIn columns aren't in the DB yet
@@ -976,6 +1028,7 @@ export default function StudentProfile() {
   const [scanningIds, setScanningIds] = useState(() => new Set());
 
   const scanSubmission = async (submissionId) => {
+    if (!isOwner) return;
     setScanningIds((prev) => new Set(prev).add(submissionId));
     try {
       await fetch('/api/scan-homework', {
@@ -989,19 +1042,20 @@ export default function StudentProfile() {
   };
 
   const submitHomeworkFiles = async (assignment, files) => {
+    if (!isOwner) return;
     for (const file of files) {
       if (file.size > 25 * 1024 * 1024) { alert(`${file.name}: max file size is 25MB`); continue; }
       const ext = file.name.split('.').pop();
       const path = `public/${student.slug}/homework/hw${assignment.number}-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from('student-uploads').upload(path, file);
-      if (upErr) { alert(`${file.name}: upload failed — ${upErr.message}`); continue; }
+      if (upErr) { alert(`${file.name}: upload failed — ${friendlyWriteError(upErr)}`); continue; }
       const { data } = supabase.storage.from('student-uploads').getPublicUrl(path);
       const { data: row, error: insErr } = await supabase
         .from('student_submissions')
         .insert({ student_id: student.id, assignment_id: assignment.id, url: data.publicUrl, file_name: file.name })
         .select('id')
         .single();
-      if (insErr) { alert(`${file.name}: could not record the submission — ${insErr.message}`); continue; }
+      if (insErr) { alert(`${file.name}: could not record the submission — ${friendlyWriteError(insErr)}`); continue; }
       await loadSubmissions(student.id);
       scanSubmission(row.id);
     }
@@ -1010,6 +1064,7 @@ export default function StudentProfile() {
   // Pasted homework: a URL becomes a link submission; anything else is saved
   // as a text file so there's a verifiable artifact to scan.
   const submitHomeworkText = async (assignment, text) => {
+    if (!isOwner) return;
     const urlLike = /^https?:\/\/\S+$/i.test(text) || /^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(text);
     if (urlLike && text.length < 500) {
       const full = text.startsWith('http') ? text : `https://${text}`;
@@ -1018,7 +1073,7 @@ export default function StudentProfile() {
         .insert({ student_id: student.id, assignment_id: assignment.id, url: full, file_name: full.replace(/^https?:\/\//, '') })
         .select('id')
         .single();
-      if (error) { alert('Could not record the submission: ' + error.message); return; }
+      if (error) { alert('Could not record the submission: ' + friendlyWriteError(error)); return; }
       await loadSubmissions(student.id);
       scanSubmission(row.id);
     } else {
@@ -1047,52 +1102,85 @@ export default function StudentProfile() {
 
   // Upsert (or clear) one week's connection count.
   const saveLinkedinWeek = async (week, value) => {
+    if (!isOwner) return;
     if (value == null) {
       const { error } = await supabase
         .from('student_linkedin_stats')
         .delete()
         .eq('student_id', student.id)
         .eq('week', week);
-      if (error) { alert('Could not clear that week: ' + error.message); return; }
+      if (error) { alert('Could not clear that week: ' + friendlyWriteError(error)); return; }
     } else {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('student_linkedin_stats')
-        .upsert({ student_id: student.id, week, connections: value }, { onConflict: 'student_id,week' });
-      if (error) { alert('Could not save: ' + error.message); return; }
+        .upsert({ student_id: student.id, week, connections: value }, { onConflict: 'student_id,week' })
+        .select('week');
+      if (error || !data?.length) { alert('Could not save: ' + friendlyWriteError(error || NOT_OWNER)); return; }
     }
     loadLinkedinStats(student.id);
   };
 
+  // Student first, then only their own cohort's assignments.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const [{ data: a }, s] = await Promise.all([
-        supabase.from('assignments').select('*').order('number', { ascending: true }),
-        loadStudent(),
-      ]);
+      const s = await loadStudent();
       if (cancelled) return;
-      setAssignments(a || []);
-      if (s) await Promise.all([loadSubmissions(s.id), loadMedia(s.id), loadLinkedinStats(s.id)]);
+      if (s) {
+        const [{ data: a }] = await Promise.all([
+          s.cohort
+            ? supabase.from('assignments').select('*').eq('cohort', s.cohort).order('number', { ascending: true })
+            : Promise.resolve({ data: [] }),
+          loadSubmissions(s.id), loadMedia(s.id), loadLinkedinStats(s.id),
+        ]);
+        if (cancelled) return;
+        setAssignments(a || []);
+      } else {
+        setAssignments([]);
+      }
       if (!cancelled) setLoading(false);
     })();
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
+  // A signed-in student opening their own unclaimed profile claims it: the
+  // RPC stamps user_id when their sign-in email matches the row's email.
+  const claimTried = useRef(null);
+  const needsClaim = !!userId && !!student && student.user_id == null;
+  useEffect(() => {
+    if (!needsClaim || claimTried.current === `${userId}:${slug}`) return;
+    claimTried.current = `${userId}:${slug}`;
+    let cancelled = false;
+    supabase.rpc('claim_student_profile', { profile_slug: slug }).then(({ data, error }) => {
+      if (!cancelled && !error && data === true) loadStudent();
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [needsClaim, userId, slug]);
+
   const saveField = async (field, value) => {
-    const { error } = await supabase.from('students').update({ [field]: value || null }).eq('id', student.id);
-    if (!error) setStudent((prev) => ({ ...prev, [field]: value || null }));
+    if (!isOwner) return false;
+    const { data, error } = await supabase
+      .from('students').update({ [field]: value || null }).eq('id', student.id).select('id');
+    if (error || !data?.length) {
+      alert('Could not save your change: ' + friendlyWriteError(error || NOT_OWNER));
+      return false;
+    }
+    setStudent((prev) => ({ ...prev, [field]: value || null }));
+    return true;
   };
 
   const uploadAvatarFile = async (file) => {
-    if (!file) return;
+    if (!file || !isOwner) return;
     if (file.size > 5 * 1024 * 1024) { alert('Max file size is 5MB'); return; }
     if (!file.type.startsWith('image/')) { alert('Only images are supported'); return; }
     setIsUploading(true);
     const ext = file.name.split('.').pop();
     const path = `public/${student.slug}/avatar-${Date.now()}.${ext}`;
     const { error: upErr } = await supabase.storage.from('student-uploads').upload(path, file, { upsert: true });
-    if (upErr) { alert('Upload failed: ' + upErr.message); setIsUploading(false); return; }
+    if (upErr) { alert('Upload failed: ' + friendlyWriteError(upErr)); setIsUploading(false); return; }
     const { data } = supabase.storage.from('student-uploads').getPublicUrl(path);
     await saveField('avatar_url', data.publicUrl);
     setIsUploading(false);
@@ -1102,6 +1190,7 @@ export default function StudentProfile() {
   const handleAvatarUpload = (e) => uploadAvatarFile(e.target.files?.[0]);
 
   const uploadMediaFiles = async (files) => {
+    if (!isOwner) return;
     const accepted = [];
     for (const file of files) {
       if (file.size > 25 * 1024 * 1024) { alert(`${file.name}: max file size is 25MB`); continue; }
@@ -1117,7 +1206,7 @@ export default function StudentProfile() {
       const ext = file.name.split('.').pop();
       const path = `public/${student.slug}/media/${Date.now()}-${Math.floor(Math.random() * 1e6)}.${ext}`;
       const { error: upErr } = await supabase.storage.from('student-uploads').upload(path, file);
-      if (upErr) { alert(`${file.name}: upload failed — ${upErr.message}`); continue; }
+      if (upErr) { alert(`${file.name}: upload failed — ${friendlyWriteError(upErr)}`); continue; }
       const { data } = supabase.storage.from('student-uploads').getPublicUrl(path);
       const { error: insErr } = await supabase.from('student_media').insert({
         student_id: student.id,
@@ -1125,7 +1214,7 @@ export default function StudentProfile() {
         url: data.publicUrl,
         title: file.name,
       });
-      if (insErr) alert(`${file.name}: could not save the upload — ${insErr.message}`);
+      if (insErr) alert(`${file.name}: could not save the upload — ${friendlyWriteError(insErr)}`);
     }
     setMediaBusy(false);
     if (mediaInputRef.current) mediaInputRef.current.value = '';
@@ -1135,22 +1224,24 @@ export default function StudentProfile() {
   const handleMediaUpload = (e) => uploadMediaFiles(Array.from(e.target.files || []));
 
   const addMediaLink = async () => {
+    if (!isOwner) return;
     const url = newMediaUrl.trim();
     if (!url) return;
     const full = url.startsWith('http') ? url : `https://${url}`;
     const { error } = await supabase.from('student_media').insert({
       student_id: student.id, kind: 'link', url: full,
     });
-    if (error) alert('Could not add the link: ' + error.message);
+    if (error) alert('Could not add the link: ' + friendlyWriteError(error));
     setNewMediaUrl('');
     setAddingMediaLink(false);
     loadMedia(student.id);
   };
 
   const removeMedia = async (item) => {
+    if (!isOwner) return;
     if (!confirm('Remove this from your profile?')) return;
-    const { error } = await supabase.from('student_media').delete().eq('id', item.id);
-    if (error) alert('Could not remove it: ' + error.message);
+    const { data, error } = await supabase.from('student_media').delete().eq('id', item.id).select('id');
+    if (error || !data?.length) alert('Could not remove it: ' + friendlyWriteError(error || NOT_OWNER));
     loadMedia(student.id);
   };
 
@@ -1162,7 +1253,7 @@ export default function StudentProfile() {
   } : {});
 
   const addProfileLink = async () => {
-    if (!newLinkUrl.trim()) return;
+    if (!isOwner || !newLinkUrl.trim()) return;
     const current = student.links ? student.links.split(',').map((l) => l.trim()).filter(Boolean) : [];
     current.push(newLinkUrl.trim());
     await saveField('links', current.join(', '));
@@ -1171,6 +1262,7 @@ export default function StudentProfile() {
   };
 
   const removeProfileLink = async (index) => {
+    if (!isOwner) return;
     const current = student.links.split(',').map((l) => l.trim()).filter(Boolean);
     current.splice(index, 1);
     await saveField('links', current.length ? current.join(', ') : '');
@@ -1193,6 +1285,8 @@ export default function StudentProfile() {
     );
   }
 
+  const weeks = cohort?.weeks || 8;
+  const backTo = cohort ? `/?cohort=${encodeURIComponent(cohort.id)}` : '/';
   const links = student.links ? student.links.split(',').map((l) => l.trim()).filter(Boolean) : [];
   const firstName = student.full_name?.split(' ')[0] || 'Student';
 
@@ -1212,9 +1306,20 @@ export default function StudentProfile() {
   return (
     <div className="custom-scrollbar flex-1 overflow-y-auto p-4 sm:p-6">
       <div className="max-w-3xl mx-auto w-full pb-12">
-        <button onClick={() => navigate('/')} className="flex items-center gap-2 text-[#1A1A1A]/50 hover:text-[#1A1A1A] transition-colors mb-4 w-fit">
-          <ArrowLeft size={18} /> All students
-        </button>
+        <Link to={backTo} className="flex items-center gap-2 text-[#1A1A1A]/50 hover:text-[#1A1A1A] transition-colors mb-4 w-fit">
+          <ArrowLeft size={18} /> Back to {cohort ? cohort.short : 'all students'}
+        </Link>
+
+        {/* Visitors: a quiet way in for the student this portfolio belongs to. */}
+        {session === null && (
+          <div className="mb-4 rounded-xl border border-[#3E9E28]/25 bg-[#3E9E28]/5 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-[#1A1A1A]/70">Is this you? Sign in to edit your portfolio.</p>
+            <a href={`/community?next=${encodeURIComponent(`/students/${student.slug}`)}`}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#0F7B3F] hover:text-[#3E9E28] transition-colors">
+              <LogIn size={14} /> Sign in
+            </a>
+          </div>
+        )}
 
         {/* ── Header card (LinkedIn style: banner + overlapping avatar) ── */}
         <div className="glass-panel !p-0 overflow-hidden mb-5">
@@ -1242,9 +1347,12 @@ export default function StudentProfile() {
                   </>
                 )}
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#0F7B3F] bg-[#3E9E28]/10 border border-[#3E9E28]/25 rounded-full px-3 py-1 mb-2">
-                Summer 2026 Cohort
-              </span>
+              {cohort && (
+                <Link to={backTo} title={`${cohort.label} · ${cohort.dates}`}
+                  className="text-[10px] font-bold uppercase tracking-wider text-[#0F7B3F] bg-[#3E9E28]/10 border border-[#3E9E28]/25 rounded-full px-3 py-1 mb-2 hover:border-[#3E9E28]/60 transition-colors">
+                  {cohort.label}
+                </Link>
+              )}
             </div>
 
             <h1 className="text-2xl sm:text-3xl">
@@ -1300,19 +1408,21 @@ export default function StudentProfile() {
           now={now}
           onSubmitFiles={submitHomeworkFiles}
           onSubmitText={submitHomeworkText}
-          onScan={scanSubmission}
+          onScan={isOwner ? scanSubmission : null}
           scanningIds={scanningIds}
           dueByWeek={dueByWeek}
+          deckLinks={hasMaterials}
         />
 
         {/* ── LinkedIn (first section below the header) ── */}
-        {(isOwner || student.linkedin_url) && (
+        {cohort?.linkedin && (isOwner || student.linkedin_url) && (
           <LinkedInSection
             student={student}
             stats={linkedinStats}
             isOwner={isOwner}
             onSaveField={saveField}
             onSaveWeek={saveLinkedinWeek}
+            weeks={weeks}
           />
         )}
 
@@ -1389,12 +1499,12 @@ export default function StudentProfile() {
           </div>
           <div className="glass-panel">
             <h2 className="text-sm uppercase tracking-wider flex items-center gap-2 mb-3">
-              <CalendarClock size={16} className="text-[#3E9E28]" /> 8-Week Goal
+              <CalendarClock size={16} className="text-[#3E9E28]" /> {weeks}-Week Goal
             </h2>
             <InlineField
               value={student.eight_week_goal}
               onSave={(v) => saveField('eight_week_goal', v)}
-              placeholder={isOwner ? 'Where do you want to be after eight weeks?' : 'Not set yet'}
+              placeholder={isOwner ? `Where do you want to be after ${weeks} weeks?` : 'Not set yet'}
               isOwner={isOwner}
               multiline
               className="text-sm text-[#1A1A1A]/80 leading-relaxed"
@@ -1407,7 +1517,7 @@ export default function StudentProfile() {
             <InlineField
               value={student.final_project_goal}
               onSave={(v) => saveField('final_project_goal', v)}
-              placeholder={isOwner ? 'What will you build by Week 8?' : 'Not set yet'}
+              placeholder={isOwner ? `What will you build by Week ${weeks}?` : 'Not set yet'}
               isOwner={isOwner}
               multiline
               className="text-sm text-[#1A1A1A]/80 leading-relaxed"
@@ -1556,7 +1666,7 @@ export default function StudentProfile() {
         </div>
 
         {/* ── Curriculum + every session's slide deck (past weeks stay open) ── */}
-        <CohortMaterialsSection variant="profile" />
+        <CohortMaterialsSection cohort={student.cohort} variant="profile" />
 
         {/* ── Weekly homework ── */}
         <div className="glass-panel">
@@ -1564,7 +1674,7 @@ export default function StudentProfile() {
             <FileText size={16} className="text-[#3E9E28]" /> Weekly Homework
           </h2>
           <p className="text-xs text-[#5C5C5C] mb-4">
-            Homework is handed out each Saturday session and due the following Saturday at 1:00 PM ET, weeks 2–8.
+            Homework is handed out at each Saturday session and due the following Saturday at 1:00 PM ET.
             Missed one? You can still turn it in after the deadline — it just goes in marked late.
           </p>
           <div className="space-y-3">
@@ -1578,9 +1688,10 @@ export default function StudentProfile() {
                 onChanged={() => loadSubmissions(student.id)}
                 isCurrent={a.id === currentAssignment?.id}
                 onSubmitFiles={submitHomeworkFiles}
-                onScan={scanSubmission}
+                onScan={isOwner ? scanSubmission : null}
                 scanningIds={scanningIds}
                 dueItems={dueByWeek[a.week_assigned]}
+                deckLinks={hasMaterials}
               />
             ))}
             {assignments.length === 0 && (

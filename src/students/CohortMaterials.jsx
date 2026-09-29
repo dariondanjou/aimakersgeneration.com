@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Target, Backpack, ChevronDown, Presentation, Layers } from 'lucide-react';
+import { cohortById } from '../cohorts';
 
 // The cohort's course materials, shown to students on /students and on every
 // student profile: the 8-week curriculum outline (objective / covered /
 // homework per session, from /api/curriculum?public=1) and every session's
 // slide deck (from /api/decks?public=1). All decks stay open — past weeks
 // included — so a student can go back and re-read any session's slides.
+//
+// The outline and decks belong to the Summer 2026 program, so the section is
+// cohort-gated: pass `cohort` (an id from src/cohorts.js) and it renders only
+// when that cohort has `materials: true`. No cohort → nothing.
 
 const fmtDate = (d) =>
   d ? new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '';
@@ -191,7 +196,12 @@ export function CurriculumAccordion({ weeks, decks }) {
 // The whole section: header, deck grid, then the outline. `variant="page"` is
 // the centered /students layout; `variant="profile"` sits inside a profile's
 // glass panel and stays compact.
-export default function CohortMaterialsSection({ variant = 'page' }) {
+export default function CohortMaterialsSection({ cohort, variant = 'page' }) {
+  if (!cohortById(cohort)?.materials) return null;
+  return <CohortMaterialsBody variant={variant} />;
+}
+
+function CohortMaterialsBody({ variant }) {
   const { weeks, decks, loading } = useCohortMaterials();
   if (loading) return null;
   if ((!weeks || weeks.length === 0) && (!decks || decks.length === 0)) return null;
