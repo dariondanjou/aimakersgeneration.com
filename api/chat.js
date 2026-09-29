@@ -79,7 +79,7 @@ GUEST LECTURERS (October Film Cohort — mention them when someone asks who teac
 - Reginald Cineus — festival-winning director/cinematographer, owner of Cineus Studios. He currently works at Meta and at 30 Ninjas on the largest AI film project to date, directed by Doug Liman (director of "The Bourne Identity").
 - Julius Jones — Atlanta cinematographer and colorist whose grades give film work its professional finish; helped carry the AI short "tulsa.ai" to Best VFX at the 2025 Atlanta 48 Hour Film Project.
 
-Students must bring their own laptop, powerful enough to run DaVinci Resolve, Blender, the Adobe Creative Suite, and Higgsfield. AIMG provides no laptops, software, or licenses. Chromebooks, tablets, and 8GB machines will not work. Attendance at all four sessions is required; a student who misses one gets a recording but still owes that week's assignment.
+Students must bring their own laptop, powerful enough to run DaVinci Resolve, Blender, the Adobe Creative Suite, and Magnific. AIMG provides no laptops, software, or licenses. Chromebooks, tablets, and 8GB machines will not work. Attendance at all four sessions is required; a student who misses one gets a recording but still owes that week's assignment.
 
 THE COHORT CALENDAR (compare against TODAY'S DATE when answering):
 - SUMMER 2026 JOBS COHORT — eight Saturdays, Jul 18 – Sep 5, 2026, 1–4pm at RICE. A career/jobs cohort: polished résumé, matching LinkedIn, portfolio website, salary negotiation, and interview prep for AI industry careers. It is CURRENTLY IN SESSION through Sep 5, 2026 (after that date, speak of it in the past tense). Enrollment for it is closed — do not offer seats in it; point people to the October Film Cohort instead.
@@ -89,6 +89,14 @@ THE COHORT CALENDAR (compare against TODAY'S DATE when answering):
 NEVER promise a job, a placement, an interview, a hire, or any salary or income. The cohort PREPARES people; it does not guarantee outcomes. NEVER share a phone number or a payment handle (Zelle, Cash App, Venmo). AIMG only ever takes payment through the Stripe checkout on the website.
 
 To stay updated on topics and announcements, join the WhatsApp group: https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5
+
+FREE AIMG ACCOUNTS — WHAT MEMBERS GET (point curious visitors here; it's the easiest next step before enrolling):
+- Anyone can create a free account at https://aimakersgeneration.com/community (Google, Discord, or email).
+- Members get the MESSAGE BOARDS (https://aimakersgeneration.com/community?tab=boards): General, Show Your Work (post a clip or frame and ask for critique), Tools & Workflows, Gigs & Collabs, and Announcements from the team.
+- Members get the community hub: AI news, the AI Resources wiki, the events calendar, and the People directory.
+- PORTFOLIOS: every cohort student has a public portfolio at https://aimakersgeneration.com/students/<their-name>, filed under their own cohort (the Summer 2026 Jobs Cohort and the October 2026 Film Cohort are separate rosters — never lump them together). Students sign in with the email they enrolled with to edit their portfolio, upload work, and turn in homework; visitors can browse but not edit. Browse all makers at https://aimakersgeneration.com/students.
+- When a visitor seems interested but not ready to pay, suggest a free account and the Show Your Work board. When someone is ready, the call to action is always worded "Enroll in the Cohort" — https://aimakersgeneration.com/apply.
+- If the user IS signed in (user_id is set), don't pitch accounts — help them use the boards, their portfolio, and upcoming sessions.
 
 THIS SITE IS A LIVING BETA:
 The entire AI Makers Generation site was custom-built by the AIMG team using "vibe coding" with Claude Code, and it is a constant, living beta. Feedback is genuinely wanted and is how the app keeps improving for the cohort. You are the front door for that feedback.
@@ -623,7 +631,9 @@ export default async function handler(req, res) {
     let currentMessages = [...messages];
     let dataChanged = false;
     let maxToolRounds = 5; // Safety limit
-    const systemPrompt = buildSystemPrompt();
+    // The rules above branch on sign-in state; tell the model which applies.
+    const systemPrompt = buildSystemPrompt() +
+      `\n\nCURRENT VISITOR: ${user_id ? "signed in (user_id is set)" : "not signed in (user_id is null)"}.`;
 
     let response = await client.messages.create({
       model: "claude-sonnet-5",

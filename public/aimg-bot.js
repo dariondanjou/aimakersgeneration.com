@@ -2,6 +2,10 @@
  *  Self-contained. Drop <script src="/aimg-bot.js" defer></script> on any page.
  *  Talks to POST /api/chat ({messages:[{role,content}]}) → {response}.
  *  Works anonymously (public Q&A). No dependencies, no build step.
+ *  Signed-in awareness: the shared site nav (src/shell/aimg-nav.js) dispatches
+ *    window "aimg:auth" {detail:{signedIn, name, accessToken}}
+ *  and the bot then greets the member by name, sends their token (the server
+ *  verifies it — see api/chat.js), and swaps visitor prompts for member ones.
  *  Optional: <script src="/aimg-bot.js" defer data-accent="#0F7B3F"></script>
  */
 (function () {
@@ -26,8 +30,25 @@
   var SUGGESTIONS = [
     "When's the next Film Bar AI?",
     "Tell me about the cohort",
-    "How do I join the community?"
+    "What do I get with a free account?"
   ];
+
+  var MEMBER_SUGGESTIONS = [
+    "What's new on the boards?",
+    "How do I add work to my portfolio?",
+    "When's the next Film Bar AI?"
+  ];
+
+  var SIGNUP_URL = "https://aimakersgeneration.com/community?mode=signup";
+  var auth = { signedIn: false, name: null, accessToken: null };
+  function setAuth(d) {
+    d = d || {};
+    auth = { signedIn: !!d.signedIn, name: d.name || null, accessToken: d.accessToken || null };
+  }
+  // The nav may have resolved auth before this script ran; it leaves the
+  // latest state on window.__aimgAuth for exactly that case.
+  setAuth(window.__aimgAuth);
+  window.addEventListener("aimg:auth", function (e) { setAuth(e && e.detail); });
 
   // ---- styles ---------------------------------------------------------------
   var css = `
@@ -133,6 +154,7 @@
   var history = [];   // [{role, content}] sent to the API
   var busy = false;
   var greeted = false;
+  var nudged = false;  // visitors see the free-account nudge once
 
   function esc(s) {
     return s.replace(/[&<>"]/g, function (c) {
@@ -160,7 +182,7 @@
 
   function showSuggestions() {
     sugWrap.innerHTML = "";
-    SUGGESTIONS.forEach(function (q) {
+    (auth.signedIn ? MEMBER_SUGGESTIONS : SUGGESTIONS).forEach(function (q) {
       var b = document.createElement("button");
       b.type = "button";
       b.textContent = q;
@@ -192,9 +214,11 @@
     var typing = typingOn();
 
     try {
+      var headers = { "Content-Type": "application/json" };
+      if (auth.accessToken) headers.Authorization = "Bearer " + auth.accessToken;
       var res = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: headers,
         body: JSON.stringify({ messages: history })
       });
       typing.remove();
@@ -204,6 +228,12 @@
         "Sorry — I hit a snag. Try again in a moment, or join the WhatsApp community: https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5";
       addMsg(reply, "bot");
       history.push({ role: "assistant", content: reply });
+      // After a couple of answers, invite visitors to stay: a free account
+      // unlocks the boards and a portfolio. Shown once, never to members.
+      if (!auth.signedIn && !nudged && history.length >= 4) {
+        nudged = true;
+        addMsg("Enjoying this? Create a free AIMG account to post on the message boards, build your portfolio, and meet other makers: " + SIGNUP_URL, "bot");
+      }
     } catch (e) {
       if (typing.parentNode) typing.remove();
       addMsg("I couldn't reach the server just now. Please try again shortly, or reach us on WhatsApp: https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5", "bot");
@@ -220,7 +250,9 @@
     requestAnimationFrame(function () { root.classList.add("aimg-bot--shown"); });
     if (!greeted) {
       greeted = true;
-      addMsg(GREETING, "bot");
+      addMsg(auth.signedIn
+        ? "Welcome back" + (auth.name ? ", " + auth.name.split(" ")[0] : "") + " 👋\n\nAsk me about the boards, your portfolio, upcoming sessions, or anything AIMG."
+        : GREETING, "bot");
       showSuggestions();
     }
     setTimeout(function () { input.focus(); }, 200);
