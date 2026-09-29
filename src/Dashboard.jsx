@@ -6,6 +6,8 @@ import { useState, useEffect, useMemo } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Fuse from 'fuse.js';
+import Boards from './Boards';
+import BoardsTeaser from './boards/BoardsTeaser';
 
 const NEWS_PAGE = 30; // articles per page in the News archive
 
@@ -436,6 +438,8 @@ export default function Dashboard({ session, refreshKey, activeTab, setActiveTab
                                 }
                             </div>
 
+                            <BoardsTeaser setActiveTab={setActiveTab} refreshKey={refreshKey} />
+
                             <div className="glass-panel p-6">
                                 <div className="flex justify-between items-center mb-4 border-b border-[#1A1A1A]/10 pb-2">
                                     <h2 className="text-lg font-bold text-[#1A1A1A]">Recently Active</h2>
@@ -770,6 +774,8 @@ export default function Dashboard({ session, refreshKey, activeTab, setActiveTab
                         </div>
                     )
                 }
+                {activeTab === 'boards' && <Boards session={session} />}
+
                 {/* Event Detail Modal Overlay */}
                 {
                     selectedEvent && (
