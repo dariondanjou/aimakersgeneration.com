@@ -76,6 +76,17 @@ aimg-nav .an-link:hover,
 aimg-nav .an-signin:hover { color: var(--near, #1A1A1A); }
 aimg-nav .an-link[aria-current="page"] { color: var(--near, #1A1A1A); font-weight: 600; }
 aimg-nav .an-signin { font-weight: 600; color: var(--near, #1A1A1A); }
+/* Contest: bold capital green letters with a 1px black outline. */
+aimg-nav .an-link.an-link-contest,
+aimg-nav .an-link.an-link-contest:hover,
+aimg-nav .an-link.an-link-contest[aria-current="page"] {
+  color: var(--green, #6FCF4B);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000,
+    0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000, 1px 0 0 #000;
+}
 
 aimg-nav .an-cta {
   background: var(--forest, #0F7B3F);

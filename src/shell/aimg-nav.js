@@ -23,7 +23,6 @@ import { readStoredSession, sharedAuthStorage, AUTH_STORAGE_KEY } from './auth-s
 // One list drives the desktop links, the mobile drawer, and the footer CTA.
 // `for`: which audience sees the item — 'visitor', 'member', or both.
 const LINKS = [
-  { key: 'home', label: 'Home', href: '/', for: ['visitor', 'member'] },
   { key: 'programs', label: 'Programs', href: '/#tracks', for: ['visitor'] },
   { key: 'contest', label: 'Contest', href: '/contest', for: ['visitor', 'member'] },
   { key: 'community', label: 'Community', href: '/community', for: ['member'] },
@@ -393,7 +392,7 @@ class AimgNav extends HTMLElement {
     const badge = (l) => (l.key === 'messages' && auth.unread > 0
       ? ` <span class="an-badge" style="display:inline-block;min-width:1.25em;padding:0 .35em;border-radius:999px;background:#3E9E28;color:#fff;font-size:.7em;line-height:1.5;text-align:center;vertical-align:.15em">${auth.unread > 99 ? '99+' : auth.unread}<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"> unread</span></span>`
       : '');
-    const linkHTML = (l) => `<a class="an-link" href="${esc(url(l.href))}"${l.key === active ? ' aria-current="page"' : ''}>${esc(l.label)}${badge(l)}</a>`;
+    const linkHTML = (l) => `<a class="an-link${l.key === 'contest' ? ' an-link-contest' : ''}" href="${esc(url(l.href))}"${l.key === active ? ' aria-current="page"' : ''}>${esc(l.label)}${badge(l)}</a>`;
     const cta = `<a class="an-cta" href="${esc(url(CTA.href))}">${esc(CTA.label)}</a>`;
 
     this.innerHTML = `<nav class="an" aria-label="Main">

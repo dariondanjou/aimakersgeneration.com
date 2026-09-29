@@ -1,76 +1,66 @@
 # 30-second ad contest (/contest) — setup
 
-Films go straight from the entrant's browser into the Google Drive submissions folder:
-https://drive.google.com/drive/folders/1zxLcx9nKoVt_0fQs23uZ5tp07wE4K2uN
+Films go straight from the entrant's browser into **Vercel Blob**, under
+`contest/oct-2026-film-ad/`. Each file is named
+`YYYY-MM-DD-HHMMSS_FirstNameLastName_<their file name>` (Eastern time), plus a random
+suffix that Blob adds so film links can't be guessed.
 
-Each file is named `YYYY-MM-DD-HHMMSS_FirstNameLastName_<their file name>` (Eastern time).
-Every film is also recorded in Supabase (`contest_submissions`, with its Drive link), and
-the `contest_entries` view lists every film with the entrant's name, email, WhatsApp number,
-LinkedIn and Drive link. Admins see the same table at the bottom of `/contest` when signed in.
+Every film is recorded in Supabase (`contest_submissions`, with its Blob URL). The
+`contest_entries` view joins each film to the entrant's name, email, WhatsApp number and
+LinkedIn. Admins signed in on `/contest` get a **Submissions** tab
+(`/contest#submissions`) listing every film with a player, those details, the time it
+arrived and a download button. Nobody else sees the tab or the film links.
 
-## 1. Apply the migration
+## 1. Apply the migrations
 
-Run `supabase/migrations/20260929140000_film_contest.sql` in the Supabase SQL editor
-(after `20260929130000_named_admins.sql`, which defines `public.is_admin()`).
+```sh
+npx supabase db push --linked
+```
 
-Until it's applied, the page loads but tells signed-in visitors "registration opens shortly".
+This applies `20260929140000_film_contest.sql` and then `20260929170000_contest_blob.sql`,
+which swaps the old Drive columns for `file_url` / `file_pathname`.
 
-## 2. Give the server access to the Drive folder
+## 2. Create the Blob store (one time)
 
-The server uploads as a real Google account, using an OAuth refresh token. (A service
-account won't work: it has no storage quota of its own, so it can't own files in a
-My Drive folder.) Use an account that owns the folder or has **Editor** access to it,
-for example the AIMG Google account.
+1. **Vercel** → the aimakersgeneration.com project → **Storage** → **Create Database** →
+   **Blob**.
+2. Choose **Public** access. The upload code uses public blobs; film URLs are unguessable
+   and only shown to admins and the person who uploaded them.
+3. **Connect** it to the project for **Production** (and Preview if you want to test there).
+   Vercel adds `BLOB_READ_WRITE_TOKEN` automatically.
+4. **Redeploy** (Deployments → ⋯ → Redeploy) so the functions pick up the token.
 
-1. **Google Cloud Console** → pick or create a project → *APIs & Services*:
-   - *Library* → enable **Google Drive API**.
-   - *OAuth consent screen* → External, app name "AIMG Contest", add your email.
-     **Publish the app ("In production").** While it's in "Testing", refresh tokens
-     expire after 7 days. No verification is needed for your own account; you'll just
-     click through an "unverified app" warning once.
-   - *Credentials* → *Create credentials* → *OAuth client ID* → **Web application**.
-     Add the authorized redirect URI `https://developers.google.com/oauthplayground`.
-     Copy the **Client ID** and **Client secret**.
-2. **Get a refresh token.** Go to https://developers.google.com/oauthplayground:
-   - Click ⚙️ (top right), tick **Use your own OAuth credentials**, and paste the client ID and secret.
-   - In *Step 1*, enter the scope `https://www.googleapis.com/auth/drive` and click
-     **Authorize APIs**. Sign in as the account with access to the folder.
-   - In *Step 2*, click **Exchange authorization code for tokens** and copy the **Refresh token**.
-3. **Vercel** → Project → Settings → Environment Variables (Production, plus Preview if you
-   want to test there):
+Until the token exists, uploads fail with "Submissions aren't open yet". Nothing else breaks.
 
-   | Name | Value |
-   |---|---|
-   | `GOOGLE_CLIENT_ID` | from step 1 |
-   | `GOOGLE_CLIENT_SECRET` | from step 1 |
-   | `GOOGLE_REFRESH_TOKEN` | from step 2 |
-   | `CONTEST_DRIVE_FOLDER_ID` | *(optional)* defaults to `1zxLcx9nKoVt_0fQs23uZ5tp07wE4K2uN` |
-   | `CONTEST_DEADLINE` | *(optional)* ISO time; defaults to `2026-10-02T02:00:00Z` = Thu Oct 1, 10:00 PM ET |
-
-   Redeploy so the functions pick them up.
-
-Without these variables, uploads fail with "Submissions aren't open yet". Nothing breaks.
+Optional: `CONTEST_DEADLINE` (an ISO time) overrides the default deadline,
+`2026-10-02T02:00:00Z` = Thu Oct 1, 10:00 PM ET.
 
 ## 3. Test it
 
 Sign in on `/contest`, save your details, and upload a short clip. It should show
-"✓ Submitted", appear in the Drive folder under the dated name, and show up in the admin
-table with a working Drive link.
+"✓ Submitted". Then open the **Submissions** tab and check that the clip plays and
+downloads. Delete test films in Vercel → Storage → your Blob store, and their rows in
+Supabase (`contest_submissions`).
 
 ## How it works
 
 - `POST /api/contest-upload {action:"start"}` checks four things: you're signed in,
   registered, the deadline hasn't passed, and the file is a video under 5 GB (max 20 films
-  per person). It then opens a Drive **resumable upload session** in the folder with the
-  final file name, records an `uploading` row, and returns the session URL.
-- The browser PUTs the file to that URL. This goes straight to Google, so there's no
-  Vercel body-size limit.
-- `POST /api/contest-upload {action:"finish"}` asks Drive to confirm the file is in the
-  folder under the expected name, then marks the row `received` with the Drive id and link.
+  per person). It then reserves the Blob pathname, records an `uploading` row, and returns
+  `{submissionId, pathname}`.
+- The browser calls `upload()` from `@vercel/blob/client`, which uses multipart for files
+  over 50 MB. Its token request comes back to the same endpoint with the entrant's Bearer
+  token. The server only signs a token for that entrant's own pending row and the exact
+  pathname it reserved: `video/*` only, 5 GB max, valid for up to 6 hours. The file goes
+  straight to Blob, so there's no Vercel body-size limit.
+- `POST /api/contest-upload {action:"finish"}` asks Blob (`head`) to confirm the file exists
+  under the reserved pathname, then marks the row `received` with its URL and size.
   Uploads that started before the deadline may finish up to 2 hours after it.
 
 ## Notes
 
+- **Cost.** Blob bills for storage and data transfer. A few dozen 30-second films is small,
+  but admins streaming them repeatedly counts as transfer.
 - **The brand kit is only gated in the UI.** The download links only appear once signed in,
   but the files (`public/contest/…`) are ordinary public URLs. That's fine for a logo pack.
 - **Entry is free.** No payment is involved anywhere in the contest.

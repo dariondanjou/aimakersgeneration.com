@@ -4,10 +4,12 @@
 // area are visible but grayed out, with sign-in / create-account links that
 // return here (?next=/contest).
 // Signed in: 1) entrant details (contest_entrants), 2) brand kit downloads,
-// 3) film uploads — /api/contest-upload opens a Google Drive upload session,
-// the browser PUTs the file straight to Drive, then the API records the link.
-// Admins also get a table of every entry with its Drive link.
+// 3) film uploads — /api/contest-upload reserves the file name, the browser
+// uploads straight to Vercel Blob, then the API confirms it and records the URL.
+// Admins also get a Submissions tab: every film with a player, the entrant's
+// details, and a download link.
 
+import { upload } from '@vercel/blob/client';
 import { supabase } from '../supabaseClient.js';
 
 const CONTEST = 'oct-2026-film-ad';
@@ -16,6 +18,14 @@ const CONTEST = 'oct-2026-film-ad';
 const DEADLINE = new Date('2026-10-02T02:00:00Z');
 const MAX_BYTES = 5 * 1024 ** 3;
 const VIDEO_EXT = /\.(mp4|mov|m4v|webm|mkv|avi|mpe?g|wmv|mts|m2ts|3gp)$/i;
+// Browsers leave file.type empty for some formats; Blob needs a video/* type.
+const EXT_TYPE = {
+  mp4: 'video/mp4', m4v: 'video/x-m4v', mov: 'video/quicktime', webm: 'video/webm', mkv: 'video/x-matroska',
+  avi: 'video/x-msvideo', mpg: 'video/mpeg', mpeg: 'video/mpeg', wmv: 'video/x-ms-wmv', mts: 'video/mp2t',
+  m2ts: 'video/mp2t', '3gp': 'video/3gpp',
+};
+const videoType = (file) => (file.type.startsWith('video/') ? file.type
+  : EXT_TYPE[(file.name.split('.').pop() || '').toLowerCase()] || 'video/mp4');
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, text) => {
@@ -68,7 +78,7 @@ function paintAuth() {
     entrant = null;
     $('reg-form').hidden = true;
     $('reg-done').hidden = true;
-    $('entries').hidden = true;
+    hideAdmin();
     $('mine').replaceChildren();
     $('mine-head').hidden = true;
   }
@@ -181,7 +191,7 @@ async function loadMine() {
   if (!session) return;
   const { data, error } = await supabase
     .from('contest_submissions')
-    .select('id, original_filename, size_bytes, received_at, drive_url')
+    .select('id, original_filename, size_bytes, received_at')
     .eq('contest', CONTEST).eq('user_id', session.user.id).eq('status', 'received')
     .order('received_at', { ascending: false });
   if (error) return;
@@ -197,34 +207,22 @@ async function loadMine() {
   $('mine-head').hidden = !(data && data.length);
 }
 
-async function api(body) {
-  // Refresh-safe: always send the current access token.
+// Refresh-safe: always send the current access token.
+async function authHeader() {
   const { data } = await supabase.auth.getSession();
   const token = data?.session?.access_token;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function api(body) {
   const res = await fetch('/api/contest-upload', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    headers: { 'Content-Type': 'application/json', ...(await authHeader()) },
     body: JSON.stringify(body),
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(json.error || 'Something went wrong. Please try again.');
   return json;
-}
-
-function putToDrive(url, file, type, onProgress) {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('PUT', url);
-    xhr.setRequestHeader('Content-Type', type);
-    xhr.upload.onprogress = (e) => { if (e.lengthComputable) onProgress(e.loaded / e.total); };
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try { resolve(JSON.parse(xhr.responseText)); } catch { reject(new Error('Upload finished but Drive sent an unexpected reply.')); }
-      } else reject(new Error(`The upload was interrupted (${xhr.status}). Please try again.`));
-    };
-    xhr.onerror = () => reject(new Error('Network error during upload. Check your connection and try again.'));
-    xhr.send(file);
-  });
 }
 
 async function uploadOne(file) {
@@ -248,15 +246,31 @@ async function uploadOne(file) {
   const leaving = (e) => { e.preventDefault(); e.returnValue = ''; };
   window.addEventListener('beforeunload', leaving);
   try {
-    const type = file.type || 'application/octet-stream';
+    const type = videoType(file);
     const start = await api({ action: 'start', filename: file.name, size: file.size, mimeType: type });
     state.textContent = 'Uploading… 0%';
-    const driveFile = await putToDrive(start.uploadUrl, file, type, (p) => {
-      fill.style.width = `${Math.round(p * 100)}%`;
-      state.textContent = `Uploading… ${Math.floor(p * 100)}%`;
-    });
+    let blob;
+    try {
+      blob = await upload(start.pathname, file, {
+        access: 'public',
+        contentType: type,
+        handleUploadUrl: '/api/contest-upload',
+        clientPayload: start.submissionId,
+        headers: await authHeader(),
+        multipart: file.size > 50 * 1024 ** 2,
+        onUploadProgress: ({ percentage }) => {
+          fill.style.width = `${Math.round(percentage)}%`;
+          state.textContent = `Uploading… ${Math.floor(percentage)}%`;
+        },
+      });
+    } catch (err) {
+      // The token route's own errors are already readable; network ones aren't.
+      throw new Error(/network|fetch|failed/i.test(err?.message || '') || !err?.message
+        ? 'The upload was interrupted. Check your connection and try again.'
+        : err.message.replace(/^Vercel Blob: /, ''));
+    }
     state.textContent = 'Confirming…';
-    await api({ action: 'finish', submissionId: start.submissionId, fileId: driveFile.id });
+    await api({ action: 'finish', submissionId: start.submissionId, url: blob.url });
     fill.style.width = '100%';
     state.textContent = '✓ Submitted';
     state.className = 'state ok';
@@ -275,44 +289,96 @@ async function uploadFiles(files) {
   for (const f of files) await uploadOne(f);
 }
 
-// ── admins: every entry with its Drive link ────────────────────────────────
+// ── admins: the Submissions tab ────────────────────────────────────────────
+// Every film with a player, the entrant's details, and a download link.
+// The tab bar only appears for admins; #submissions deep-links to it.
+function showTab(name) {
+  const subs = name === 'submissions' && !$('admin-tabs').hidden;
+  $('tab-enter').hidden = subs;
+  $('tab-submissions').hidden = !subs;
+  document.querySelectorAll('#admin-tabs [data-tab]').forEach((b) => {
+    b.setAttribute('aria-selected', String((b.dataset.tab === 'submissions') === subs));
+  });
+}
+
+function hideAdmin() {
+  $('admin-tabs').hidden = true;
+  showTab('enter');
+}
+
+const waLink = (phone) => {
+  const digits = String(phone || '').replace(/\D/g, '');
+  // Ten digits with no country code: assume US.
+  return `https://wa.me/${digits.length === 10 ? '1' + digits : digits}`;
+};
+
+const extLink = (text, href) => {
+  const a = el('a', null, text);
+  a.href = href; a.target = '_blank'; a.rel = 'noopener';
+  return a;
+};
+
+function filmCard(r) {
+  const card = el('article', 'film');
+  const video = el('video');
+  video.controls = true;
+  video.preload = 'metadata';
+  video.playsInline = true;
+  video.src = r.file_url;
+  card.append(video);
+
+  const body = el('div', 'film-body');
+  body.append(el('h3', null, `${r.first_name} ${r.last_name}`));
+  const dl = el('dl');
+  const row = (label, ...nodes) => { dl.append(el('dt', null, label)); const dd = el('dd'); dd.append(...nodes); dl.append(dd); };
+  const mail = el('a', null, r.email); mail.href = `mailto:${r.email}`;
+  row('Email', mail);
+  row('WhatsApp', extLink(r.whatsapp_phone, waLink(r.whatsapp_phone)));
+  row('LinkedIn', r.linkedin_url ? extLink(r.linkedin_url.replace(/^https?:\/\/(www\.)?/i, ''), r.linkedin_url) : el('span', 'hint', '—'));
+  row('Received', document.createTextNode(`${fmtET(r.received_at)} ET`));
+  row('File', el('span', 'file-name', r.file_name), ...(r.size_bytes ? [el('span', 'hint', fmtBytes(r.size_bytes))] : []));
+  body.append(dl);
+
+  const actions = el('div', 'film-actions');
+  const download = el('a', 'btn btn-primary', 'Download');
+  download.href = `${r.file_url}${r.file_url.includes('?') ? '&' : '?'}download=1`;
+  actions.append(download, extLink('Open in new tab', r.file_url));
+  body.append(actions);
+  card.append(body);
+  return card;
+}
+
 async function loadEntries() {
   const { data: admin } = await supabase.rpc('is_admin');
-  if (!admin) { $('entries').hidden = true; return; }
+  if (!admin) { hideAdmin(); return; }
+  $('admin-tabs').hidden = false;
+  if (location.hash === '#submissions') showTab('submissions');
+
   const { data, error } = await supabase
     .from('contest_entries')
-    .select('received_at, first_name, last_name, email, whatsapp_phone, linkedin_url, drive_name, drive_url, size_bytes, user_id')
+    .select('received_at, first_name, last_name, email, whatsapp_phone, linkedin_url, file_name, file_url, size_bytes, user_id')
     .eq('contest', CONTEST).eq('status', 'received')
     .order('received_at', { ascending: false });
-  $('entries').hidden = false;
-  const body = $('entries-body');
+  const list = $('films');
   if (error) {
-    $('entries-summary').textContent = notSetUp(error) ? 'The contest tables are not set up yet (apply the film contest migration).' : `Couldn't load entries: ${error.message}`;
-    body.replaceChildren();
+    $('entries-summary').textContent = notSetUp(error) ? 'The contest tables are not set up yet (apply the contest migrations).' : `Couldn't load submissions: ${error.message}`;
+    list.replaceChildren();
     return;
   }
-  const people = new Set((data || []).map((r) => r.user_id)).size;
-  $('entries-summary').textContent = `${data.length} film${data.length === 1 ? '' : 's'} from ${people} entrant${people === 1 ? '' : 's'}. Films are in the Google Drive submissions folder.`;
-  body.replaceChildren(...data.map((r) => {
-    const tr = el('tr');
-    const who = el('td');
-    who.append(el('strong', null, `${r.first_name} ${r.last_name}`));
-    if (r.linkedin_url) {
-      const a = el('a', null, 'LinkedIn');
-      a.href = r.linkedin_url; a.target = '_blank'; a.rel = 'noopener';
-      who.append(el('br'), a);
-    }
-    const contact = el('td');
-    contact.append(document.createTextNode(r.email), el('br'), document.createTextNode(`WhatsApp ${r.whatsapp_phone}`));
-    const film = el('td');
-    const link = el('a', null, r.drive_name);
-    link.href = r.drive_url; link.target = '_blank'; link.rel = 'noopener';
-    film.append(link);
-    if (r.size_bytes) film.append(el('br'), el('span', 'hint', fmtBytes(r.size_bytes)));
-    tr.append(el('td', null, fmtET(r.received_at)), who, contact, film);
-    return tr;
-  }));
+  const people = new Set(data.map((r) => r.user_id)).size;
+  $('subs-count').textContent = String(data.length);
+  $('entries-summary').textContent = data.length
+    ? `${data.length} film${data.length === 1 ? '' : 's'} from ${people} entrant${people === 1 ? '' : 's'}, newest first.`
+    : 'No films yet. They show up here as soon as an upload finishes.';
+  list.replaceChildren(...data.map(filmCard));
 }
+
+document.querySelectorAll('#admin-tabs [data-tab]').forEach((b) => b.addEventListener('click', () => {
+  showTab(b.dataset.tab);
+  history.replaceState(null, '', b.dataset.tab === 'submissions' ? '#submissions' : location.pathname + location.search);
+  if (b.dataset.tab === 'submissions') loadEntries();
+}));
+$('subs-refresh').addEventListener('click', loadEntries);
 
 // ── wiring ─────────────────────────────────────────────────────────────────
 async function onSession(next) {

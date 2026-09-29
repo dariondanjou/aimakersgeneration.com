@@ -150,11 +150,26 @@
   .bar i{display:block;height:100%;width:0;background:var(--green);transition:width .2s}
   .closed{padding:14px 16px;border-radius:12px;background:var(--warm);font-weight:600}
 
-  /* admin */
-  .admin-table{width:100%;border-collapse:collapse;font-size:.88rem}
-  .admin-table th,.admin-table td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
-  .admin-table th{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--graphite)}
-  .table-wrap{overflow-x:auto}
+  /* admin: tabs + submissions */
+  .tabs{background:#fff;border-bottom:1px solid var(--rule)}
+  .tabs .wrap{display:flex;align-items:center;gap:6px}
+  .tabs button{font:inherit;font-weight:600;background:none;border:0;border-bottom:3px solid transparent;padding:14px 12px 11px;cursor:pointer;color:var(--graphite)}
+  .tabs button[aria-selected=true]{color:var(--near);border-bottom-color:var(--green)}
+  .tabs .count{display:inline-block;min-width:1.5em;padding:0 .4em;border-radius:99px;background:var(--warm);font-size:.8rem;text-align:center}
+  .tabs .count:empty{display:none}
+  .tabs-note{margin-left:auto;font-size:.8rem;color:var(--graphite)}
+  .subs-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:12px}
+  .films{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+  .film{border:1px solid var(--rule);border-radius:16px;overflow:hidden;background:#fff;display:flex;flex-direction:column}
+  .film video{width:100%;aspect-ratio:16/9;background:#000;display:block}
+  .film-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1}
+  .film h3{font-size:1.1rem}
+  .film dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0;font-size:.88rem}
+  .film dt{color:var(--graphite)}
+  .film dd{margin:0;word-break:break-word;display:flex;flex-direction:column}
+  .film .file-name{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;word-break:break-all}
+  .film-actions{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:auto}
+  .film-actions .btn{padding:9px 18px;font-size:.92rem}
 </style>
 <script type="module" src="/src/shell/aimg-nav.js"></script>
 <script type="module" src="/src/contest/contest.js"></script>
@@ -192,7 +207,17 @@
   </div>
 </header>
 
+<!-- admins only: switch between the public page and every submission -->
+<div class="tabs" id="admin-tabs" hidden>
+  <div class="wrap" role="tablist" aria-label="Contest views">
+    <button type="button" role="tab" data-tab="enter" aria-selected="true" aria-controls="tab-enter">Enter</button>
+    <button type="button" role="tab" data-tab="submissions" aria-selected="false" aria-controls="tab-submissions">Submissions <span class="count" id="subs-count"></span></button>
+    <span class="tabs-note">Only admins see this</span>
+  </div>
+</div>
+
 <main id="main">
+<div id="tab-enter" role="tabpanel">
 
   <section id="brief">
     <div class="wrap">
@@ -317,19 +342,23 @@
     </div>
   </section>
 
+</div>
+
   <!-- admins only -->
-  <section id="entries" hidden>
-    <div class="wrap">
-      <div class="step-head"><h2>Entries (admins)</h2></div>
-      <p class="sub" id="entries-summary"></p>
-      <div class="table-wrap">
-        <table class="admin-table">
-          <thead><tr><th>Received (ET)</th><th>Entrant</th><th>Contact</th><th>Film</th></tr></thead>
-          <tbody id="entries-body"></tbody>
-        </table>
+  <div id="tab-submissions" role="tabpanel" hidden>
+    <section id="entries">
+      <div class="wrap">
+        <div class="subs-head">
+          <div>
+            <h2>Submissions</h2>
+            <p class="sub" id="entries-summary">Loading…</p>
+          </div>
+          <button class="btn btn-line" type="button" id="subs-refresh">Refresh</button>
+        </div>
+        <div class="films" id="films"></div>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
 
 </main>
 
