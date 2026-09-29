@@ -102,7 +102,9 @@ async function start(supabase, user, body) {
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     throw new UserError(503, "Submissions aren't open yet — please try again shortly.");
   }
-  const { filename, size, mimeType } = body;
+  const { filename, size, mimeType, agreedToRights } = body;
+  // Every received film was submitted with the usage rights accepted.
+  if (agreedToRights !== true) throw new UserError(400, "Tick the box to agree to the usage rights first.");
   const bytes = Number(size);
   const type = typeof mimeType === "string" ? mimeType.slice(0, 100) : "";
   if (typeof filename !== "string" || !filename.trim()) throw new UserError(400, "Choose a video file.");

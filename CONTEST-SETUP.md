@@ -64,6 +64,7 @@ Supabase (`contest_submissions`).
 - **The brand kit is only gated in the UI.** The download links only appear once signed in,
   but the files (`public/contest/…`) are ordinary public URLs. That's fine for a logo pack.
 - **Entry is free.** No payment is involved anywhere in the contest.
+- **Usage rights.** Entrants tick a box accepting a perpetual, royalty-free, non-exclusive license for AIMG to use their film and name for marketing and promotion, win or lose (text in `#rights` on `contest.html`, the brand guide, and the chatbot prompt). The API refuses to start an upload without it, so every `received` row was submitted with the rights accepted.
 - **The homepage banner** (`#contest-cta` in `index.html`) removes itself after
   Friday, Oct 2 (midnight ET). The `/contest` page stays up and shows "Submissions are closed"
   after the deadline.

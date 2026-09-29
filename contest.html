@@ -148,6 +148,11 @@
   .uploads .state.err{color:#B42318}
   .bar{height:6px;border-radius:99px;background:var(--rule);margin-top:8px;overflow:hidden}
   .bar i{display:block;height:100%;width:0;background:var(--green);transition:width .2s}
+  .rights{border:1px solid var(--rule);border-radius:14px;padding:14px 16px;margin:0 0 16px;font-size:.9rem;background:#fff}
+  .rights p{margin:0 0 10px;color:var(--graphite)}
+  .rights p strong{color:var(--near)}
+  .agree{display:flex;gap:10px;align-items:flex-start;margin:0;font-size:.95rem;cursor:pointer}
+  .agree input{width:18px;height:18px;margin-top:3px;accent-color:var(--green-deep);flex:none}
   .closed{padding:14px 16px;border-radius:12px;background:var(--warm);font-weight:600}
 
   /* admin: tabs + submissions */
@@ -228,6 +233,7 @@
         <li><strong>Bring your own laptop and tools.</strong> Use any AI tools you like.</li>
         <li><strong>Enter as many films as you want.</strong> Entry is free.</li>
         <li><strong>Submit by Thursday, October 1 at 11:59 PM ET.</strong> We announce the winner Friday morning, and the cohort starts the next day.</li>
+        <li><strong>AIMG may use every film submitted</strong>, whether it wins or not, for marketing and promotion, forever. <a href="#rights">Usage rights</a></li>
       </ul>
     </div>
   </section>
@@ -329,10 +335,14 @@
         <p class="lock-note" id="submit-lock">🔒 <span><a data-signin href="/community?next=%2Fcontest">Sign in</a> or <a data-signup href="/community?mode=signup&amp;next=%2Fcontest">create a free account</a> to submit.</span></p>
         <div class="panel-body">
           <p class="closed" id="submit-closed" hidden>Submissions are closed. The deadline was Thursday, October 1 at 11:59 PM ET.</p>
+          <div class="rights" id="rights">
+            <p><strong>Usage rights.</strong> When you submit a film, you give AI MAKERS GENERATION (AIMG) a <strong>perpetual</strong>, worldwide, royalty-free, non-exclusive license to use, copy, edit, excerpt, display, and share your film, along with your name, for marketing and promotional purposes in any media. This applies <strong>whether or not your film wins</strong>. You keep ownership of your film. You also confirm that it's your own work and that you have the rights to everything in it, including any music, footage, and likenesses.</p>
+            <label class="agree"><input type="checkbox" id="agree"> I agree to these usage rights for every film I submit.</label>
+          </div>
           <div class="drop" id="drop">
             <input type="file" id="film" accept="video/*,.mp4,.mov,.m4v,.webm" multiple hidden>
             <button class="btn btn-primary" type="button" id="pick">Choose video files</button>
-            <p>or drag and drop them here</p>
+            <p id="drop-hint">or drag and drop them here</p>
           </div>
           <ul class="uploads" id="uploads" aria-live="polite"></ul>
           <h3 style="font-size:1.05rem;margin:26px 0 8px" id="mine-head" hidden>Your submitted films</h3>

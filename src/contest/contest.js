@@ -40,6 +40,9 @@ let entrant = null;
 let uploading = 0;
 
 const isClosed = () => Date.now() > DEADLINE.getTime();
+// Entrants must accept the usage rights (#rights) before uploading.
+const agreed = () => $('agree').checked;
+const canUpload = () => !!session && !!entrant && !isClosed() && agreed();
 
 // "relation does not exist" / PostgREST "table not in schema cache": the
 // contest migration hasn't been applied yet.
@@ -93,7 +96,9 @@ function paintSubmit() {
   panel.classList.toggle('locked', !ready);
   $('submit-closed').hidden = !closed || !ready;
   $('drop').hidden = closed && ready;
-  $('pick').disabled = !ready || closed;
+  $('pick').disabled = !ready || closed || !agreed();
+  $('agree').disabled = !ready || closed;
+  $('drop-hint').textContent = ready && !agreed() ? 'Tick the usage-rights box above to start uploading.' : 'or drag and drop them here';
 
   const span = lock.querySelector('span');
   if (!session) {
@@ -247,7 +252,7 @@ async function uploadOne(file) {
   window.addEventListener('beforeunload', leaving);
   try {
     const type = videoType(file);
-    const start = await api({ action: 'start', filename: file.name, size: file.size, mimeType: type });
+    const start = await api({ action: 'start', filename: file.name, size: file.size, mimeType: type, agreedToRights: true });
     state.textContent = 'Uploading… 0%';
     let blob;
     try {
@@ -284,7 +289,7 @@ async function uploadOne(file) {
 }
 
 async function uploadFiles(files) {
-  if (!session || !entrant || isClosed()) return;
+  if (!canUpload()) return;
   // One at a time: parallel multi-GB uploads just compete for bandwidth.
   for (const f of files) await uploadOne(f);
 }
@@ -396,18 +401,20 @@ async function onSession(next) {
 $('reg-form').addEventListener('submit', saveEntrant);
 $('reg-edit').addEventListener('click', showForm);
 
+$('agree').addEventListener('change', paintSubmit);
+
 const input = $('film');
 $('pick').addEventListener('click', () => input.click());
 input.addEventListener('change', () => { uploadFiles([...input.files]); input.value = ''; });
 
 const drop = $('drop');
 ['dragenter', 'dragover'].forEach((t) => drop.addEventListener(t, (e) => {
-  if (!session || !entrant || isClosed()) return;
+  if (!canUpload()) return;
   e.preventDefault(); drop.classList.add('over');
 }));
 ['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, () => drop.classList.remove('over')));
 drop.addEventListener('drop', (e) => {
-  if (!session || !entrant || isClosed()) return;
+  if (!canUpload()) return;
   e.preventDefault();
   uploadFiles([...(e.dataTransfer?.files || [])]);
 });
