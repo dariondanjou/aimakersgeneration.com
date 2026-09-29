@@ -9,10 +9,6 @@ const edits = [
     ['    <p class="entity">AI MAKERS GENERATION is a registered trade name of D\'Anjou, Inc.</p>\n', ''],
     ['© <span id="yr">2026</span> D\'Anjou, Inc. · Atlanta, GA ·', '© <span id="yr">2026</span> AI MAKERS GENERATION · Atlanta, GA ·'],
   ]],
-  ['discount.html', [
-    ['    <p class="entity">AI MAKERS GENERATION is a registered trade name of D\'Anjou, Inc.</p>\n', ''],
-    ['© <span id="yr">2026</span> D\'Anjou, Inc. · Atlanta, GA ·', '© <span id="yr">2026</span> AI MAKERS GENERATION · Atlanta, GA ·'],
-  ]],
 ];
 for (const [file, pairs] of edits) {
   let t = fs.readFileSync(file, 'utf8');

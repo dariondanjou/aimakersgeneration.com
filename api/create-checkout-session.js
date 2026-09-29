@@ -13,15 +13,6 @@ const TOTAL_SEATS = 20;
 // Eastern (EDT, UTC-4). After this instant the API refuses to start a checkout.
 const ENROLLMENT_DEADLINE_MS = Date.UTC(2026, 9, 3, 17, 0, 0); // 2026-10-03T13:00 EDT
 
-// A private, unadvertised discount page (discount.html, served at /discount) posts this code.
-// Nothing on the site links to that page — you only reach it via a direct URL. The code
-// maps to a FIXED discounted amount here; the browser never sends a dollar figure, so the
-// price stays as authoritative as the full-price path. Anyone who guessed the code would
-// still only ever get this one sanctioned 10% price, never an arbitrary amount.
-const DISCOUNT_CODE = "COHORT10";
-const DISCOUNT_RATE = 0.10; // 10% off
-const DISCOUNT_RETURN_PATH = "/discount"; // send discount buyers back to their page
-
 // A checkout that was started but never paid still reserves a seat for this long,
 // so two people can't both take seat 20 while Stripe is processing.
 const PENDING_HOLD_MINUTES = 30;
@@ -48,6 +39,15 @@ const ALLOWED = {
 };
 
 const isEmail = (v) => typeof v === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+const isUrl = (v) => {
+  if (typeof v !== "string") return false;
+  try {
+    const u = new URL(v.trim());
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
 const clip = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : null);
 
 /** Seats already taken: paid, plus checkouts started within the hold window. */
@@ -96,6 +96,9 @@ export default async function handler(req, res) {
   if (!isEmail(body.email)) {
     return res.status(400).json({ error: "That email address doesn't look right." });
   }
+  if (!isUrl(body.portfolio_url)) {
+    return res.status(400).json({ error: "Please share a working link (starting with http:// or https://) to your current AI film work." });
+  }
   for (const [field, options] of Object.entries(ALLOWED)) {
     if (!options.includes(String(body[field]).trim())) {
       return res.status(400).json({ error: `Invalid value for ${field}.` });
@@ -106,12 +109,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Every acknowledgement must be checked." });
   }
 
-  // Price is decided here, never by the browser. A valid discount code yields the one
-  // sanctioned discounted amount; anything else pays full tuition.
-  const isDiscount = body.discount_code === DISCOUNT_CODE;
-  const amountCents = isDiscount
-    ? Math.round(TUITION_CENTS * (1 - DISCOUNT_RATE)) // $720.00
-    : TUITION_CENTS;
+  // Price is decided here, never by the browser.
+  const amountCents = TUITION_CENTS;
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -177,10 +176,7 @@ export default async function handler(req, res) {
     const host = req.headers["x-forwarded-host"] || req.headers.host;
     const proto = req.headers["x-forwarded-proto"] || (host?.startsWith("localhost") ? "http" : "https");
     const origin = `${proto}://${host}`;
-    // Discount buyers return to their own (unadvertised) page; everyone else to /apply or /.
-    const returnPath = isDiscount
-      ? DISCOUNT_RETURN_PATH
-      : (host?.startsWith("cohorts.") ? "/" : "/apply");
+    const returnPath = host?.startsWith("cohorts.") ? "/" : "/apply";
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -196,9 +192,7 @@ export default async function handler(req, res) {
           currency: "usd",
           unit_amount: amountCents,
           product_data: {
-            name: isDiscount
-              ? "AIMG October 2026 Film Cohort — Tuition (10% discount)"
-              : "AIMG October 2026 Film Cohort — Tuition",
+            name: "AIMG October 2026 Film Cohort — Tuition",
             description: "Four-week AI filmmaking intensive. Four Saturdays, 1–4 PM, October 3–24, 2026. RICE Center, Atlanta. Paid in full; no deposits or installments.",
           },
         },

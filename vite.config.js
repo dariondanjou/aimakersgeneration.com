@@ -35,9 +35,6 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         about: resolve(__dirname, 'about.html'),
         apply: resolve(__dirname, 'apply.html'),
-        // Private, unadvertised 10%-discount copy of the application page. Nothing links
-        // to it; reachable only by direct URL (/discount).
-        discount: resolve(__dirname, 'discount.html'),
         app: resolve(__dirname, 'app.html'),
         students: resolve(__dirname, 'students.html'),
       },
