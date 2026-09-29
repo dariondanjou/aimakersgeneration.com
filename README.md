@@ -44,7 +44,7 @@ Set in Vercel → Settings → Environment Variables.
 | `STRIPE_SECRET_KEY` | `api/create-checkout-session.js`, `api/confirm-payment.js`, `api/webhooks/stripe.js` | **New, required.** Use the test key first. |
 | `STRIPE_WEBHOOK_SECRET` | `api/webhooks/stripe.js` | **New, required.** The `whsec_…` signing secret for the `cohorts-aimakersgeneration` destination. See `STRIPE-SETUP.md`. |
 | `BLOB_READ_WRITE_TOKEN` | `api/contest-upload.js` | **Required for /contest submissions.** Added automatically when a (Public) Vercel Blob store is connected to the project. See `CONTEST-SETUP.md`. |
-| `CONTEST_DEADLINE` | `api/contest-upload.js` | Optional override for the deadline (defaults to `2026-10-02T02:00:00Z`, Thu Oct 1 10 PM ET). |
+| `CONTEST_DEADLINE` | `api/contest-upload.js` | Optional override for the deadline (defaults to `2026-10-02T03:59:00Z`, Thu Oct 1 11:59 PM ET). |
 
 **Admins** are not configured with env vars and there is no shared admin password. An admin is anyone signed in with their own account whose **confirmed** email is in `public.admin_emails` (see `supabase/migrations/20260929130000_named_admins.sql`). Add one in the Supabase SQL editor:
 

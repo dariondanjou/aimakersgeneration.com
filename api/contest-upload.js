@@ -31,8 +31,8 @@ import { getVerifiedUser, serviceClient } from "./_lib/admin-auth.js";
 
 const CONTEST = "oct-2026-film-ad";
 const PREFIX = `contest/${CONTEST}/`;
-// Thursday, October 1, 2026, 10:00 PM EDT.
-const DEADLINE = new Date(process.env.CONTEST_DEADLINE || "2026-10-02T02:00:00Z");
+// Thursday, October 1, 2026, 11:59 PM EDT.
+const DEADLINE = new Date(process.env.CONTEST_DEADLINE || "2026-10-02T03:59:00Z");
 // An upload that STARTED before the deadline may finish a little after it.
 const FINISH_GRACE_MS = 2 * 60 * 60 * 1000;
 // How long the browser's upload token stays valid (big files, slow Wi-Fi).
@@ -97,7 +97,7 @@ async function ownPendingRow(supabase, userId, submissionId) {
 
 async function start(supabase, user, body) {
   if (Date.now() > DEADLINE.getTime()) {
-    throw new UserError(403, "Submissions are closed — the deadline was Thursday at 10 PM ET.");
+    throw new UserError(403, "Submissions are closed — the deadline was Thursday at 11:59 PM ET.");
   }
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     throw new UserError(503, "Submissions aren't open yet — please try again shortly.");
