@@ -5,7 +5,7 @@ import {
   Clock, BookOpen, Backpack, ClipboardList, Check,
 } from 'lucide-react';
 import { adminHeaders } from './adminAuth';
-import AdminKeyForm from './AdminKeyForm';
+import AdminSignIn from './AdminSignIn';
 
 // The living curriculum: 8 pages, one per 3-hour session. Every line is
 // inline-editable and can carry a note appended to its end; edits autosave
@@ -110,8 +110,7 @@ export default function Curriculum({ session }) {
     const w = parseInt(new URLSearchParams(window.location.search).get('week'), 10);
     return Number.isInteger(w) && w >= 1 && w <= 8 ? w : 1;
   });
-  const [needsKey, setNeedsKey] = useState(false);
-  const [keyError, setKeyError] = useState(null);
+  const [denied, setDenied] = useState(false);
   const [error, setError] = useState(null);
   const [saveState, setSaveState] = useState('idle'); // idle | saving | saved
   const [regen, setRegen] = useState({}); // week -> 'running' | 'done' | 'error'
@@ -121,10 +120,9 @@ export default function Curriculum({ session }) {
     try {
       const res = await fetch('/api/curriculum', { headers: adminHeaders(session) });
       const data = await res.json();
-      if (res.ok) { setWeeks(data.weeks); setNeedsKey(false); setKeyError(null); return; }
+      if (res.ok) { setWeeks(data.weeks); setDenied(false); return; }
       if (res.status === 401 || res.status === 403) {
-        setKeyError(res.status === 403 ? 'Wrong password — try again.' : null);
-        setNeedsKey(true); return;
+        setDenied(true); return;
       }
       setError(data.error || 'Something went wrong.');
     } catch { setError("Couldn't reach the server."); }
@@ -195,7 +193,7 @@ export default function Curriculum({ session }) {
     for (const w of dirty) await regenWeek(w); // sequential: each is one function call
   };
 
-  if (needsKey) return <AdminKeyForm title="Curriculum" onUnlock={load} error={keyError} />;
+  if (denied) return <AdminSignIn title="Curriculum" session={session} />;
   if (error) return <div className="flex-1 flex items-center justify-center text-[#5C5C5C]">{error}</div>;
   if (!weeks) {
     return (

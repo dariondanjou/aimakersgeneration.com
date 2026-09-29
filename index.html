@@ -133,6 +133,18 @@
   .hero .lede strong{color:#fff;font-weight:600}
   .hero-cta{display:flex;flex-wrap:wrap;gap:14px;margin-top:40px}
   .hero-note{margin-top:26px;color:#818A7C;font-size:.92rem}
+  /* contest banner — big, can't-miss button above the enroll CTA */
+  .contest-cta{display:flex;align-items:center;gap:18px;margin-top:36px;padding:20px 24px;border-radius:20px;
+    background:var(--green);color:#0C1408;text-decoration:none;max-width:760px;
+    box-shadow:0 10px 40px rgba(111,207,75,.28);transition:transform .15s ease,box-shadow .15s ease}
+  .contest-cta:hover{transform:translateY(-2px);box-shadow:0 14px 48px rgba(111,207,75,.4)}
+  .contest-cta .cc-icon{flex:none;font-size:2.2rem;line-height:1}
+  .contest-cta .cc-text{flex:1;min-width:0}
+  .contest-cta .cc-tag{display:block;font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
+  .contest-cta .cc-title{display:block;font-family:var(--display);font-weight:800;font-size:clamp(1.15rem,2.6vw,1.55rem);letter-spacing:-.02em;line-height:1.15;margin-top:4px}
+  .contest-cta .cc-sub{display:block;font-size:.92rem;margin-top:4px}
+  .contest-cta .cc-go{flex:none;font-size:1.6rem;font-weight:700}
+  @media(max-width:600px){.contest-cta .cc-icon,.contest-cta .cc-go{display:none}}
   .hero .eyebrow{color:var(--green)}
 
   /* ── next up ── */
@@ -290,6 +302,17 @@
         work up to an elite industry-professional standard. No experience assumed. We teach
         every level.
       </p>
+      <!-- 30-second ad contest. Hidden automatically after the winner is announced (see script). -->
+      <a class="contest-cta" id="contest-cta" href="/contest" data-until="2026-10-03T04:00:00Z">
+        <span class="cc-icon" aria-hidden="true">🎬</span>
+        <span class="cc-text">
+          <span class="cc-tag">Contest · Free to enter</span>
+          <span class="cc-title">Make a 30-second ad for AIMG. Win FREE entry to the Film Cohort.</span>
+          <span class="cc-sub">Submissions due Thursday, Oct 1 at 10 PM ET. Winner announced Friday morning.</span>
+        </span>
+        <span class="cc-go" aria-hidden="true">→</span>
+      </a>
+      <script>(function(){var a=document.getElementById('contest-cta');if(a&&Date.now()>Date.parse(a.dataset.until))a.remove();})();</script>
       <div class="hero-cta">
         <a class="btn btn-primary" href="/apply">Enroll in the Cohort</a>
         <a class="btn btn-ghost" href="#film-bar">Or come Tuesday — it's free</a>

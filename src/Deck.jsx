@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight, Maximize, Minimize } from 'lucide-react';
 import { adminHeaders } from './adminAuth';
-import AdminKeyForm from './AdminKeyForm';
+import AdminSignIn from './AdminSignIn';
 
 // Full-screen presentable slide deck for one cohort session, styled after the
 // AIMG workshop decks: near-black slides, chartreuse #CCFF00 accent, Inter,
@@ -156,8 +156,7 @@ export default function Deck({ session, publicView = false }) {
   const navigate = useNavigate();
   const [deck, setDeck] = useState(null);
   const [idx, setIdx] = useState(0);
-  const [needsKey, setNeedsKey] = useState(false);
-  const [keyError, setKeyError] = useState(null);
+  const [denied, setDenied] = useState(false);
   const [error, setError] = useState(null);
   const [isFull, setIsFull] = useState(false);
   const rootRef = useRef(null);
@@ -182,10 +181,9 @@ export default function Deck({ session, publicView = false }) {
         : `/api/decks?week=${encodeURIComponent(week)}`;
       const res = await fetch(url, publicView ? undefined : { headers: adminHeaders(session) });
       const data = await res.json();
-      if (res.ok) { setDeck(data); setNeedsKey(false); setKeyError(null); return; }
+      if (res.ok) { setDeck(data); setDenied(false); return; }
       if (!publicView && (res.status === 401 || res.status === 403)) {
-        setKeyError(res.status === 403 ? 'Wrong password — try again.' : null);
-        setNeedsKey(true);
+        setDenied(true);
         return;
       }
       setError(data.error || 'Something went wrong.');
@@ -223,7 +221,7 @@ export default function Deck({ session, publicView = false }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [next, prev, navigate, toggleFull, backTo]);
 
-  if (needsKey) return <AdminKeyForm title="Session Deck" onUnlock={load} error={keyError} />;
+  if (denied) return <AdminSignIn title="Session Deck" session={session} />;
   if (error) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4 text-[#5C5C5C] p-6 text-center">

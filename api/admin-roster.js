@@ -1,61 +1,19 @@
-import { timingSafeEqual } from "node:crypto";
-import { createClient } from "@supabase/supabase-js";
-
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://xnejbxdvqmzlaljkgwaf.supabase.co";
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-
-const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || "")
-  .split(",").map(s => s.trim()).filter(Boolean);
-
-// Shared admin password (the x-admin-key header). Anyone who knows it gets
-// the roster — no account needed. Unset disables password access entirely.
-const ADMIN_KEY = process.env.ADMIN_KEY || "";
-
-function adminKeyMatches(provided) {
-  if (!ADMIN_KEY || typeof provided !== "string" || !provided) return false;
-  const a = Buffer.from(provided);
-  const b = Buffer.from(ADMIN_KEY);
-  return a.length === b.length && timingSafeEqual(a, b);
-}
-
-// Same verified-token identity resolution as api/chat.js: the Authorization
-// header is the only source of identity.
-async function getVerifiedUser(req) {
-  const header = req.headers.authorization || "";
-  if (!header.startsWith("Bearer ")) return null;
-  const token = header.slice(7).trim();
-  if (!token || !SUPABASE_ANON_KEY) return null;
-  const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  const { data, error } = await authClient.auth.getUser(token);
-  if (error || !data?.user) return null;
-  return data.user;
-}
+import { requireAdmin, serviceClient } from "./_lib/admin-auth.js";
 
 // The cohort roster for admins: every application joined to its students row
 // in the SAME cohort (one person can have a Summer and an October profile).
 // Every row carries `cohort` so the admin page can list cohorts separately.
-// Unlike chat.js's calendar check (where an unset ADMIN_USER_IDS lets any
-// member manage events), an empty allowlist DENIES here — this response
-// carries applicant PII (email, phone).
+// Admins only (signed in with their own account — see _lib/admin-auth.js);
+// this response carries applicant PII (email, phone).
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  // Two ways in: the shared admin password, or a signed-in allowlisted admin.
-  const providedKey = req.headers["x-admin-key"];
-  let authorized = adminKeyMatches(providedKey);
-  if (!authorized) {
-    const user = await getVerifiedUser(req);
-    authorized = !!user && ADMIN_USER_IDS.includes(user.id);
-  }
-  if (!authorized) {
-    if (providedKey) return res.status(403).json({ error: "Wrong password." });
-    return res.status(401).json({ error: "Enter the admin password." });
-  }
+  const denied = await requireAdmin(req);
+  if (denied) return res.status(denied.status).json({ error: denied.error });
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const supabase = serviceClient();
   const [studentsRes, appsRes] = await Promise.all([
     supabase.from("students")
       .select("cohort, slug, full_name, email, user_id, sort_order")

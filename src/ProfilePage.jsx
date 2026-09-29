@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Plus, ExternalLink, Camera, Check, X } from 'lucide-react';
 import { supabase } from './supabaseClient';
 import { getSocialPlatform, getSocialTooltip } from './socialPlatforms';
+import ProfileVideos from './profile/ProfileVideos';
+import MessageButton from './messages/MessageButton';
 
 function InlineField({ value, onSave, placeholder, isOwner, multiline = false, className = '' }) {
   const [editing, setEditing] = useState(false);
@@ -210,6 +212,8 @@ export default function ProfilePage({ session }) {
           </div>
         </div>
 
+        <MessageButton session={session} userId={id} />
+
         {/* Profile Info */}
         <div className="glass-panel p-6 space-y-5">
           <div>
@@ -323,6 +327,8 @@ export default function ProfilePage({ session }) {
             )}
           </div>
         </div>
+
+        <ProfileVideos userId={id} session={session} />
       </div>
     </div>
   );

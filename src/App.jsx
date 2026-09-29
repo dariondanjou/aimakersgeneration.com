@@ -7,6 +7,7 @@ import Dashboard from './Dashboard';
 import ProfilePage from './ProfilePage';
 import Settings from './Settings';
 import Admin from './Admin';
+import AdminUsers from './AdminUsers';
 import Curriculum from './Curriculum';
 import Deck from './Deck';
 
@@ -291,6 +292,7 @@ const WHATSAPP_URL = 'https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5';
 const COMMUNITY_TABS = [
   { key: 'home', label: 'Home' },
   { key: 'boards', label: 'Boards' },
+  { key: 'messages', label: 'Messages' },
   { key: 'news', label: 'AI News' },
   { key: 'resources', label: 'AI Resources' },
   { key: 'calendar', label: 'Calendar' },
@@ -570,6 +572,15 @@ function CommunityShell() {
   const [recovering, setRecovering] = useState(false);
   const [activeTab, setActiveTab] = useState(() => tabFromSearch(window.location.search));
 
+  // A router navigation to the dashboard carrying ?tab= (e.g. the profile
+  // page's "Message" button → /?tab=messages&c=…) selects that tab.
+  const [seenNavKey, setSeenNavKey] = useState(location.key);
+  if (location.key !== seenNavKey) {
+    setSeenNavKey(location.key);
+    const t = new URLSearchParams(location.search).get('tab');
+    if ((location.pathname === '/' || location.pathname === '') && TAB_KEYS.has(t) && t !== activeTab) setActiveTab(t);
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -601,7 +612,8 @@ function CommunityShell() {
 
   // Keep ?tab= in sync with the dashboard's active tab (Home = no param).
   // Only `tab` is ours: every other param is kept, except the Boards view's own
-  // ?board=/&thread= (managed by Boards.jsx), dropped when leaving Boards.
+  // ?board=/&thread= (managed by Boards.jsx), dropped when leaving Boards, and
+  // the Messages view's ?c= (src/messages/), dropped when leaving Messages.
   const onDashboard = location.pathname === '/' || location.pathname === '';
   useEffect(() => {
     if (!onDashboard) return;
@@ -609,6 +621,7 @@ function CommunityShell() {
     if (activeTab === 'home') u.searchParams.delete('tab');
     else u.searchParams.set('tab', activeTab);
     if (activeTab !== 'boards') { u.searchParams.delete('board'); u.searchParams.delete('thread'); }
+    if (activeTab !== 'messages') u.searchParams.delete('c');
     // Sign-in helpers (?email=&mode=signup, ?next=) are spent once signed in.
     if (session) ['email', 'mode', 'next'].forEach((k) => u.searchParams.delete(k));
     if (u.href !== window.location.href) window.history.replaceState(window.history.state, '', u.href);
@@ -633,7 +646,7 @@ function CommunityShell() {
 
   const handleDataChange = () => setRefreshKey(k => k + 1);
 
-  const navActive = onDashboard && activeTab === 'boards' ? 'boards' : 'community';
+  const navActive = onDashboard && (activeTab === 'boards' || activeTab === 'messages') ? activeTab : 'community';
 
   return (
     <div className="site-shell">
@@ -647,9 +660,10 @@ function CommunityShell() {
             <Route path="/" element={session ? <Dashboard session={session} refreshKey={refreshKey} activeTab={activeTab} setActiveTab={setActiveTab} /> : <CommunityGate />} />
             <Route path="/profile/:id" element={session ? <ProfilePage session={session} /> : <CommunityGate />} />
             <Route path="/settings" element={session ? <Settings session={session} /> : <CommunityGate />} />
-            {/* No sign-in wall: each admin page asks for the shared admin
-                password, verified server-side by the /api endpoints. */}
+            {/* Admins sign in with their own account; each admin page asks the
+                /api endpoints, which check public.is_admin() for that user. */}
             <Route path="/admin" element={<Admin session={session} />} />
+            <Route path="/admin/users" element={<AdminUsers session={session} />} />
             <Route path="/admin/curriculum" element={<Curriculum session={session} />} />
             <Route path="/admin/deck/:week" element={<Deck session={session} />} />
           </Routes>

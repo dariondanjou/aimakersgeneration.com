@@ -1,40 +1,17 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
+import { resolveAdmin } from "./_lib/admin-auth.js";
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://xnejbxdvqmzlaljkgwaf.supabase.co";
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-
-// Optional comma-separated allowlist of profile UUIDs permitted to manage the
-// shared event calendar. migration.sql marks events admin-only. If unset, any
-// signed-in maker may manage events (the prior behaviour).
-const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || "")
-  .split(",").map(s => s.trim()).filter(Boolean);
 
 /**
- * Resolve the caller from a verified Supabase access token.
- *
- * This is the ONLY source of identity. The request body is attacker-controlled:
- * because the tool executor runs with the service-role key (which bypasses RLS),
- * trusting a body-supplied user_id would let anyone delete or rewrite any row.
- * Returns null for anonymous callers, who get no tools.
+ * Identity comes only from a verified Supabase access token (see
+ * _lib/admin-auth.js). The request body is attacker-controlled: because the
+ * tool executor runs with the service-role key (which bypasses RLS), trusting
+ * a body-supplied user_id would let anyone delete or rewrite any row.
+ * Anonymous callers get no tools; only named admins get admin tools.
  */
-async function getVerifiedUser(req) {
-  const header = req.headers.authorization || "";
-  if (!header.startsWith("Bearer ")) return null;
-  const token = header.slice(7).trim();
-  if (!token) return null;
-
-  if (!SUPABASE_ANON_KEY) {
-    console.error("SUPABASE_ANON_KEY is not set — cannot verify access tokens.");
-    return null;
-  }
-
-  const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  const { data, error } = await authClient.auth.getUser(token);
-  if (error || !data?.user) return null;
-  return data.user;
-}
 
 // Built per request (not at module load) so a warm serverless instance never
 // serves a stale date — the bot computes "next Tuesday" etc. from this.
@@ -85,6 +62,8 @@ THE COHORT CALENDAR (compare against TODAY'S DATE when answering):
 - SUMMER 2026 JOBS COHORT — eight Saturdays, Jul 18 – Sep 5, 2026, 1–4pm at RICE. A career/jobs cohort: polished résumé, matching LinkedIn, portfolio website, salary negotiation, and interview prep for AI industry careers. It is CURRENTLY IN SESSION through Sep 5, 2026 (after that date, speak of it in the past tense). Enrollment for it is closed — do not offer seats in it; point people to the October Film Cohort instead.
 - OCTOBER 2026 FILM COHORT — the four-week AI filmmaking intensive described above, Oct 3–24, 2026. This is the cohort currently open for enrollment.
 - WINTER 2027 JOBS COHORT — the next jobs/careers cohort, coming January 2027; exact dates are still to be scheduled. If someone wants the jobs track rather than film, tell them Winter 2027 is their cohort and to join the WhatsApp group to hear the dates first.
+
+FILM CONTEST — WIN FREE ENTRY TO THE OCTOBER FILM COHORT: make a 30-second ad advertising AI MAKERS GENERATION (AIMG). FREE to enter; entrants need a free AIMG account. AIMG provides the brand kit (logos, brand colors, fonts, slogan) on the contest page; entrants bring their own laptop and tools. Kick-off is at Film Bar AI. Submissions are due THURSDAY, OCTOBER 1, 2026 AT 10:00 PM ET; the winner is announced Friday morning (Oct 2) and gets free entry into the October Film Cohort, which starts Saturday, Oct 3. Entrants may submit more than one film. Everything — sign-up, the brand kit, and uploading films — is at https://aimakersgeneration.com/contest. After the deadline, say submissions are closed.
 
 NEVER promise a job, a placement, an interview, a hire, or any salary or income. The cohort PREPARES people; it does not guarantee outcomes. NEVER share a phone number or a payment handle (Zelle, Cash App, Venmo). AIMG only ever takes payment through the Stripe checkout on the website.
 
@@ -613,11 +592,9 @@ export default async function handler(req, res) {
   }
 
   // Identity comes from the verified JWT, never from req.body.
-  const authedUser = await getVerifiedUser(req);
+  const { user: authedUser, isAdmin } = await resolveAdmin(req);
   const user_id = authedUser?.id || null;
   const user_email = authedUser?.email || null;
-  // No allowlist configured → every signed-in maker may manage events (prior behaviour).
-  const isAdmin = !!user_id && (ADMIN_USER_IDS.length === 0 || ADMIN_USER_IDS.includes(user_id));
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);

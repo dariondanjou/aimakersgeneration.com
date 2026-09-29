@@ -6,6 +6,7 @@ Three surfaces, one Vercel project.
 |---|---|---|
 | `aimakersgeneration.com/` | Public marketing landing. Crawlable, no login. | `index.html` — plain HTML, no React |
 | `cohorts.aimakersgeneration.com/` | Cohort enrollment + Stripe checkout. | `apply.html` — plain HTML, no React |
+| `aimakersgeneration.com/contest` | 30-second ad contest: sign up, brand kit, film uploads to Google Drive. | `contest.html` + `src/contest/contest.js` |
 | `aimakersgeneration.com/community` | The member app: Dashboard, profiles, AI Maker Bot. | `app.html` → `src/` (React SPA) |
 
 `aimakersgeneration.com/apply` **301-redirects** to the cohorts subdomain, so old links keep working.
@@ -38,11 +39,20 @@ Set in Vercel → Settings → Environment Variables.
 |---|---|---|
 | `ANTHROPIC_API_KEY` | `api/chat.js` | Already set. |
 | `SUPABASE_SERVICE_ROLE_KEY` | all `api/*` | **Bypasses RLS. Server only. Never expose to the browser.** |
-| `SUPABASE_ANON_KEY` | `api/chat.js` | **New, required.** Used to *verify* member access tokens. Without it, nobody can use the bot's tools. |
+| `SUPABASE_ANON_KEY` | `api/chat.js`, `api/_lib/admin-auth.js` | **Required.** Used to *verify* member access tokens and check admin status. Without it, nobody can use the bot's tools or the admin pages. |
 | `SUPABASE_URL` | all `api/*` | Optional; falls back to the hardcoded project URL. |
 | `STRIPE_SECRET_KEY` | `api/create-checkout-session.js`, `api/confirm-payment.js`, `api/webhooks/stripe.js` | **New, required.** Use the test key first. |
 | `STRIPE_WEBHOOK_SECRET` | `api/webhooks/stripe.js` | **New, required.** The `whsec_…` signing secret for the `cohorts-aimakersgeneration` destination. See `STRIPE-SETUP.md`. |
-| `ADMIN_USER_IDS` | `api/chat.js` | Optional, comma-separated profile UUIDs. Restricts calendar edits to admins. **If unset, any signed-in member can create/delete events** — the old behavior. |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN` | `api/contest-upload.js` | **Required for /contest submissions.** Lets the server open Google Drive uploads into the contest submissions folder. See `CONTEST-SETUP.md`. |
+| `CONTEST_DRIVE_FOLDER_ID`, `CONTEST_DEADLINE` | `api/contest-upload.js` | Optional overrides: Drive folder (defaults to the submissions folder) and deadline (defaults to `2026-10-02T02:00:00Z`, Thu Oct 1 10 PM ET). |
+
+**Admins** are not configured with env vars and there is no shared admin password. An admin is anyone signed in with their own account whose **confirmed** email is in `public.admin_emails` (see `supabase/migrations/20260929130000_named_admins.sql`). Add one in the Supabase SQL editor:
+
+```sql
+INSERT INTO public.admin_emails (email) VALUES ('someone@example.com') ON CONFLICT DO NOTHING;
+```
+
+The old `ADMIN_KEY` and `ADMIN_USER_IDS` env vars are no longer read and can be deleted from Vercel.
 
 ---
 

@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ShieldCheck, ExternalLink, CheckCircle2, GraduationCap, KeyRound, Presentation, BookOpen } from 'lucide-react';
+import { ShieldCheck, ExternalLink, CheckCircle2, GraduationCap, Presentation, BookOpen, Users } from 'lucide-react';
 import { COHORTS, CURRENT_COHORT, cohortById } from './cohorts';
+import { adminHeaders } from './adminAuth';
+import AdminSignIn from './AdminSignIn';
 
 // Cohort admin: the full roster (every application + every students row),
-// served by /api/admin-roster, which allows only the user IDs in the
-// ADMIN_USER_IDS env var. Names link to the student's public profile page.
+// served by /api/admin-roster to signed-in admins only (their own account;
+// no shared password — see api/_lib/admin-auth.js). Names link to the student's public profile page.
 // One cohort at a time (?cohort=<id>, default CURRENT_COHORT) so the Summer
 // and October programs are never mixed; rows without a `cohort` (older API
 // responses) land in an "Unassigned" bucket.
@@ -21,79 +23,49 @@ const STATUS_STYLES = {
 const fmtDate = (d) =>
   d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 
-// Anyone with the shared admin password gets in (checked server-side against
-// the ADMIN_KEY env var); allowlisted signed-in admins skip the prompt. The
-// accepted password is kept in localStorage so refreshes and new tabs
-// (e.g. decks opening in their own tab) don't re-ask.
-const KEY_STORAGE = 'aimg-admin-key';
-
 export default function Admin({ session }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [roster, setRoster] = useState(null);
   const [sessions, setSessions] = useState(null);
   const [error, setError] = useState(null);
-  const [needsKey, setNeedsKey] = useState(false);
-  const [keyInput, setKeyInput] = useState('');
-  const [keyError, setKeyError] = useState(null);
-  const [busy, setBusy] = useState(false);
+  const [denied, setDenied] = useState(false);
 
-  const load = async (adminKey) => {
+  const load = async () => {
     try {
-      const headers = {};
-      if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
-      if (adminKey) headers['x-admin-key'] = adminKey;
-      const res = await fetch('/api/admin-roster', { headers });
+      const res = await fetch('/api/admin-roster', { headers: adminHeaders(session) });
       const data = await res.json();
       if (res.ok) {
-        if (adminKey) localStorage.setItem(KEY_STORAGE, adminKey);
         setRoster(data.roster);
-        setNeedsKey(false);
-        return true;
+        setDenied(false);
+        return;
       }
       if (res.status === 401 || res.status === 403) {
-        setNeedsKey(true);
-        return false;
+        setDenied(true);
+        return;
       }
       setError(data.error || 'Something went wrong.');
-      return false;
     } catch {
       setError("Couldn't reach the server. Please try again.");
-      return false;
     }
   };
 
   useEffect(() => {
-    load(localStorage.getItem(KEY_STORAGE) || undefined);
+    load();
   }, [session?.access_token]);
 
-  // Cohort sessions (deck links) — loads once the roster unlocked us.
+  // Cohort sessions (deck links) — loads once the roster has loaded.
   useEffect(() => {
     if (roster === null) return;
     let cancelled = false;
     (async () => {
       try {
-        const headers = {};
-        if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
-        const stored = localStorage.getItem(KEY_STORAGE);
-        if (stored) headers['x-admin-key'] = stored;
-        const res = await fetch('/api/decks', { headers });
+        const res = await fetch('/api/decks', { headers: adminHeaders(session) });
         const data = await res.json();
         if (!cancelled && res.ok) setSessions(data.decks);
       } catch { /* sessions list is optional chrome */ }
     })();
     return () => { cancelled = true; };
   }, [roster, session?.access_token]);
-
-  const submitKey = async (e) => {
-    e.preventDefault();
-    const key = keyInput.trim();
-    if (!key || busy) return;
-    setBusy(true);
-    setKeyError(null);
-    const ok = await load(key);
-    if (!ok) setKeyError('Wrong password — try again.');
-    setBusy(false);
-  };
 
   if (error) {
     return (
@@ -104,30 +76,7 @@ export default function Admin({ session }) {
     );
   }
 
-  if (needsKey) {
-    return (
-      <div className="flex-1 flex items-start justify-center p-6 pt-16">
-        <div className="glass-panel w-full max-w-sm flex flex-col gap-3">
-          <h1 className="text-xl uppercase text-center flex items-center justify-center gap-2">
-            <KeyRound size={20} className="text-[#3E9E28]" /> Cohort Admin
-          </h1>
-          <p className="text-sm text-[#5C5C5C] text-center">Enter the admin password to see the roster.</p>
-          <form onSubmit={submitKey} className="flex flex-col gap-2">
-            <input
-              type="password" required autoFocus autoComplete="current-password"
-              placeholder="Admin password"
-              value={keyInput} onChange={(e) => setKeyInput(e.target.value)}
-              className="w-full rounded-full border border-[#E3E3DF] bg-white px-4 py-2.5 text-sm text-[#1A1A1A] placeholder-black/40 focus:outline-none focus:border-[#3E9E28] transition-colors"
-            />
-            <button type="submit" disabled={busy} className="btn btn-primary w-full">
-              {busy ? 'Checking…' : 'Open the roster'}
-            </button>
-          </form>
-          {keyError && <p className="text-xs text-center text-red-600">{keyError}</p>}
-        </div>
-      </div>
-    );
-  }
+  if (denied) return <AdminSignIn title="Cohort Admin" session={session} />;
 
   if (roster === null) {
     return (
@@ -175,6 +124,9 @@ export default function Admin({ session }) {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Link to="/admin/users" className="btn !text-sm" title="Every account on the site — make or remove admins">
+              <Users size={16} /> Users &amp; admins
+            </Link>
             {cohort?.materials && <Link to="/admin/curriculum" target="_blank" rel="noopener" className="btn !text-sm" title="The 8-week curriculum — inline editable">
               <BookOpen size={16} /> Curriculum
             </Link>}

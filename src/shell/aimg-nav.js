@@ -25,8 +25,10 @@ import { readStoredSession, sharedAuthStorage, AUTH_STORAGE_KEY } from './auth-s
 const LINKS = [
   { key: 'home', label: 'Home', href: '/', for: ['visitor', 'member'] },
   { key: 'programs', label: 'Programs', href: '/#tracks', for: ['visitor'] },
+  { key: 'contest', label: 'Contest', href: '/contest', for: ['visitor', 'member'] },
   { key: 'community', label: 'Community', href: '/community', for: ['member'] },
   { key: 'boards', label: 'Boards', href: '/community?tab=boards', for: ['member'] },
+  { key: 'messages', label: 'Messages', href: '/community?tab=messages', for: ['member'] },
   { key: 'makers', label: 'Makers', href: '/students', for: ['visitor', 'member'] },
   { key: 'events', label: 'Events', href: '/#next', for: ['visitor', 'member'] },
   { key: 'about', label: 'Who we are', href: '/about', for: ['visitor'] },
@@ -93,6 +95,7 @@ const auth = {
   avatar: null,
   portfolio: null, // href
   admin: false,
+  unread: 0, // conversations with unread messages (Messages badge)
 };
 const subscribers = new Set();
 
@@ -128,7 +131,7 @@ function displayAvatar(user, profile) {
 function publish(patch) {
   Object.assign(auth, patch);
   if (!auth.signedIn) {
-    Object.assign(auth, { uid: null, email: null, accessToken: null, name: null, avatar: null, portfolio: null, admin: false });
+    Object.assign(auth, { uid: null, email: null, accessToken: null, name: null, avatar: null, portfolio: null, admin: false, unread: 0 });
   }
   writeCache();
   window.__aimgAuth = { signedIn: auth.signedIn, name: auth.name, accessToken: auth.accessToken };
@@ -150,6 +153,7 @@ function fromSession(session) {
     avatar: cached?.avatar || displayAvatar(user, null),
     portfolio: cached?.portfolio || `/community/profile/${user.id}`,
     admin: !!cached?.admin,
+    unread: 0,
   };
 }
 
@@ -177,6 +181,19 @@ async function fetchRole(supabase, session) {
   });
 }
 
+// Unread-conversation count for the Messages badge. Best effort: any failure
+// (e.g. messaging not set up yet) just hides the badge.
+async function fetchUnread(supabase) {
+  const uid = auth.uid;
+  if (!uid) return;
+  let n = 0;
+  try {
+    const { data, error } = await supabase.rpc('unread_conversation_count');
+    if (!error && Number.isFinite(data)) n = data;
+  } catch { /* ignore */ }
+  if (auth.uid === uid && auth.unread !== n) publish({ unread: n });
+}
+
 function onSession(supabase, session) {
   if (!session?.user) {
     roleFor = null;
@@ -191,6 +208,7 @@ function onSession(supabase, session) {
     publish(base);
   }
   if (roleFor !== session.user.id) fetchRole(supabase, session);
+  fetchUnread(supabase);
 }
 
 function loadSupabase() {
@@ -236,6 +254,10 @@ function startAuth(live) {
   document.addEventListener('visibilitychange', () => { if (!document.hidden) recheck(); });
   // Settings saves a new name/avatar → the app can fire this to refresh the nav.
   window.addEventListener('aimg:profile-changed', () => { roleFor = null; verify(); });
+  // The Messages view fires this after marking a conversation read.
+  const refreshUnread = () => { if (auth.signedIn && supabasePromise) supabasePromise.then((sb) => sb && fetchUnread(sb)); };
+  window.addEventListener('aimg:messages-changed', refreshUnread);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshUnread(); });
 }
 
 async function signOut() {
@@ -252,8 +274,12 @@ function detectActive() {
   const p = location.pathname.replace(/\/+$/, '') || '/';
   if (p === '/') return 'home';
   if (p === '/about') return 'about';
+  if (p === '/contest') return 'contest';
   if (p.startsWith('/students')) return 'makers';
-  if (p.startsWith('/community')) return new URLSearchParams(location.search).get('tab') === 'boards' ? 'boards' : 'community';
+  if (p.startsWith('/community')) {
+    const tab = new URLSearchParams(location.search).get('tab');
+    return tab === 'boards' || tab === 'messages' ? tab : 'community';
+  }
   return '';
 }
 
@@ -364,7 +390,10 @@ class AimgNav extends HTMLElement {
     const active = this.getAttribute('active') || detectActive();
     const role = auth.signedIn ? 'member' : 'visitor';
     const links = LINKS.filter((l) => l.for.includes(role));
-    const linkHTML = (l) => `<a class="an-link" href="${esc(url(l.href))}"${l.key === active ? ' aria-current="page"' : ''}>${esc(l.label)}</a>`;
+    const badge = (l) => (l.key === 'messages' && auth.unread > 0
+      ? ` <span class="an-badge" style="display:inline-block;min-width:1.25em;padding:0 .35em;border-radius:999px;background:#3E9E28;color:#fff;font-size:.7em;line-height:1.5;text-align:center;vertical-align:.15em">${auth.unread > 99 ? '99+' : auth.unread}<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"> unread</span></span>`
+      : '');
+    const linkHTML = (l) => `<a class="an-link" href="${esc(url(l.href))}"${l.key === active ? ' aria-current="page"' : ''}>${esc(l.label)}${badge(l)}</a>`;
     const cta = `<a class="an-cta" href="${esc(url(CTA.href))}">${esc(CTA.label)}</a>`;
 
     this.innerHTML = `<nav class="an" aria-label="Main">

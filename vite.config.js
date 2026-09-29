@@ -37,6 +37,7 @@ export default defineConfig({
         apply: resolve(__dirname, 'apply.html'),
         app: resolve(__dirname, 'app.html'),
         students: resolve(__dirname, 'students.html'),
+        contest: resolve(__dirname, 'contest.html'),
       },
     },
   },

@@ -8,6 +8,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import Fuse from 'fuse.js';
 import Boards from './Boards';
 import BoardsTeaser from './boards/BoardsTeaser';
+import Messages from './messages/Messages';
 
 const NEWS_PAGE = 30; // articles per page in the News archive
 
@@ -775,6 +776,7 @@ export default function Dashboard({ session, refreshKey, activeTab, setActiveTab
                     )
                 }
                 {activeTab === 'boards' && <Boards session={session} />}
+                {activeTab === 'messages' && <Messages session={session} />}
 
                 {/* Event Detail Modal Overlay */}
                 {
