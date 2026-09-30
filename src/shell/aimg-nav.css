@@ -76,6 +76,53 @@ aimg-nav .an-link:hover,
 aimg-nav .an-signin:hover { color: var(--near, #1A1A1A); }
 aimg-nav .an-link[aria-current="page"] { color: var(--near, #1A1A1A); font-weight: 600; }
 aimg-nav .an-signin { font-weight: 600; color: var(--near, #1A1A1A); }
+/* Students, for signed-in members who aren't in a cohort: grayed out, with a
+   hover/focus tooltip. The tooltip is real text, so screen readers get it too. */
+aimg-nav .an-link.an-link-locked {
+  position: relative;
+  color: #A8A8A3;
+  cursor: not-allowed;
+}
+aimg-nav .an-link.an-link-locked:hover { color: #A8A8A3; }
+aimg-nav .an-tip {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  width: max-content;
+  max-width: 240px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: var(--near, #1A1A1A);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.35;
+  white-space: normal;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease;
+}
+aimg-nav .an-link-locked:hover .an-tip,
+aimg-nav .an-link-locked:focus-visible .an-tip { opacity: 1; visibility: visible; }
+aimg-nav .an-drawer .an-link-locked .an-tip {
+  /* no hover on phones: say it inline in the drawer */
+  position: static;
+  display: block;
+  transform: none;
+  width: auto;
+  max-width: none;
+  padding: 2px 0 0;
+  background: none;
+  color: var(--graphite, #5C5C5C);
+  text-align: left;
+  opacity: 1;
+  visibility: visible;
+}
+
 /* Contest: bold capital green letters with a 1px black outline. */
 aimg-nav .an-link.an-link-contest,
 aimg-nav .an-link.an-link-contest:hover,

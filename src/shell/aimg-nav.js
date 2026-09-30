@@ -22,13 +22,13 @@ import { readStoredSession, sharedAuthStorage, AUTH_STORAGE_KEY } from './auth-s
 // ───────────────────────────── config ─────────────────────────────
 // One list drives the desktop links, the mobile drawer, and the footer CTA.
 // `for`: which audience sees the item — 'visitor', 'member', or both.
+// `studentsOnly`: members who aren't cohort students (no linked row in
+// public.students) see it grayed out, not clickable, with `lockedTip`.
 const LINKS = [
   { key: 'programs', label: 'Programs', href: '/#tracks', for: ['visitor'] },
   { key: 'contest', label: 'Contest', href: '/contest', for: ['visitor', 'member'] },
   { key: 'community', label: 'Community', href: '/community', for: ['member'] },
-  { key: 'boards', label: 'Boards', href: '/community?tab=boards', for: ['member'] },
-  { key: 'messages', label: 'Messages', href: '/community?tab=messages', for: ['member'] },
-  { key: 'makers', label: 'Makers', href: '/students', for: ['visitor', 'member'] },
+  { key: 'students', label: 'Students', href: '/students', for: ['member'], studentsOnly: true, lockedTip: 'Enroll in a Cohort to access Students pages' },
   { key: 'events', label: 'Events', href: '/#next', for: ['visitor', 'member'] },
   { key: 'about', label: 'Who we are', href: '/about', for: ['visitor'] },
   { key: 'faq', label: 'FAQ', href: '/#faq', for: ['visitor', 'member'] },
@@ -54,7 +54,6 @@ const PROGRAMS = [
 ];
 const SITE = [
   { label: 'Who we are', href: '/about' },
-  { label: 'Makers', href: '/students' },
   { label: 'Community', href: '/community' },
   { label: 'FAQ', href: '/#faq' },
 ];
@@ -94,7 +93,8 @@ const auth = {
   avatar: null,
   portfolio: null, // href
   admin: false,
-  unread: 0, // conversations with unread messages (Messages badge)
+  student: false, // linked to a row in public.students (any cohort)
+  unread: 0, // conversations with unread messages (badge on the Community link)
 };
 const subscribers = new Set();
 
@@ -107,8 +107,8 @@ function readCache(uid) {
 function writeCache() {
   try {
     if (!auth.signedIn) { localStorage.removeItem(PROFILE_CACHE); return; }
-    const { uid, name, avatar, portfolio, admin } = auth;
-    localStorage.setItem(PROFILE_CACHE, JSON.stringify({ uid, name, avatar, portfolio, admin }));
+    const { uid, name, avatar, portfolio, admin, student } = auth;
+    localStorage.setItem(PROFILE_CACHE, JSON.stringify({ uid, name, avatar, portfolio, admin, student }));
   } catch { /* storage unavailable */ }
 }
 
@@ -130,7 +130,7 @@ function displayAvatar(user, profile) {
 function publish(patch) {
   Object.assign(auth, patch);
   if (!auth.signedIn) {
-    Object.assign(auth, { uid: null, email: null, accessToken: null, name: null, avatar: null, portfolio: null, admin: false, unread: 0 });
+    Object.assign(auth, { uid: null, email: null, accessToken: null, name: null, avatar: null, portfolio: null, admin: false, student: false, unread: 0 });
   }
   writeCache();
   window.__aimgAuth = { signedIn: auth.signedIn, name: auth.name, accessToken: auth.accessToken };
@@ -152,6 +152,7 @@ function fromSession(session) {
     avatar: cached?.avatar || displayAvatar(user, null),
     portfolio: cached?.portfolio || `/community/profile/${user.id}`,
     admin: !!cached?.admin,
+    student: !!cached?.student,
     unread: 0,
   };
 }
@@ -177,6 +178,7 @@ async function fetchRole(supabase, session) {
     avatar: displayAvatar(user, profile),
     portfolio: slug ? `/students/${encodeURIComponent(slug)}` : `/community/profile/${uid}`,
     admin: adm?.data === true,
+    student: !!slug,
   });
 }
 
@@ -274,11 +276,8 @@ function detectActive() {
   if (p === '/') return 'home';
   if (p === '/about') return 'about';
   if (p === '/contest') return 'contest';
-  if (p.startsWith('/students')) return 'makers';
-  if (p.startsWith('/community')) {
-    const tab = new URLSearchParams(location.search).get('tab');
-    return tab === 'boards' || tab === 'messages' ? tab : 'community';
-  }
+  if (p.startsWith('/students')) return 'students';
+  if (p.startsWith('/community')) return 'community';
   return '';
 }
 
@@ -389,10 +388,12 @@ class AimgNav extends HTMLElement {
     const active = this.getAttribute('active') || detectActive();
     const role = auth.signedIn ? 'member' : 'visitor';
     const links = LINKS.filter((l) => l.for.includes(role));
-    const badge = (l) => (l.key === 'messages' && auth.unread > 0
+    const badge = (l) => (l.key === 'community' && auth.unread > 0
       ? ` <span class="an-badge" style="display:inline-block;min-width:1.25em;padding:0 .35em;border-radius:999px;background:#3E9E28;color:#fff;font-size:.7em;line-height:1.5;text-align:center;vertical-align:.15em">${auth.unread > 99 ? '99+' : auth.unread}<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"> unread</span></span>`
       : '');
-    const linkHTML = (l) => `<a class="an-link${l.key === 'contest' ? ' an-link-contest' : ''}" href="${esc(url(l.href))}"${l.key === active ? ' aria-current="page"' : ''}>${esc(l.label)}${badge(l)}</a>`;
+    const linkHTML = (l) => (l.studentsOnly && !auth.student
+      ? `<span class="an-link an-link-locked" tabindex="0" aria-disabled="true">${esc(l.label)}<span class="an-tip" role="tooltip">${esc(l.lockedTip)}</span></span>`
+      : `<a class="an-link${l.key === 'contest' ? ' an-link-contest' : ''}" href="${esc(url(l.href))}"${l.key === active ? ' aria-current="page"' : ''}>${esc(l.label)}${badge(l)}</a>`);
     const cta = `<a class="an-cta" href="${esc(url(CTA.href))}">${esc(CTA.label)}</a>`;
 
     this.innerHTML = `<nav class="an" aria-label="Main">

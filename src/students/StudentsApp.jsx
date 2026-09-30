@@ -16,7 +16,7 @@ export default function StudentsApp() {
   return (
     <Router basename={STUDENTS_BASE}>
       <div className="site-shell">
-        <aimg-nav active="makers" live-auth=""></aimg-nav>
+        <aimg-nav active="students" live-auth=""></aimg-nav>
         <main className="main-content">
           <Routes>
             <Route path="/" element={<StudentsGrid />} />

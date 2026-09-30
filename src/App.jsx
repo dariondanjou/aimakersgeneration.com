@@ -646,11 +646,9 @@ function CommunityShell() {
 
   const handleDataChange = () => setRefreshKey(k => k + 1);
 
-  const navActive = onDashboard && (activeTab === 'boards' || activeTab === 'messages') ? activeTab : 'community';
-
   return (
     <div className="site-shell">
-      <aimg-nav active={navActive} live-auth=""></aimg-nav>
+      <aimg-nav active="community" live-auth=""></aimg-nav>
       {session && !recovering && <CommunityTabs activeTab={activeTab} setActiveTab={setActiveTab} />}
       <main className="main-content">
         {recovering ? (
