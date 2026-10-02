@@ -13,9 +13,10 @@ import { upload } from '@vercel/blob/client';
 import { supabase } from '../supabaseClient.js';
 
 const CONTEST = 'oct-2026-film-ad';
-// Thursday, October 1, 2026, 11:59 PM EDT. The API enforces it; this only
+// Friday, October 2, 2026, 11:59 AM EDT (extended from Thursday 11:59 PM;
+// final). The API enforces it; this only
 // decides what the page shows.
-const DEADLINE = new Date('2026-10-02T03:59:00Z');
+const DEADLINE = new Date('2026-10-02T15:59:00Z');
 const MAX_BYTES = 5 * 1024 ** 3;
 const VIDEO_EXT = /\.(mp4|mov|m4v|webm|mkv|avi|mpe?g|wmv|mts|m2ts|3gp)$/i;
 // Browsers leave file.type empty for some formats; Blob needs a video/* type.

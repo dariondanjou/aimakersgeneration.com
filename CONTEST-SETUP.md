@@ -33,7 +33,7 @@ which swaps the old Drive columns for `file_url` / `file_pathname`.
 Until the token exists, uploads fail with "Submissions aren't open yet". Nothing else breaks.
 
 Optional: `CONTEST_DEADLINE` (an ISO time) overrides the default deadline,
-`2026-10-02T03:59:00Z` = Thu Oct 1, 11:59 PM ET.
+`2026-10-02T15:59:00Z` = Fri Oct 2, 11:59 AM ET (extended from Thu Oct 1, 11:59 PM ET).
 
 ## 3. Test it
 
