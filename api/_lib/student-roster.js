@@ -15,6 +15,7 @@ const PLACEHOLDER_ANSWERS = new Set(["i'm not sure yet", "help me decide"]);
 
 // Keep in sync with src/cohorts.js and the SQL trigger.
 const HEADLINES = {
+  "winter-2027-jobs": "AI Maker — Winter 2027 Jobs Cohort",
   "october-2026-film": "AI Filmmaker — October 2026 Film Cohort",
   "summer-2026": "AI Maker — Summer 2026 Cohort",
 };

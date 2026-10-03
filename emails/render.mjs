@@ -3,8 +3,10 @@
 // Usage:
 //   node emails/render.mjs                      → writes emails/preview.html with sample data
 //   node emails/render.mjs "Liana" liana        → render for one student (name, slug)
+//   node emails/render.mjs --film [name slug]   → the October film cohort welcome
+//                                                 (film-welcome-email.html)
 //
-// Placeholders in welcome-email.html:
+// Placeholders in both templates:
 //   {{FIRST_NAME}}   the student's first name
 //   {{PROFILE_URL}}  absolute URL to /students/<slug>
 //
@@ -17,8 +19,8 @@ import { dirname, join } from "node:path";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASE_URL = process.env.PROFILE_BASE_URL || "https://aimakersgeneration.com";
 
-export function renderWelcomeEmail({ firstName, slug }) {
-  const template = readFileSync(join(__dirname, "welcome-email.html"), "utf8");
+export function renderWelcomeEmail({ firstName, slug, file = "welcome-email.html" }) {
+  const template = readFileSync(join(__dirname, file), "utf8");
   const profileUrl = `${BASE_URL}/students/${encodeURIComponent(slug)}`;
   return template
     .replaceAll("{{FIRST_NAME}}", escapeHtml(firstName))
@@ -35,9 +37,11 @@ function escapeHtml(s) {
 
 // Run directly → write a preview file.
 if (process.argv[1] && process.argv[1].endsWith("render.mjs")) {
-  const firstName = process.argv[2] || "Liana";
-  const slug = process.argv[3] || "liana";
-  const html = renderWelcomeEmail({ firstName, slug });
+  const film = process.argv.includes("--film");
+  const args = process.argv.slice(2).filter((a) => a !== "--film");
+  const firstName = args[0] || "Liana";
+  const slug = args[1] || "liana";
+  const html = renderWelcomeEmail({ firstName, slug, file: film ? "film-welcome-email.html" : "welcome-email.html" });
   const out = join(__dirname, "preview.html");
   writeFileSync(out, html, "utf8");
   console.log(`Rendered preview for "${firstName}" (/students/${slug}) → ${out}`);

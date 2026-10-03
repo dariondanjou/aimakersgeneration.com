@@ -11,7 +11,9 @@ import { cohortById } from '../cohorts';
 //
 // The outline and decks belong to the Summer 2026 program, so the section is
 // cohort-gated: pass `cohort` (an id from src/cohorts.js) and it renders only
-// when that cohort has `materials: true`. No cohort → nothing.
+// when that cohort has `materials: true`. A cohort with a fixed `curriculum`
+// outline in src/cohorts.js (the October film cohort) shows that instead,
+// without decks. No cohort → nothing.
 
 const fmtDate = (d) =>
   d ? new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '';
@@ -104,9 +106,10 @@ export function DecksGrid({ decks, compact = false }) {
   );
 }
 
-// The 8-week outline as a tap-to-expand list. Each session that has a deck
-// gets an "Open slide deck" button inside its panel.
-export function CurriculumAccordion({ weeks, decks }) {
+// The week-by-week outline as a tap-to-expand list. Each session that has a
+// deck gets an "Open slide deck" button inside its panel; `showDecks={false}`
+// drops the deck row entirely (cohorts without slide decks).
+export function CurriculumAccordion({ weeks, decks, showDecks = true }) {
   const [open, setOpen] = useState(null);
   if (!weeks || weeks.length === 0) return null;
   const deckByWeek = new Map((decks || []).map((d) => [d.week, d]));
@@ -173,7 +176,7 @@ export function CurriculumAccordion({ weeks, decks }) {
                     </ul>
                   </div>
                 )}
-                <div className="pt-1">
+                {showDecks && <div className="pt-1">
                   {hasDeck ? (
                     <Link to={`/deck/${w.week}`} className="btn btn-primary !text-xs !py-1.5 !px-3.5 inline-flex items-center gap-1.5">
                       <Presentation size={13} /> Open the Week {w.week} slide deck ({deck.slide_count} slides)
@@ -183,7 +186,7 @@ export function CurriculumAccordion({ weeks, decks }) {
                       <Presentation size={13} /> Slide deck coming soon
                     </span>
                   )}
-                </div>
+                </div>}
               </div>
             )}
           </div>
@@ -197,8 +200,48 @@ export function CurriculumAccordion({ weeks, decks }) {
 // the centered /students layout; `variant="profile"` sits inside a profile's
 // glass panel and stays compact.
 export default function CohortMaterialsSection({ cohort, variant = 'page' }) {
-  if (!cohortById(cohort)?.materials) return null;
+  const c = cohortById(cohort);
+  if (c?.curriculum) return <FixedCurriculumBody cohort={c} variant={variant} />;
+  if (!c?.materials) return null;
   return <CohortMaterialsBody variant={variant} />;
+}
+
+const NUMBER_WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'];
+
+// A cohort with a fixed outline in src/cohorts.js (no decks, no editor).
+function FixedCurriculumBody({ cohort, variant }) {
+  const weeks = cohort.curriculum;
+  const count = NUMBER_WORDS[weeks.length] || String(weeks.length);
+
+  if (variant === 'profile') {
+    return (
+      <div id="curriculum" className="glass-panel mb-5">
+        <h2 className="text-sm uppercase tracking-wider flex items-center gap-2 mb-1">
+          <Layers size={16} className="text-[#3E9E28]" /> Curriculum
+        </h2>
+        <p className="text-xs text-[#5C5C5C] mb-4">
+          {count} sessions, one project. Tap a week for what we cover and what's due.
+        </p>
+        <CurriculumAccordion weeks={weeks} showDecks={false} />
+      </div>
+    );
+  }
+
+  return (
+    <div id="curriculum" className="max-w-3xl mx-auto w-full pb-16 scroll-mt-24">
+      <div className="text-center mb-8">
+        <p className="text-xs uppercase tracking-[0.18em] font-semibold text-[#3E9E28] mb-2 flex items-center justify-center gap-2">
+          <BookOpen size={16} /> The Curriculum
+        </p>
+        <h2 className="text-2xl sm:text-3xl uppercase">{count} Sessions</h2>
+        <p className="text-[#5C5C5C] mt-3 max-w-xl mx-auto text-sm">
+          Saturdays 1:00–4:00 PM ET at RICE, Atlanta. Fast-paced and hands-on: you pick one project in Week 1 and
+          present the finished film in Week {weeks.length}. Tap a week to see what we cover.
+        </p>
+      </div>
+      <CurriculumAccordion weeks={weeks} showDecks={false} />
+    </div>
+  );
 }
 
 function CohortMaterialsBody({ variant }) {

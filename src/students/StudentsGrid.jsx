@@ -521,9 +521,9 @@ export default function StudentsGrid() {
           <p className="text-[#5C5C5C] mt-3 max-w-xl mx-auto">
             {cohort.dates}
           </p>
-          {cohort.materials && (
+          {(cohort.materials || cohort.curriculum) && (
             <a href="#curriculum" className="inline-flex items-center gap-1.5 mt-4 text-xs font-semibold uppercase tracking-wider text-[#0F7B3F] hover:text-[#3E9E28] transition-colors">
-              <BookOpen size={14} /> Curriculum &amp; slide decks ↓
+              <BookOpen size={14} /> {cohort.materials ? <>Curriculum &amp; slide decks ↓</> : <>The {cohort.weeks}-week curriculum ↓</>}
             </a>
           )}
         </div>

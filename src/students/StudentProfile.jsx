@@ -960,9 +960,17 @@ export default function StudentProfile() {
   const [dueByWeek, setDueByWeek] = useState({});
   const cohort = cohortById(student?.cohort);
   // The curriculum outline (and its per-week homework bullets + decks) is the
-  // Summer program's — only cohorts with `materials` use it.
+  // Summer program's — only cohorts with `materials` use it. Cohorts with a
+  // fixed outline in src/cohorts.js take their homework bullets from there.
   const hasMaterials = !!cohort?.materials;
+  const fixedCurriculum = cohort?.curriculum || null;
   useEffect(() => {
+    if (fixedCurriculum) {
+      const map = {};
+      for (const w of fixedCurriculum) if (w.homework?.length) map[w.week] = w.homework;
+      setDueByWeek(map);
+      return undefined;
+    }
     if (!hasMaterials) { setDueByWeek({}); return undefined; }
     let cancelled = false;
     fetch('/api/curriculum?public=1')
@@ -975,7 +983,7 @@ export default function StudentProfile() {
       })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, [hasMaterials]);
+  }, [hasMaterials, fixedCurriculum]);
   const [isUploading, setIsUploading] = useState(false);
   const [addingLink, setAddingLink] = useState(false);
   const [newLinkUrl, setNewLinkUrl] = useState('');
