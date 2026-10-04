@@ -47,9 +47,10 @@ export const COHORTS = [
           'A tour of the current toolchain — image, video, voice, and music models — and when to reach for each',
         ],
         homework: [
-          'Final logline and one-page treatment for your cohort project',
-          'A style-frame board that defines the look of your film',
-          'An agent-built shot list plus your first five hero shots, generated and ready for critique',
+          'Decide on your capstone project, then add its title and a short brief in the Capstone Project box on your profile',
+          'Gather every material you already have for it into one folder, projects/<your-capstone-project-name>, and save all project materials there from now on',
+          'Make a 1-minute film without leaving ChatGPT: use ChatGPT Desktop the whole time, and have it save your files to your local folders in a folder structure you agree with',
+          'Upload the finished film to your student profile by dragging it into the This Week box',
         ],
       },
       {

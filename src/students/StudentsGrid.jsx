@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { GraduationCap, BookOpen, ListChecks, Sparkles, Activity, Check, PartyPopper, Linkedin, TrendingUp, Users } from 'lucide-react';
 import { supabase } from '../supabaseClient';
-import CohortMaterialsSection from './CohortMaterials.jsx';
+import CohortMaterialsSection, { HomeworkCallout } from './CohortMaterials.jsx';
 import { COHORTS, CURRENT_COHORT, cohortById } from '../cohorts';
 
 // The public roster at /students. Read-only for everyone: each card links to
@@ -434,7 +434,7 @@ function CohortRoster({ cohort }) {
     let cancelled = false;
     supabase
       .from('students')
-      .select('id, slug, full_name, headline, goal, avatar_url, city, cohort')
+      .select('id, slug, full_name, headline, goal, avatar_url, city, cohort, capstone_title')
       .eq('cohort', cohort.id)
       .order('sort_order', { ascending: true })
       .order('full_name', { ascending: true })
@@ -472,6 +472,9 @@ function CohortRoster({ cohort }) {
                 {s.headline || cohort.headline}
               </p>
               {s.city && <p className="text-xs text-[#1A1A1A]/40 mt-0.5">{s.city}</p>}
+              {s.capstone_title && (
+                <p className="text-xs text-[#0F7B3F] mt-2"><span className="uppercase tracking-wider text-[10px] text-[#1A1A1A]/40">Capstone</span> · {s.capstone_title}</p>
+              )}
               {s.goal && (
                 <p className="text-sm text-[#5C5C5C] mt-3 line-clamp-3">{s.goal}</p>
               )}
@@ -527,6 +530,8 @@ export default function StudentsGrid() {
             </a>
           )}
         </div>
+
+        <HomeworkCallout cohort={cohort.id} />
 
         <CohortRoster key={cohort.id} cohort={cohort} />
       </div>

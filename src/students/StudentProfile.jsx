@@ -314,6 +314,16 @@ const sentenceBullets = (text) =>
     .map((t) => t.trim())
     .filter(Boolean);
 
+// Video homework (films) is stored in the profile-videos bucket, which only
+// accepts these types. Some OSes report an empty type for .mov/.m4v, so fall
+// back on the extension.
+const HOMEWORK_VIDEO_TYPES = { mp4: 'video/mp4', mov: 'video/quicktime', webm: 'video/webm', m4v: 'video/x-m4v' };
+function homeworkVideoType(file) {
+  if (Object.values(HOMEWORK_VIDEO_TYPES).includes(file.type)) return file.type;
+  if (file.type && file.type !== 'application/octet-stream') return null;
+  return HOMEWORK_VIDEO_TYPES[(file.name.split('.').pop() || '').toLowerCase()] || null;
+}
+
 function DueList({ items, description, compact = false }) {
   const bullets = items?.length ? items : sentenceBullets(description);
   if (bullets.length === 0) return null;
@@ -471,7 +481,7 @@ function ThisWeekPanel({
               <Upload size={20} className="mx-auto mb-2 text-[#3E9E28]" />
               <p className="text-sm font-semibold">Drag &amp; drop, paste, or click to add your homework</p>
               <p className="text-xs text-[#5C5C5C] mt-1">
-                Any file or link works. It's scanned for relevance to the assignment — the circle checks once it's verified.
+                Any file or link works. Films up to 500MB (MP4, MOV, WebM, M4V); other files up to 25MB. It's scanned for relevance to the assignment — the circle checks once it's verified.
               </p>
             </>
           )}
@@ -1010,7 +1020,7 @@ export default function StudentProfile() {
   const isOwner = !!session && !!student && (student.user_id === session.user.id || isAdmin);
 
   const BASE_COLUMNS = 'id, slug, full_name, headline, bio, goal, final_project_goal, avatar_url, links, user_id, city, current_work, ai_experience, coding_experience, something_made, eight_week_goal, cohort';
-  const STUDENT_COLUMNS = `${BASE_COLUMNS}, linkedin_url, linkedin_ai_pct`;
+  const STUDENT_COLUMNS = `${BASE_COLUMNS}, linkedin_url, linkedin_ai_pct, capstone_title, capstone_brief`;
   const loadStudent = async () => {
     // Prefer the full column set. If the LinkedIn columns aren't in the DB yet
     // (migration 20260722 not applied), fall back to the base set so the page
@@ -1052,12 +1062,23 @@ export default function StudentProfile() {
   const submitHomeworkFiles = async (assignment, files) => {
     if (!isOwner) return;
     for (const file of files) {
-      if (file.size > 25 * 1024 * 1024) { alert(`${file.name}: max file size is 25MB`); continue; }
+      // Films go to the profile-videos bucket (500MB, under the uploader's own
+      // folder); everything else to student-uploads (25MB).
       const ext = file.name.split('.').pop();
-      const path = `public/${student.slug}/homework/hw${assignment.number}-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from('student-uploads').upload(path, file);
+      const videoType = homeworkVideoType(file);
+      const max = videoType ? 500 : 25;
+      if (file.size > max * 1024 * 1024) {
+        alert(`${file.name}: max file size is ${max}MB${videoType ? ' — try a smaller export, or paste a YouTube/Vimeo/Drive link instead' : ''}`);
+        continue;
+      }
+      const bucket = videoType ? 'profile-videos' : 'student-uploads';
+      const path = videoType
+        ? `${userId}/homework/${student.slug}-hw${assignment.number}-${Date.now()}.${ext}`
+        : `public/${student.slug}/homework/hw${assignment.number}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from(bucket)
+        .upload(path, file, videoType ? { contentType: videoType } : undefined);
       if (upErr) { alert(`${file.name}: upload failed — ${friendlyWriteError(upErr)}`); continue; }
-      const { data } = supabase.storage.from('student-uploads').getPublicUrl(path);
+      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
       const { data: row, error: insErr } = await supabase
         .from('student_submissions')
         .insert({ student_id: student.id, assignment_id: assignment.id, url: data.publicUrl, file_name: file.name })
@@ -1406,6 +1427,37 @@ export default function StudentProfile() {
 
           </div>
         </div>
+
+        {/* ── Capstone project (title + brief) ── */}
+        {(isOwner || student.capstone_title || student.capstone_brief) && (
+          <div className="glass-panel mb-5 !border-[#3E9E28]/40">
+            <h2 className="text-sm uppercase tracking-wider flex items-center gap-2 mb-1">
+              <Flag size={16} className="text-[#0F7B3F]" /> Capstone Project
+            </h2>
+            {isOwner && (
+              <p className="text-xs text-[#5C5C5C] mb-3">
+                The one project you'll build across the cohort. Click either line to edit it.
+              </p>
+            )}
+            <label className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1 block">Title</label>
+            <InlineField
+              value={student.capstone_title}
+              onSave={(v) => saveField('capstone_title', v)}
+              placeholder={isOwner ? 'Name your capstone project' : 'Not set yet'}
+              isOwner={isOwner}
+              className="text-base font-semibold mb-3"
+            />
+            <label className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1 mt-3 block">Brief</label>
+            <InlineField
+              value={student.capstone_brief}
+              onSave={(v) => saveField('capstone_brief', v)}
+              placeholder={isOwner ? 'A few sentences: what is it, who is it for, and what will it look and feel like?' : 'Not set yet'}
+              isOwner={isOwner}
+              multiline
+              className="text-sm text-[#1A1A1A]/80 leading-relaxed"
+            />
+          </div>
+        )}
 
         {/* ── This week's homework, highlighted at the top ── */}
         <ThisWeekPanel

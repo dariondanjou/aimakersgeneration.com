@@ -206,7 +206,43 @@ export default function CohortMaterialsSection({ cohort, variant = 'page' }) {
   return <CohortMaterialsBody variant={variant} />;
 }
 
-const NUMBER_WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'];
+// This week's homework for a cohort with a fixed outline: the latest session
+// that has started, due at the start (1:00 PM ET) of the next one.
+export function HomeworkCallout({ cohort }) {
+  const weeks = cohortById(cohort)?.curriculum;
+  if (!weeks) return null;
+  const today = todayKey();
+  const started = weeks.filter((w) => w.session_date <= today);
+  const current = started[started.length - 1];
+  if (!current?.homework?.length) return null;
+  const next = weeks.find((w) => w.week === current.week + 1);
+
+  return (
+    <div className="glass-panel max-w-3xl mx-auto mb-10 !border-[#3E9E28]/50 text-left">
+      <div className="flex items-center justify-between gap-2 flex-wrap mb-2">
+        <h2 className="text-sm uppercase tracking-wider flex items-center gap-2">
+          <Backpack size={16} className="text-[#3E9E28]" /> This Week's Homework · Week {current.week}
+        </h2>
+        {next && (
+          <span className="text-xs font-semibold text-[#0F7B3F]">
+            Due {fmtDate(next.session_date)} · 1:00 PM ET
+          </span>
+        )}
+      </div>
+      <ul className="list-disc pl-5 space-y-1.5 marker:text-[#3E9E28]">
+        {current.homework.map((t, i) => (
+          <li key={i} className="text-sm text-[#1A1A1A]/85 leading-relaxed">{t}</li>
+        ))}
+      </ul>
+      <p className="text-xs text-[#5C5C5C] mt-4">
+        <strong>How to turn it in:</strong> log in, open your own card below, and drag &amp; drop your files into the
+        This Week box on your profile.
+      </p>
+    </div>
+  );
+}
+
+const NUMBER_WORDS =['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'];
 
 // A cohort with a fixed outline in src/cohorts.js (no decks, no editor).
 function FixedCurriculumBody({ cohort, variant }) {
