@@ -52,34 +52,6 @@ export const COHORTS = [
           'Make a 1-minute film without leaving ChatGPT: use ChatGPT Desktop the whole time, and have it save your files to your local folders in a folder structure you agree with',
           'Upload the finished film to your student profile by dragging it into the This Week box',
         ],
-        // Shown on /students as big thumbnail cards. Thumbnails and PDFs are in
-        // public/; the recording is too large for the repo and lives in Vercel Blob.
-        resources: [
-          {
-            kind: 'video',
-            title: 'Session 1 Recording',
-            description: 'The full Saturday, Oct 3 session: from voice note to final cut, with the Modern House action short as the case study.',
-            meta: '2 hr 31 min · MP4',
-            url: 'BLOB_URL_PENDING',
-            thumb: '/materials/october-2026-film/week-1/session-1-recording.jpg',
-          },
-          {
-            kind: 'pdf',
-            title: 'Session 1 Transcript Summary',
-            description: 'The session distilled into seven ideas, the core loop, and the Modern House case study.',
-            meta: '8 pages · PDF',
-            url: '/materials/october-2026-film/week-1/session-1-transcript-summary.pdf',
-            thumb: '/materials/october-2026-film/week-1/session-1-transcript-summary.jpg',
-          },
-          {
-            kind: 'pdf',
-            title: 'Traditional to AI Filmmaking Workflow',
-            description: 'One film, two workflows: every stage of traditional production mapped to its AI filmmaking equivalent, with example tools.',
-            meta: '1 page · PDF',
-            url: '/materials/october-2026-film/week-1/traditional-to-ai-filmmaking-workflow.pdf',
-            thumb: '/materials/october-2026-film/week-1/traditional-to-ai-filmmaking-workflow.jpg',
-          },
-        ],
       },
       {
         week: 2,

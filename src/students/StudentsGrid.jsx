@@ -4,6 +4,7 @@ import { GraduationCap, BookOpen, ListChecks, Sparkles, Activity, Check, PartyPo
 import { supabase } from '../supabaseClient';
 import CohortMaterialsSection, { HomeworkCallout, SessionResources } from './CohortMaterials.jsx';
 import { COHORTS, CURRENT_COHORT, cohortById } from '../cohorts';
+import useSession from './useSession';
 
 // The public roster at /students. Read-only for everyone: each card links to
 // the student's portfolio, which only its owner (or an admin) can edit.
@@ -428,6 +429,7 @@ function CohortSwitcher({ value, onChange }) {
 // Everything for one cohort. Keyed by cohort id, so switching cohorts resets
 // all of its state instead of briefly showing the other roster.
 function CohortRoster({ cohort }) {
+  const session = useSession();
   const [students, setStudents] = useState(null);
 
   useEffect(() => {
@@ -489,7 +491,7 @@ function CohortRoster({ cohort }) {
       {cohort.linkedin && <LinkedInTrajectorySection students={students} cohort={cohort} />}
 
       {/* Session recordings and handouts (cohorts with a fixed outline) */}
-      <SessionResources cohort={cohort.id} />
+      <SessionResources cohort={cohort.id} session={session} />
 
       {/* Curriculum outline + every session's slide deck (past weeks included) */}
       <CohortMaterialsSection cohort={cohort.id} />
@@ -532,7 +534,7 @@ export default function StudentsGrid() {
               <BookOpen size={14} /> {cohort.materials ? <>Curriculum &amp; slide decks ↓</> : <>The {cohort.weeks}-week curriculum ↓</>}
             </a>
           )}
-          {cohort.curriculum?.some((w) => w.resources?.length) && (
+          {cohort.curriculum && (
             <a href="#materials" className="inline-flex items-center gap-1.5 mt-4 ml-5 text-xs font-semibold uppercase tracking-wider text-[#0F7B3F] hover:text-[#3E9E28] transition-colors">
               <Film size={14} /> Recordings &amp; materials ↓
             </a>

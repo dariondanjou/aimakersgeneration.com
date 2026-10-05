@@ -242,15 +242,11 @@ export function HomeworkCallout({ cohort }) {
   );
 }
 
-// Week-by-week session materials (recordings, PDFs) for a cohort with a fixed
-// outline: big thumbnail cards, each viewable in the browser or downloadable.
-// Videos play inline when the thumbnail is clicked. A resource whose url isn't
-// an http(s) or site path yet is skipped.
-const isLive = (url) => /^(https?:\/\/|\/)/.test(url || '');
-// Vercel Blob serves a file as an attachment with ?download=1 (a cross-origin
-// <a download> is ignored); same-origin files use the download attribute.
-const downloadHref = (url) => (/^https?:\/\//.test(url) ? `${url}${url.includes('?') ? '&' : '?'}download=1` : url);
-
+// Week-by-week session materials (recordings, PDFs): big thumbnail cards,
+// each viewable in the browser or downloadable. Videos play inline when the
+// thumbnail is clicked. The list comes from /api/cohort-resources, which only
+// answers signed-in cohort members; it returns a view URL and a download URL
+// (a signed URL or Blob link that is served as an attachment) per item.
 function ResourceCard({ r, hero = false }) {
   const [playing, setPlaying] = useState(false);
   const isVideo = r.kind === 'video';
@@ -293,7 +289,7 @@ function ResourceCard({ r, hero = false }) {
               <Eye size={13} /> View in browser
             </a>
           )}
-          <a href={downloadHref(r.url)} download className={btn}>
+          <a href={r.download} download className={btn}>
             <Download size={13} /> Download
           </a>
         </div>
@@ -302,10 +298,27 @@ function ResourceCard({ r, hero = false }) {
   );
 }
 
-export function SessionResources({ cohort }) {
-  const weeks = (cohortById(cohort)?.curriculum || [])
-    .map((w) => ({ ...w, resources: (w.resources || []).filter((r) => isLive(r.url)) }))
-    .filter((w) => w.resources.length > 0);
+export function SessionResources({ cohort, session }) {
+  const [loaded, setLoaded] = useState({ key: null, weeks: [] });
+  const token = session?.access_token || null;
+  const key = token ? `${cohort}:${session.user.id}` : null;
+
+  useEffect(() => {
+    if (!token) return undefined;
+    let cancelled = false;
+    fetch(`/api/cohort-resources?cohort=${encodeURIComponent(cohort)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (!cancelled) setLoaded({ key, weeks: data?.weeks || [] }); })
+      .catch(() => { if (!cancelled) setLoaded({ key, weeks: [] }); });
+    return () => { cancelled = true; };
+    // Re-fetch per cohort and user, not on every token refresh.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+
+  const outline = new Map((cohortById(cohort)?.curriculum || []).map((w) => [w.week, w]));
+  const weeks = loaded.key === key ? loaded.weeks.map((w) => ({ ...outline.get(w.week), ...w })) : [];
   if (weeks.length === 0) return null;
 
   return (
@@ -325,11 +338,11 @@ export function SessionResources({ cohort }) {
         return (
           <div key={w.week} className="mb-10">
             <p className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-3 flex items-center gap-1.5">
-              <Layers size={12} className="text-[#3E9E28]" /> Week {w.week} · {fmtDate(w.session_date)} · {w.title}
+              <Layers size={12} className="text-[#3E9E28]" /> Week {w.week}{w.session_date ? ` · ${fmtDate(w.session_date)}` : ''}{w.title ? ` · ${w.title}` : ''}
             </p>
             {heroFirst && <div className="mb-5"><ResourceCard r={first} hero /></div>}
             <div className="grid gap-5 sm:grid-cols-2">
-              {(heroFirst ? rest : w.resources).map((r) => <ResourceCard key={r.url} r={r} />)}
+              {(heroFirst ? rest : w.resources).map((r) => <ResourceCard key={r.title} r={r} />)}
             </div>
           </div>
         );

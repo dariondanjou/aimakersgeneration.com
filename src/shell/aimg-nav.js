@@ -165,6 +165,9 @@ async function fetchRole(supabase, session) {
   const user = session.user;
   const uid = user.id;
   roleFor = uid;
+  // Link any student rows enrolled under this email first, so a student is
+  // recognized (and gets the Students link) the first time they sign in.
+  await Promise.resolve(supabase.rpc('claim_my_student_profiles')).catch(() => {});
   const [prof, stud, adm] = await Promise.all([
     supabase.from('profiles').select('username, avatar_url, first_name, last_name').eq('id', uid).maybeSingle(),
     supabase.from('students').select('slug, cohort, created_at').eq('user_id', uid)

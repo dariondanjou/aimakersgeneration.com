@@ -4,12 +4,12 @@ import StudentProfile from './StudentProfile.jsx';
 import QuizBuilder from './QuizBuilder.jsx';
 import QuizTake from './QuizTake.jsx';
 import Deck from '../Deck.jsx';
+import MembersGate from './MembersGate.jsx';
 import '../shell/aimg-nav.js'; // the shared site nav: <aimg-nav>
 
-// Public student showcase, served at /students (see vercel.json + vite.config).
-// Deliberately auth-free: anyone who visits can browse AND edit profiles —
-// there is no sign-in anywhere on this page (per the program's choice; the
-// database still protects email/user_id/slug and homework deadlines).
+// The cohort student showcase, served at /students (see vercel.json + vite.config).
+// Members only: signed-in cohort students and admins (MembersGate, enforced in
+// the database by public.is_cohort_member()). Students edit only their own profile.
 const STUDENTS_BASE = '/students';
 
 export default function StudentsApp() {
@@ -18,6 +18,7 @@ export default function StudentsApp() {
       <div className="site-shell">
         <aimg-nav active="students" live-auth=""></aimg-nav>
         <main className="main-content">
+          <MembersGate>
           <Routes>
             <Route path="/" element={<StudentsGrid />} />
             <Route path="/quiz-builder" element={<QuizBuilder />} />
@@ -26,6 +27,7 @@ export default function StudentsApp() {
             <Route path="/deck/:week" element={<Deck publicView />} />
             <Route path="/:slug" element={<StudentProfile />} />
           </Routes>
+          </MembersGate>
         </main>
       </div>
     </Router>
