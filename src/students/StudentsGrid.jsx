@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { GraduationCap, BookOpen, ListChecks, Sparkles, Activity, Check, PartyPopper, Linkedin, TrendingUp, Users } from 'lucide-react';
+import { GraduationCap, BookOpen, ListChecks, Sparkles, Activity, Check, PartyPopper, Linkedin, TrendingUp, Users, Film } from 'lucide-react';
 import { supabase } from '../supabaseClient';
-import CohortMaterialsSection, { HomeworkCallout } from './CohortMaterials.jsx';
+import CohortMaterialsSection, { HomeworkCallout, SessionResources } from './CohortMaterials.jsx';
 import { COHORTS, CURRENT_COHORT, cohortById } from '../cohorts';
 
 // The public roster at /students. Read-only for everyone: each card links to
@@ -488,6 +488,9 @@ function CohortRoster({ cohort }) {
 
       {cohort.linkedin && <LinkedInTrajectorySection students={students} cohort={cohort} />}
 
+      {/* Session recordings and handouts (cohorts with a fixed outline) */}
+      <SessionResources cohort={cohort.id} />
+
       {/* Curriculum outline + every session's slide deck (past weeks included) */}
       <CohortMaterialsSection cohort={cohort.id} />
 
@@ -527,6 +530,11 @@ export default function StudentsGrid() {
           {(cohort.materials || cohort.curriculum) && (
             <a href="#curriculum" className="inline-flex items-center gap-1.5 mt-4 text-xs font-semibold uppercase tracking-wider text-[#0F7B3F] hover:text-[#3E9E28] transition-colors">
               <BookOpen size={14} /> {cohort.materials ? <>Curriculum &amp; slide decks ↓</> : <>The {cohort.weeks}-week curriculum ↓</>}
+            </a>
+          )}
+          {cohort.curriculum?.some((w) => w.resources?.length) && (
+            <a href="#materials" className="inline-flex items-center gap-1.5 mt-4 ml-5 text-xs font-semibold uppercase tracking-wider text-[#0F7B3F] hover:text-[#3E9E28] transition-colors">
+              <Film size={14} /> Recordings &amp; materials ↓
             </a>
           )}
         </div>
