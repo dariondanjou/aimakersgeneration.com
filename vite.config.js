@@ -21,6 +21,7 @@ const spaFallbacks = () => ({
     server.middlewares.use((req, _res, next) => {
       const path = req.url.split('?')[0];
       if (/^\/students(\/|$)/.test(path) && !path.includes('.')) req.url = '/students.html';
+      else if (/^\/terminology(\/|$)/.test(path) && !path.includes('.')) req.url = '/terminology.html';
       else if (/^\/community(\/|$)/.test(path) && !path.includes('.')) req.url = '/app.html';
       next();
     });
@@ -37,6 +38,7 @@ export default defineConfig({
         apply: resolve(__dirname, 'apply.html'),
         app: resolve(__dirname, 'app.html'),
         students: resolve(__dirname, 'students.html'),
+        terminology: resolve(__dirname, 'terminology.html'),
         contest: resolve(__dirname, 'contest.html'),
       },
     },

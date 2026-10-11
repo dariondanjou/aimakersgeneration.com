@@ -365,3 +365,34 @@ aimg-footer .af-legal {
 }
 aimg-footer .af-legal p { margin: 0; }
 aimg-footer .af-legal a { color: #9DA398; text-decoration: none; }
+
+/* ── Top-level nav dropdown (Terminology → Filmmaking, …) ───────────────── */
+aimg-nav .an-navdd { position: relative; display: inline-flex; }
+aimg-nav .an-navdd-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: none; border: 0; padding: 0; margin: 0;
+  font: inherit; cursor: pointer;
+}
+aimg-nav .an-navdd-btn .an-chev { transition: transform 0.15s ease; }
+aimg-nav .an-navdd-btn[aria-expanded="true"] .an-chev { transform: rotate(180deg); }
+aimg-nav .an-navdd-menu {
+  position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%);
+  min-width: 180px; background: #fff;
+  border: 1px solid var(--rule, #E3E3DF); border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12); padding: 6px; z-index: 60;
+}
+aimg-nav .an-navdd-menu[hidden] { display: none; }
+aimg-nav .an-navdd-menu a {
+  display: block; padding: 9px 12px; border-radius: 8px;
+  color: var(--mid, #5C5C5C); font-size: 0.95rem; font-weight: 500; text-decoration: none; white-space: nowrap;
+}
+aimg-nav .an-navdd-menu a:hover,
+aimg-nav .an-navdd-menu a:focus-visible { background: var(--warm, #F4F4F2); color: var(--near, #1A1A1A); }
+
+/* Drawer: dropdown becomes a labelled group of links */
+aimg-nav .an-drawer-group { margin-top: 6px; }
+aimg-nav .an-drawer-h {
+  display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: #A8A8A3; padding: 6px 0 2px;
+}
+aimg-nav .an-drawer-group .an-link { padding-left: 12px; }

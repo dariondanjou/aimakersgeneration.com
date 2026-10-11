@@ -30,6 +30,9 @@ const LINKS = [
   { key: 'contest', label: 'Contest', href: '/contest', for: ['visitor', 'member'] },
   { key: 'community', label: 'Community', href: '/community', for: ['member'] },
   { key: 'students', label: 'Students', href: '/students', for: ['member'], studentsOnly: true, lockedTip: 'Enroll in a Cohort to access Students pages' },
+  // A dropdown: Terminology glossaries, open to any signed-in member. More
+  // sub-tabs (other AI terminology) will be added alongside Filmmaking.
+  { key: 'terminology', label: 'Terminology', for: ['member'], menu: [{ label: 'Filmmaking', href: '/terminology' }] },
   { key: 'events', label: 'Events', href: '/#next', for: ['visitor', 'member'] },
   { key: 'about', label: 'Who we are', href: '/about', for: ['visitor'] },
   { key: 'faq', label: 'FAQ', href: '/#faq', for: ['visitor', 'member'] },
@@ -281,6 +284,7 @@ function detectActive() {
   if (p === '/about') return 'about';
   if (p === '/contest') return 'contest';
   if (p.startsWith('/students')) return 'students';
+  if (p.startsWith('/terminology')) return 'terminology';
   if (p.startsWith('/community')) return 'community';
   return '';
 }
@@ -395,9 +399,21 @@ class AimgNav extends HTMLElement {
     const badge = (l) => (l.key === 'community' && auth.unread > 0
       ? ` <span class="an-badge" style="display:inline-block;min-width:1.25em;padding:0 .35em;border-radius:999px;background:#3E9E28;color:#fff;font-size:.7em;line-height:1.5;text-align:center;vertical-align:.15em">${auth.unread > 99 ? '99+' : auth.unread}<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"> unread</span></span>`
       : '');
-    const linkHTML = (l) => (l.studentsOnly && !auth.student && !auth.admin
-      ? `<span class="an-link an-link-locked" tabindex="0" aria-disabled="true">${esc(l.label)}<span class="an-tip" role="tooltip">${esc(l.lockedTip)}</span></span>`
-      : `<a class="an-link${l.key === 'contest' ? ' an-link-contest' : ''}" href="${esc(url(l.href))}"${l.key === active ? ' aria-current="page"' : ''}>${esc(l.label)}${badge(l)}</a>`);
+    const linkHTML = (l, drawer = false) => {
+      if (l.menu) {
+        if (drawer) {
+          return `<div class="an-drawer-group"><span class="an-drawer-h">${esc(l.label)}</span>${l.menu.map((m) => `<a class="an-link" href="${esc(url(m.href))}">${esc(m.label)}</a>`).join('')}</div>`;
+        }
+        const items = l.menu.map((m) => `<a role="menuitem" href="${esc(url(m.href))}">${esc(m.label)}</a>`).join('');
+        return `<div class="an-navdd">
+          <button type="button" class="an-link an-navdd-btn"${l.key === active ? ' aria-current="page"' : ''} aria-haspopup="menu" aria-expanded="false">${esc(l.label)}${CHEV_SVG}</button>
+          <div class="an-navdd-menu" role="menu" hidden>${items}</div>
+        </div>`;
+      }
+      return (l.studentsOnly && !auth.student && !auth.admin
+        ? `<span class="an-link an-link-locked" tabindex="0" aria-disabled="true">${esc(l.label)}<span class="an-tip" role="tooltip">${esc(l.lockedTip)}</span></span>`
+        : `<a class="an-link${l.key === 'contest' ? ' an-link-contest' : ''}" href="${esc(url(l.href))}"${l.key === active ? ' aria-current="page"' : ''}>${esc(l.label)}${badge(l)}</a>`);
+    };
     const cta = `<a class="an-cta" href="${esc(url(CTA.href))}">${esc(CTA.label)}</a>`;
 
     this.innerHTML = `<nav class="an" aria-label="Main">
@@ -405,7 +421,7 @@ class AimgNav extends HTMLElement {
         <a class="an-mark" href="${esc(url('/'))}" aria-label="AIMG — home">
           <img src="/brand/aimg-mark-256.png" width="256" height="254" alt="">AIMG
         </a>
-        <div class="an-links">${links.map(linkHTML).join('')}</div>
+        <div class="an-links">${links.map((l) => linkHTML(l)).join('')}</div>
         <div class="an-right">
           <a href="#" class="an-bot" data-aimg-bot title="Talk to the AI Maker Bot" aria-label="Talk to the AI Maker Bot">${BOT_SVG}</a>
           ${this._userHTML()}
@@ -414,7 +430,7 @@ class AimgNav extends HTMLElement {
         </div>
       </div>
       <div class="an-drawer" id="${id}-drawer"${this._drawerOpen ? '' : ' hidden'}>
-        ${links.map(linkHTML).join('')}
+        ${links.map((l) => linkHTML(l, true)).join('')}
         ${cta}
       </div>
     </nav>`;
@@ -463,10 +479,26 @@ class AimgNav extends HTMLElement {
     const user = this.querySelector('.an-user');
     if (this._menuOpen && !(user && path.includes(user))) this._setMenu(false);
     if (this._drawerOpen && !path.includes(this)) this._setDrawer(false);
+    if (!path.some((n) => n?.classList && n.classList.contains('an-navdd'))) this._closeNavDropdowns();
+  }
+
+  _closeNavDropdowns() {
+    this.querySelectorAll('.an-navdd-menu:not([hidden])').forEach((m) => {
+      m.hidden = true;
+      m.previousElementSibling?.setAttribute('aria-expanded', 'false');
+    });
   }
 
   _onClick(e) {
     const t = e.target;
+    const ddBtn = t.closest('.an-navdd-btn');
+    if (ddBtn) {
+      const menu = ddBtn.nextElementSibling;
+      const willOpen = ddBtn.getAttribute('aria-expanded') !== 'true';
+      this._closeNavDropdowns();
+      if (willOpen && menu) { menu.hidden = false; ddBtn.setAttribute('aria-expanded', 'true'); }
+      return;
+    }
     if (t.closest('.an-user-btn')) {
       this._setMenu(!this._menuOpen);
       return;
@@ -485,6 +517,7 @@ class AimgNav extends HTMLElement {
     // Close popovers on navigation (same-page anchors don't reload).
     if (this._menuOpen) this._setMenu(false);
     if (this._drawerOpen) this._setDrawer(false);
+    this._closeNavDropdowns();
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.target) return;
     const dest = new URL(a.href, location.href);
     if (dest.origin !== location.origin) return;
