@@ -70,7 +70,7 @@ export const COHORTS = [
         ],
         homework: [
           "At least one minute of new footage toward your capstone — put the session's notes to work: vary your shots, pull a real style reference so it never reads as default AI, scene-stitch, cut clean, and keep your backgrounds alive. (Drop your stills in the WhatsApp group for a thumbs-up before you burn credits generating.)",
-          'A shot-list document: pick a ~1-minute scene from a film or commercial you love, screenshot every shot in order, and describe each one — shot size, camera move, and what it does for the story. Follow the Week 2 shot-list guide on your student page (a worked example to model yours on).',
+          'A shot-list document: pick a ~1-minute scene from a film or commercial you love, screenshot every shot in order, and describe each one — shot size, camera move, and what it does for the story. Use the Week 2 shot-list guide (a worked example) and the fill-in template on your student page.',
         ],
       },
       {

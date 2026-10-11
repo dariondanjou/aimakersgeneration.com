@@ -250,6 +250,7 @@ export function HomeworkCallout({ cohort }) {
 function ResourceCard({ r, hero = false }) {
   const [playing, setPlaying] = useState(false);
   const isVideo = r.kind === 'video';
+  const isDoc = r.kind === 'doc'; // editable handout (e.g. a .docx template): download only
   const btn = 'btn !text-xs !py-2 !px-4 inline-flex items-center gap-1.5';
 
   const thumb = (
@@ -259,7 +260,7 @@ function ResourceCard({ r, hero = false }) {
       {isVideo && <div className="absolute inset-0 bg-black/25 group-hover:bg-black/10 transition-colors" />}
       <span className="absolute inset-0 flex items-center justify-center">
         <span className={`rounded-full bg-[#CCFF00] text-[#0B0B0B] flex items-center justify-center shadow-2xl transition-all group-hover:scale-110 ${hero ? 'w-20 h-20' : 'w-14 h-14'} ${isVideo ? '' : 'opacity-0 group-hover:opacity-100'}`}>
-          {isVideo ? <Play size={hero ? 34 : 24} className="ml-1" fill="currentColor" /> : <Eye size={22} />}
+          {isVideo ? <Play size={hero ? 34 : 24} className="ml-1" fill="currentColor" /> : isDoc ? <Download size={22} /> : <Eye size={22} />}
         </span>
       </span>
     </div>
@@ -272,6 +273,8 @@ function ResourceCard({ r, hero = false }) {
           className="w-full aspect-video rounded-xl bg-black" />
       ) : isVideo ? (
         <button type="button" onClick={() => setPlaying(true)} className="block w-full" title={`Play ${r.title}`}>{thumb}</button>
+      ) : isDoc ? (
+        <a href={r.download} download className="block" title={`Download ${r.title}`}>{thumb}</a>
       ) : (
         <a href={r.url} target="_blank" rel="noopener" className="block" title={`Open ${r.title}`}>{thumb}</a>
       )}
@@ -281,17 +284,28 @@ function ResourceCard({ r, hero = false }) {
         <p className="text-sm text-[#5C5C5C] leading-relaxed mb-1">{r.description}</p>
         <div className="flex flex-wrap gap-2 mt-auto">
           {isVideo ? (
-            <button type="button" onClick={() => setPlaying(true)} className={`${btn} btn-primary`}>
-              <Play size={13} /> Play in browser
-            </button>
-          ) : (
-            <a href={r.url} target="_blank" rel="noopener" className={`${btn} btn-primary`}>
-              <Eye size={13} /> View in browser
+            <>
+              <button type="button" onClick={() => setPlaying(true)} className={`${btn} btn-primary`}>
+                <Play size={13} /> Play in browser
+              </button>
+              <a href={r.download} download className={btn}>
+                <Download size={13} /> Download
+              </a>
+            </>
+          ) : isDoc ? (
+            <a href={r.download} download className={`${btn} btn-primary`}>
+              <Download size={13} /> Download
             </a>
+          ) : (
+            <>
+              <a href={r.url} target="_blank" rel="noopener" className={`${btn} btn-primary`}>
+                <Eye size={13} /> View in browser
+              </a>
+              <a href={r.download} download className={btn}>
+                <Download size={13} /> Download
+              </a>
+            </>
           )}
-          <a href={r.download} download className={btn}>
-            <Download size={13} /> Download
-          </a>
         </div>
       </div>
     </div>

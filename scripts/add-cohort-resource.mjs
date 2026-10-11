@@ -60,7 +60,15 @@ if (!KEY) { console.error('SUPABASE_SERVICE_ROLE_KEY missing. Run: sh scripts/pu
 
 const required = ['cohort', 'week', 'kind', 'title'];
 for (const r of required) if (!args[r]) { console.error(`--${r} is required`); process.exit(1); }
-if (args.kind !== 'video' && args.kind !== 'pdf') { console.error("--kind must be 'video' or 'pdf'"); process.exit(1); }
+if (!['video', 'pdf', 'doc'].includes(args.kind)) { console.error("--kind must be 'video', 'pdf' or 'doc'"); process.exit(1); }
+
+// storage content types by extension — a 'doc' (e.g. a .docx template) is
+// served as a download, so the browser must get the right MIME.
+const MIME = {
+  pdf: 'application/pdf',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  doc: 'application/msword',
+};
 
 const BUCKET = 'cohort-materials';
 const sb = createClient(URL, KEY, { auth: { persistSession: false } });
@@ -68,15 +76,17 @@ const sb = createClient(URL, KEY, { auth: { persistSession: false } });
 let blob_url = args['blob-url'] || null;
 let storage_path = args['storage-path'] || null;
 
-if (args.kind === 'pdf') {
-  if (!args.pdf && !storage_path) { console.error('pdf rows need --pdf <localfile> (or --storage-path to an existing object)'); process.exit(1); }
-  if (args.pdf) {
-    if (!existsSync(args.pdf)) { console.error(`file not found: ${args.pdf}`); process.exit(1); }
-    storage_path = storage_path || `${args.cohort}/week-${args.week}/${basename(args.pdf)}`;
-    const buf = readFileSync(args.pdf);
-    const { error } = await sb.storage.from(BUCKET).upload(storage_path, buf, { contentType: 'application/pdf', upsert: true });
+if (args.kind === 'pdf' || args.kind === 'doc') {
+  const local = args.pdf || args.doc;
+  if (!local && !storage_path) { console.error(`${args.kind} rows need --${args.kind} <localfile> (or --storage-path to an existing object)`); process.exit(1); }
+  if (local) {
+    if (!existsSync(local)) { console.error(`file not found: ${local}`); process.exit(1); }
+    storage_path = storage_path || `${args.cohort}/week-${args.week}/${basename(local)}`;
+    const ext = (local.split('.').pop() || '').toLowerCase();
+    const buf = readFileSync(local);
+    const { error } = await sb.storage.from(BUCKET).upload(storage_path, buf, { contentType: MIME[ext] || 'application/octet-stream', upsert: true });
     if (error) { console.error('upload failed:', error.message); process.exit(1); }
-    console.log(`uploaded ${args.pdf} → ${BUCKET}/${storage_path}`);
+    console.log(`uploaded ${local} → ${BUCKET}/${storage_path}`);
   }
   blob_url = null;
 } else {
