@@ -30,6 +30,10 @@ export const GROUPS = [
 
 export const BY_SLUG = new Map(TERMS.map((t) => [t.slug, t]));
 export const getTerm = (slug) => BY_SLUG.get(slug);
+
+// Each term has an illustrative header image at this path (public/). TermPage
+// renders it and quietly hides it if a term has none yet.
+export const imageFor = (slug) => `/materials/terminology/${slug}.jpg`;
 export const byTitle = (a, b) => a.title.localeCompare(b.title);
 export const sortedTerms = [...TERMS].sort(byTitle);
 

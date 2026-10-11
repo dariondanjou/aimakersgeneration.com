@@ -73,7 +73,9 @@
 .term-title { font-family: var(--font-display); font-size: 2.4rem; line-height: 1.06; font-weight: 800; color: var(--near); display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .term-abbr { font-size: 0.95rem; font-weight: 700; color: var(--cat); background: var(--cat-soft); border: 1px solid var(--cat-border); border-radius: 8px; padding: 2px 10px; letter-spacing: 0.05em; }
 .term-short { font-size: 1.12rem; color: var(--graphite); margin-top: 10px; line-height: 1.5; }
-.term-figure { margin: 24px 0; background: #fff; border: 1px solid var(--rule); border-radius: 14px; padding: 18px 20px; }
+.term-hero { margin: 20px 0 6px; }
+.term-hero img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; border: 1px solid var(--rule); }
+.term-figure { margin: 20px 0; background: #fff; border: 1px solid var(--rule); border-radius: 14px; padding: 18px 20px; }
 .term-figure-svg svg { width: 100%; height: auto; display: block; }
 .term-figure figcaption { margin-top: 12px; font-size: 0.8rem; color: var(--graphite); text-align: center; }
 .term-body { margin-top: 6px; }

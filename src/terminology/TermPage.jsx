@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { getTerm, CATEGORIES, DIAGRAMS } from './glossary';
+import { getTerm, CATEGORIES, DIAGRAMS, imageFor } from './glossary';
 import { TermLink } from './TermLink.jsx';
 import { parseInline } from './inline.jsx';
 
@@ -11,6 +11,16 @@ function Block({ b }) {
   if (b.t === 'list') return <ul className="term-ul">{b.items.map((it, i) => <li key={i}>{parseInline(it)}</li>)}</ul>;
   if (b.t === 'note') return <div className="term-note"><span className="term-note-tag">Tip</span><span>{parseInline(b.c)}</span></div>;
   return null;
+}
+
+function HeroImage({ slug, title }) {
+  const [ok, setOk] = useState(true);
+  if (!ok) return null;
+  return (
+    <div className="term-hero">
+      <img src={imageFor(slug)} alt={`Illustration of ${title}`} onError={() => setOk(false)} />
+    </div>
+  );
 }
 
 function Figure({ dia }) {
@@ -59,6 +69,7 @@ export default function TermPage() {
       </h1>
       <p className="term-short">{t.short}</p>
 
+      <HeroImage slug={t.slug} title={t.title} />
       {dia && <Figure dia={dia} />}
 
       <div className="term-body">
