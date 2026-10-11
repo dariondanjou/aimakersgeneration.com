@@ -56,6 +56,38 @@ The old `ADMIN_KEY` and `ADMIN_USER_IDS` env vars are no longer read and can be 
 
 ---
 
+## Applying database migrations
+
+Migrations live in `supabase/migrations/`. To apply the pending ones to the
+remote database without hand-running SQL in the dashboard:
+
+```bash
+npm run db:push              # apply every pending migration
+npm run db:push -- --dry-run # list what would run, apply nothing
+```
+
+This wraps `supabase db push --db-url <uri>` (`scripts/db-push.mjs`), which
+connects straight to Postgres — no `supabase login` or linked project needed.
+It diffs `supabase/migrations/` against the remote ledger
+(`supabase_migrations.schema_migrations`) and applies only what's missing.
+
+One-time setup: put the **direct Postgres connection string** in `.env.pulled`
+(gitignored). Get it from the Supabase dashboard → Project Settings → Database →
+Connection string → **URI**:
+
+```bash
+SUPABASE_DB_URL=postgresql://postgres:<password>@db.xnejbxdvqmzlaljkgwaf.supabase.co:5432/postgres
+```
+
+This is a direct DB connection, **not** the REST anon/service-role key — those
+go through PostgREST and cannot run `GRANT`/`ALTER`/other DDL. The column-level
+grants on `students` (see `20260716_students_email_privacy.sql`) mean **every
+new `students` column needs an explicit `GRANT SELECT` to be readable through
+the API**, or client queries that select it fail with `42501` and silently
+return no rows.
+
+---
+
 ## Security: what changed and why
 
 `api/chat.js` used to take the caller's identity **from the request body**:
