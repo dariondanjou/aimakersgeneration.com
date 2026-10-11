@@ -18,6 +18,7 @@ const COHORT = "october-2026-film";
 const EMAILS = {
   welcome: { file: "film-welcome-email.html", subject: "Welcome to the Film Cohort — today, 1:00 PM at RICE" },
   hw1: { file: "film-hw1-email.html", subject: "Week 1 homework: your capstone + a 1-minute film made in ChatGPT" },
+  hw2: { file: "film-hw2-email.html", subject: "Week 2 homework: a minute of capstone footage + a shot-list breakdown" },
 };
 const emailIdx = process.argv.indexOf("--email");
 const EMAIL = EMAILS[process.argv[emailIdx + 1]];

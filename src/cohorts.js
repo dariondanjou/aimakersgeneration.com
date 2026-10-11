@@ -56,21 +56,21 @@ export const COHORTS = [
       {
         week: 2,
         session_date: '2026-10-10',
-        title: 'Dialogue, Performance & Editing',
+        title: 'Shot Craft, Style & the Edit',
         objective:
-          'Make your characters speak convincingly, cover a dialogue scene like a working director, and cut it into a scene that plays.',
+          "Turn a finished first film into shots that read as cinema: control the viewer's eye, kill the generic AI look with real references, stitch and cut like an editor, and push toward your capstone.",
         covered: [
-          'Critique of your Week 1 hero shots and shot lists',
-          'Writing dialogue that AI performances can carry — subtext, rhythm, and economy',
-          'Voice design, voice cloning, and lip-sync / performance models',
-          'Covering a conversation: masters, singles, shot / reverse shot, and eyelines',
-          'Holding characters consistent across angles and lighting setups',
-          'Editing fundamentals: assembly to rough cut, pacing, cutting on action, J- and L-cuts',
-          'Sound design and music: room tone, foley, score, and temp tracks',
+          'Live critique of all five Week 1 films',
+          'Controlling the eye: varying shot size, pushing in on reactions, and cutting in inserts',
+          'Killing the generic AI look with a real style / colour reference (ShotDeck, Pinterest, Cosmos)',
+          'Scene-stitching with first-frame / last-frame for seamless motion — clean cuts over dissolves',
+          'Beating identity drift and degradation: nail step one with a clean, high-res reference',
+          'Keeping shots alive: moving background extras, blinks, and sound on held beats',
+          'A pro node-based workflow (Weavy): look prompts, context scaffolding, storyboards, upscaling, and finishing in DaVinci',
         ],
         homework: [
-          'One complete dialogue scene from your project — voiced, lip-synced, and cut, with sound',
-          'A rough assembly of your project so far',
+          "At least one minute of new footage toward your capstone — put the session's notes to work: vary your shots, pull a real style reference so it never reads as default AI, scene-stitch, cut clean, and keep your backgrounds alive. (Drop your stills in the WhatsApp group for a thumbs-up before you burn credits generating.)",
+          'A shot-list document: pick a ~1-minute scene from a film or commercial you love, screenshot every shot in order, and describe each one — shot size, camera move, and what it does for the story. Follow the Week 2 guide and template on your student page.',
         ],
       },
       {
