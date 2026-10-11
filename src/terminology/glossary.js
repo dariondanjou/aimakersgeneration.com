@@ -149,4 +149,126 @@ export const DIAGRAMS = {
       <text x="170" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="${PURPLE}">interpolated motion</text>
     </svg>`,
   },
+  'shot-reverse-shot': {
+    caption: 'Two reverse angles, both kept on one side of the line.',
+    svg: `<svg viewBox="0 0 320 170" role="img" aria-label="Two reverse angles on one side of the axis" font-family="Inter, sans-serif">
+      <rect x="2" y="2" width="316" height="166" rx="8" fill="#F8FAFC"/>
+      <line x1="55" y1="68" x2="265" y2="68" stroke="${INK}" stroke-width="2" stroke-dasharray="7 6"/>
+      <circle cx="80" cy="68" r="15" fill="#CFE4F6" stroke="${BLUE}" stroke-width="2"/><text x="80" y="73" text-anchor="middle" font-size="12" font-weight="700" fill="${INK}">A</text>
+      <circle cx="240" cy="68" r="15" fill="#CFE4F6" stroke="${BLUE}" stroke-width="2"/><text x="240" y="73" text-anchor="middle" font-size="12" font-weight="700" fill="${INK}">B</text>
+      <g fill="${BLUE}">
+        <polygon points="106,118 130,106 130,130"/><rect x="106" y="111" width="22" height="14" rx="3"/>
+        <polygon points="214,118 190,106 190,130"/><rect x="192" y="111" width="22" height="14" rx="3"/>
+      </g>
+      <line x1="124" y1="109" x2="90" y2="83" stroke="${BLUE}" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <line x1="196" y1="109" x2="230" y2="83" stroke="${BLUE}" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <text x="100" y="150" text-anchor="middle" font-size="10" font-weight="700" fill="${INK}">angle on B</text>
+      <text x="220" y="150" text-anchor="middle" font-size="10" font-weight="700" fill="${INK}">angle on A</text>
+    </svg>`,
+  },
+  'depth-of-field': {
+    caption: 'Shallow focus: the subject is sharp, the background falls soft.',
+    svg: `<svg viewBox="0 0 320 170" role="img" aria-label="A sharp foreground subject against a blurred background" font-family="Inter, sans-serif">
+      <defs><filter id="dofblur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5"/></filter></defs>
+      <rect x="2" y="2" width="316" height="166" rx="8" fill="#EEF4FA"/>
+      <g filter="url(#dofblur)" opacity="0.75">
+        <circle cx="215" cy="60" r="26" fill="#A9CDEC"/>
+        <circle cx="262" cy="92" r="20" fill="#A9CDEC"/>
+        <rect x="180" y="96" width="120" height="60" rx="10" fill="#BBD6EF"/>
+      </g>
+      <circle cx="104" cy="92" r="34" fill="#CFE4F6" stroke="${BLUE}" stroke-width="3"/>
+      <text x="104" y="150" text-anchor="middle" font-size="10" font-weight="700" fill="${BLUE}">in focus</text>
+      <text x="248" y="150" text-anchor="middle" font-size="10" font-weight="700" fill="${INK}">soft background</text>
+    </svg>`,
+  },
+  'aspect-ratio': {
+    caption: 'The same frame in three common shapes.',
+    svg: `<svg viewBox="0 0 320 150" role="img" aria-label="16:9, 2.39:1 and 9:16 frame shapes" font-family="Inter, sans-serif">
+      <g fill="#EAF3FC" stroke="${BLUE}" stroke-width="2">
+        <rect x="14" y="40" width="96" height="54" rx="4"/>
+        <rect x="130" y="46" width="115" height="48" rx="4"/>
+        <rect x="268" y="22" width="40" height="96" rx="4"/>
+      </g>
+      <g font-size="11" font-weight="700" fill="${INK}" text-anchor="middle">
+        <text x="62" y="112">16:9</text>
+        <text x="187" y="112">2.39:1</text>
+        <text x="288" y="134">9:16</text>
+      </g>
+    </svg>`,
+  },
+  'cut': {
+    caption: 'A cut: one frame ends, the next begins, instantly.',
+    svg: `<svg viewBox="0 0 320 140" role="img" aria-label="Two shots butted together at an instant cut" font-family="Inter, sans-serif">
+      <rect x="10" y="24" width="140" height="80" rx="6" fill="#CFE4F6" stroke="${BLUE}" stroke-width="2"/>
+      <rect x="170" y="24" width="140" height="80" rx="6" fill="#E7F0F9" stroke="${BLUE}" stroke-width="2"/>
+      <line x1="160" y1="14" x2="160" y2="114" stroke="${INK}" stroke-width="3"/>
+      <text x="80" y="68" text-anchor="middle" font-size="12" font-weight="700" fill="${INK}">Shot A</text>
+      <text x="240" y="68" text-anchor="middle" font-size="12" font-weight="700" fill="${INK}">Shot B</text>
+      <text x="160" y="130" text-anchor="middle" font-size="10" font-weight="700" fill="${BLUE}">instant &mdash; no transition</text>
+    </svg>`,
+  },
+  'dissolve': {
+    caption: 'A dissolve: the two shots overlap and blend across the join.',
+    svg: `<svg viewBox="0 0 320 140" role="img" aria-label="Two shots blending through a dissolve" font-family="Inter, sans-serif">
+      <defs><linearGradient id="dsvA" x1="0" x2="1"><stop offset="0.55" stop-color="#CFE4F6"/><stop offset="1" stop-color="#CFE4F6" stop-opacity="0"/></linearGradient>
+      <linearGradient id="dsvB" x1="0" x2="1"><stop offset="0" stop-color="#E7F0F9" stop-opacity="0"/><stop offset="0.45" stop-color="#E7F0F9"/></linearGradient></defs>
+      <rect x="10" y="24" width="190" height="80" rx="6" fill="url(#dsvA)" stroke="${BLUE}" stroke-width="2"/>
+      <rect x="120" y="24" width="190" height="80" rx="6" fill="url(#dsvB)" stroke="${BLUE}" stroke-width="2"/>
+      <text x="60" y="68" text-anchor="middle" font-size="12" font-weight="700" fill="${INK}">Shot A</text>
+      <text x="260" y="68" text-anchor="middle" font-size="12" font-weight="700" fill="${INK}">Shot B</text>
+      <text x="160" y="130" text-anchor="middle" font-size="10" font-weight="700" fill="${BLUE}">overlap &mdash; a gradual blend</text>
+    </svg>`,
+  },
+  'keyframe': {
+    caption: 'A chosen still anchors the shot; the model animates from it.',
+    svg: `<svg viewBox="0 0 340 150" role="img" aria-label="A keyframe still animating into a sequence of frames" font-family="Inter, sans-serif">
+      <rect x="6" y="22" width="104" height="78" rx="6" fill="#F1EAFE" stroke="${PURPLE}" stroke-width="3"/>
+      <circle cx="46" cy="52" r="13" fill="#DDC9F7"/><rect x="34" y="62" width="24" height="34" rx="6" fill="#DDC9F7"/>
+      <text x="58" y="116" text-anchor="middle" font-size="10" font-weight="700" fill="${PURPLE}">keyframe</text>
+      <line x1="116" y1="60" x2="150" y2="60" stroke="${PURPLE}" stroke-width="2" stroke-dasharray="5 5"/><polygon points="150,60 138,53 138,67" fill="${PURPLE}"/>
+      <g>
+        ${[160, 206, 252, 298].map((x) => `<rect x="${x}" y="30" width="40" height="62" rx="4" fill="#F6F2FE" stroke="#C9A3F0" stroke-width="1.5"/><circle cx="${x + 20}" cy="52" r="8" fill="#DDC9F7"/><rect x="${x + 11}" y="60" width="18" height="26" rx="4" fill="#DDC9F7"/>`).join('')}
+      </g>
+      <text x="249" y="116" text-anchor="middle" font-size="10" font-weight="700" fill="${INK}">generated motion</text>
+    </svg>`,
+  },
+  'scene-stitching': {
+    caption: 'Short clips chained so each one hands off to the next.',
+    svg: `<svg viewBox="0 0 340 140" role="img" aria-label="Three short clips joined into one sequence" font-family="Inter, sans-serif">
+      ${[8, 122, 236].map((x, i) => `<rect x="${x}" y="30" width="96" height="60" rx="6" fill="#F1EAFE" stroke="${PURPLE}" stroke-width="2"/><text x="${x + 48}" y="64" text-anchor="middle" font-size="11" font-weight="700" fill="${INK}">clip ${i + 1}</text>`).join('')}
+      <g fill="${PURPLE}">
+        <polygon points="104,60 120,52 120,68"/>
+        <polygon points="218,60 234,52 234,68"/>
+      </g>
+      <text x="170" y="112" text-anchor="middle" font-size="10" font-weight="700" fill="${PURPLE}">last frame &rarr; next first frame</text>
+    </svg>`,
+  },
+  'node-based-workflow': {
+    caption: 'A pipeline wired as nodes — swap one input, re-run the chain.',
+    svg: `<svg viewBox="0 0 340 150" role="img" aria-label="A node graph from prompt to upscaled output" font-family="Inter, sans-serif">
+      ${[['Prompt', 10, 20], ['Image', 10, 86], ['ControlNet', 128, 53], ['Video', 236, 20], ['Upscale', 236, 86]].map(([t, x, y]) => `<rect x="${x}" y="${y}" width="90" height="44" rx="9" fill="#F1EAFE" stroke="${PURPLE}" stroke-width="2"/><text x="${x + 45}" y="${y + 27}" text-anchor="middle" font-size="12" font-weight="700" fill="${INK}">${t}</text>`).join('')}
+      <g stroke="${PURPLE}" stroke-width="2" fill="none">
+        <path d="M100 42 H118 Q128 42 128 55 V70"/>
+        <path d="M100 108 H118 Q128 108 128 95 V80"/>
+        <path d="M218 75 H228 Q236 75 236 55 V44"/>
+        <path d="M218 75 H228 Q236 75 236 95 V108"/>
+      </g>
+    </svg>`,
+  },
+  'control-net': {
+    caption: 'A pose guide steers the generation; the look is filled in around it.',
+    svg: `<svg viewBox="0 0 320 150" role="img" aria-label="A pose skeleton guiding a rendered figure" font-family="Inter, sans-serif">
+      <rect x="10" y="18" width="110" height="104" rx="8" fill="#F6F2FE" stroke="${PURPLE}" stroke-width="2"/>
+      <g stroke="${PURPLE}" stroke-width="3" fill="none" stroke-linecap="round">
+        <circle cx="65" cy="42" r="9" fill="#DDC9F7" stroke="none"/>
+        <line x1="65" y1="51" x2="65" y2="86"/><line x1="65" y1="60" x2="44" y2="74"/><line x1="65" y1="60" x2="86" y2="74"/>
+        <line x1="65" y1="86" x2="50" y2="110"/><line x1="65" y1="86" x2="80" y2="110"/>
+      </g>
+      <text x="65" y="138" text-anchor="middle" font-size="10" font-weight="700" fill="${PURPLE}">pose guide</text>
+      <line x1="128" y1="68" x2="168" y2="68" stroke="${PURPLE}" stroke-width="2" stroke-dasharray="5 5"/><polygon points="168,68 156,61 156,75" fill="${PURPLE}"/>
+      <rect x="196" y="18" width="110" height="104" rx="8" fill="#F1EAFE" stroke="${PURPLE}" stroke-width="2"/>
+      <circle cx="251" cy="44" r="12" fill="#C9A3F0"/><rect x="233" y="58" width="36" height="52" rx="9" fill="#C9A3F0"/>
+      <text x="251" y="138" text-anchor="middle" font-size="10" font-weight="700" fill="${INK}">same pose, rendered</text>
+    </svg>`,
+  },
 };
