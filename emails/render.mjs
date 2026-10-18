@@ -19,15 +19,20 @@ import { dirname, join } from "node:path";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASE_URL = process.env.PROFILE_BASE_URL || "https://aimakersgeneration.com";
 
-export function renderWelcomeEmail({ firstName, slug, file = "welcome-email.html" }) {
+// `blocks` fills extra placeholders with ready-made HTML, inserted as-is —
+// e.g. { FEEDBACK_HTML } for the per-student feedback in film-hw3-email.html.
+// Callers must escape any text they put inside it (escapeHtml below).
+export function renderWelcomeEmail({ firstName, slug, file = "welcome-email.html", blocks = {} }) {
   const template = readFileSync(join(__dirname, file), "utf8");
   const profileUrl = `${BASE_URL}/students/${encodeURIComponent(slug)}`;
-  return template
+  let html = template
     .replaceAll("{{FIRST_NAME}}", escapeHtml(firstName))
     .replaceAll("{{PROFILE_URL}}", profileUrl);
+  for (const [key, value] of Object.entries(blocks)) html = html.replaceAll(`{{${key}}}`, value);
+  return html;
 }
 
-function escapeHtml(s) {
+export function escapeHtml(s) {
   return String(s)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")

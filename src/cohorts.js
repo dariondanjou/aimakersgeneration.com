@@ -76,20 +76,22 @@ export const COHORTS = [
       {
         week: 3,
         session_date: '2026-10-17',
-        title: 'Node-Based Workflows & the Commercial',
+        title: 'Kill the Flatness: Look, References & the Final Brief',
         objective:
-          'Build repeatable node-based pipelines for consistency and scale, and apply them to the format the industry pays for most: the commercial.',
+          'Take your capstone from good to elite: lock one cinematic look, build every reference before the story, fix what the AI gets wrong in the cut, and set the bar for the final two minutes.',
         covered: [
-          'Critique of your Week 2 dialogue scenes and rough assemblies',
-          'Node-based workflows (ComfyUI and node canvases): reusable graphs, control inputs, LoRAs, batching, and upscaling',
-          'Product and character consistency at scale — the same bottle, the same face, every shot',
-          'Anatomy of a commercial: the brief, the 15- and 30-second structure, the hook, and the end card',
-          'Brand look, client feedback rounds, and delivering in every aspect ratio',
-          'Color grading and finishing — the difference between footage and cinema',
+          'Live critique of four capstone films (ANKRBOY, THE CALL, Episode 2, FLOOR 13) and two shot-list breakdowns (Heat, Money Heist)',
+          'Killing the flat, commercial AI default: a film-still style reference and a saved look prompt for every scene, dramatic lighting, decluttering, and the rule of thirds',
+          "Why references compete: the Cybertruck test, and when an object reference helps or hurts",
+          'References first, story second: look → location angles along the 360 azimuth → full-resolution character images → story stills',
+          'Setting up a ChatGPT project once: instructions, memory, and sources (Reginald Cineus)',
+          'Fixing it in the cut: inserts, sound design, continuity, and edit-video passes instead of regenerating',
+          "Guest mentor Renee: timecoded prompts for Seedance and locked-plate VFX in edit-video mode",
         ],
         homework: [
-          'A 15- or 30-second spec commercial built with a node-based workflow',
-          'Picture lock on your cohort project, ready for final polish',
+          'Finish your capstone: at least 2 minutes, and every second of it perfect. It can be an excerpt of a longer project, and you can go past 2 minutes, but any extra time has to be just as perfectly executed, with intentional style-reference choices.',
+          "Get help the whole way. Before you spend credits, share every step in the WhatsApp group — script, shot list, stills, prompts, and the generations that aren't working — so the mentors can help you reach an elite level.",
+          'Upload the finished film to your profile by dragging it into the This Week box (or paste a YouTube, Vimeo, or Google Drive link if it is too big). Use the Session 3 recording, the transcript summary, and your feedback on your profile as your checklist.',
         ],
       },
       {
@@ -99,7 +101,6 @@ export const COHORTS = [
         objective:
           'Finish, present, and release: screen your film for the room and the mentors, and leave with a plan for where it goes next.',
         covered: [
-          'Critique of your spec commercials',
           'Final polish: grade, mix, titles, upscaling, and delivery specs',
           'Final project presentations and screening, with feedback from the mentors',
           'Release strategy: festivals, contests, social platforms, and building your reel',

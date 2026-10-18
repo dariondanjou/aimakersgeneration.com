@@ -4,7 +4,7 @@ import {
   ArrowLeft, Camera, Check, X, Plus, ExternalLink, Target, Flag,
   Image as ImageIcon, Link as LinkIcon, Upload, FileText, Clock, CheckCircle2, Trash2,
   MapPin, Briefcase, CalendarClock, Linkedin, TrendingUp, Users, Sparkles,
-  ListChecks, RefreshCw, AlertTriangle, Presentation, LogIn,
+  ListChecks, RefreshCw, AlertTriangle, Presentation, LogIn, MessageSquareQuote, PlayCircle,
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { getSocialPlatform, getSocialTooltip } from '../socialPlatforms';
@@ -290,6 +290,66 @@ function DeckLink({ week, enabled = true }) {
     <Link to={`/deck/${week}`} className="inline-flex items-center gap-1 font-semibold text-[#0F7B3F] hover:text-[#3E9E28] transition-colors" title={`Open the Week ${week} slide deck`}>
       <Presentation size={12} /> Week {week} slides
     </Link>
+  );
+}
+
+// The mentors' notes on this student's work, newest session first (from
+// public.student_feedback). RLS returns rows only to the student themself and
+// to admins, so for anyone else `items` is empty and the panel never renders.
+function MentorFeedback({ items, firstName, isSelf }) {
+  if (!items?.length) return null;
+  const fmt = (d) => (d ? new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '');
+  return (
+    <div className="glass-panel mb-5 !border-[#3E9E28]/40">
+      <h2 className="text-sm uppercase tracking-wider flex items-center gap-2 mb-1">
+        <MessageSquareQuote size={16} className="text-[#0F7B3F]" /> Mentor Feedback
+      </h2>
+      <p className="text-xs text-[#5C5C5C] mb-4">
+        {isSelf ? 'Notes on your work from the mentors. Only you and the mentors can see this.'
+          : `Only ${firstName} and the mentors can see this.`}
+      </p>
+      <div className="space-y-6">
+        {items.map((f) => (
+          <div key={f.id}>
+            <div className="flex items-baseline justify-between gap-2 flex-wrap mb-2">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#3E9E28]">
+                Session {f.week}{f.session_date ? ` · ${fmt(f.session_date)}` : ''}{f.given_by ? ` · ${f.given_by}` : ''}
+              </p>
+              {f.recording_at && (
+                <span className="text-[10px] font-semibold text-[#5C5C5C] inline-flex items-center gap-1" title="Where this starts in the session recording">
+                  <PlayCircle size={12} className="text-[#3E9E28]" /> In the recording: {f.recording_at}
+                </span>
+              )}
+            </div>
+            {f.project && <p className="text-base font-semibold mb-2">{f.project}</p>}
+            {f.working && (
+              <div className="rounded-lg bg-[#3E9E28]/[0.07] border border-[#3E9E28]/20 px-3.5 py-2.5 mb-3">
+                <p className="text-[10px] uppercase tracking-wider text-[#0F7B3F] font-bold mb-1">What's working</p>
+                <p className="text-sm text-[#1A1A1A]/85 leading-relaxed">{f.working}</p>
+              </div>
+            )}
+            {f.notes?.length > 0 && (
+              <>
+                <p className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-1.5">{f.working ? 'To take it to elite' : 'Notes'}</p>
+                <ol className="space-y-2 mb-3">
+                  {f.notes.map((n, i) => (
+                    <li key={i} className="text-sm text-[#1A1A1A]/85 leading-relaxed flex gap-2.5">
+                      <span className="text-[11px] font-bold text-[#0F7B3F] tabular-nums shrink-0 w-5 h-5 rounded border border-[#3E9E28]/50 flex items-center justify-center mt-px">{i + 1}</span>
+                      <span>{n}</span>
+                    </li>
+                  ))}
+                </ol>
+              </>
+            )}
+            {f.next_step && (
+              <p className="text-sm leading-relaxed border-l-2 border-[#3E9E28] pl-3">
+                <strong>Your focus:</strong> {f.next_step}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -1019,6 +1079,22 @@ export default function StudentProfile() {
   }, [userId]);
   const isOwner = !!session && !!student && (student.user_id === session.user.id || isAdmin);
 
+  // Mentor feedback is private to the student and admins (RLS), so it loads
+  // per signed-in user, not with the public profile.
+  const [feedback, setFeedback] = useState([]);
+  const studentId = student?.id || null;
+  useEffect(() => {
+    if (!studentId || !userId) { setFeedback([]); return undefined; }
+    let cancelled = false;
+    supabase
+      .from('student_feedback')
+      .select('id, week, session_date, project, recording_at, working, notes, next_step, given_by')
+      .eq('student_id', studentId)
+      .order('week', { ascending: false })
+      .then(({ data }) => { if (!cancelled) setFeedback(data || []); });
+    return () => { cancelled = true; };
+  }, [studentId, userId]);
+
   const BASE_COLUMNS = 'id, slug, full_name, headline, bio, goal, final_project_goal, avatar_url, links, user_id, city, current_work, ai_experience, coding_experience, something_made, eight_week_goal, cohort';
   const STUDENT_COLUMNS = `${BASE_COLUMNS}, linkedin_url, linkedin_ai_pct, capstone_title, capstone_brief`;
   const loadStudent = async () => {
@@ -1472,6 +1548,13 @@ export default function StudentProfile() {
           scanningIds={scanningIds}
           dueByWeek={dueByWeek}
           deckLinks={hasMaterials}
+        />
+
+        {/* ── Mentor feedback (the student + admins only) ── */}
+        <MentorFeedback
+          items={feedback}
+          firstName={(student.full_name || '').trim().split(/\s+/)[0] || 'this student'}
+          isSelf={student.user_id === userId}
         />
 
         {/* ── LinkedIn (first section below the header) ── */}
