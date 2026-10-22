@@ -20,9 +20,11 @@ export const GROUPS = [
   'Camera & Lens',
   'Camera Movement',
   'Lighting',
+  'Color & Grade',
   'Editing',
   'Sound',
   'Story & Script',
+  'VFX & Finishing',
   'AI Workflow',
   'AI Models & Tools',
   'Consistency & Control',
@@ -273,6 +275,65 @@ export const DIAGRAMS = {
       <rect x="196" y="18" width="110" height="104" rx="8" fill="#F1EAFE" stroke="${PURPLE}" stroke-width="2"/>
       <circle cx="251" cy="44" r="12" fill="#C9A3F0"/><rect x="233" y="58" width="36" height="52" rx="9" fill="#C9A3F0"/>
       <text x="251" y="138" text-anchor="middle" font-size="10" font-weight="700" fill="${INK}">same pose, rendered</text>
+    </svg>`,
+  },
+  'over-the-shoulder': {
+    caption: 'Over the shoulder — a soft, cropped shoulder in the foreground, the subject sharp beyond.',
+    svg: `<svg viewBox="0 0 320 190" role="img" aria-label="An over-the-shoulder frame with a blurred foreground shoulder and a sharp subject" font-family="Inter, sans-serif">
+      <defs><filter id="otsBlur"><feGaussianBlur stdDeviation="4"/></filter><clipPath id="otsClip"><rect x="2" y="2" width="316" height="176" rx="6"/></clipPath></defs>
+      <rect x="2" y="2" width="316" height="176" rx="6" fill="#F4F7FA" stroke="${INK}" stroke-width="2"/>
+      <g clip-path="url(#otsClip)">
+        <circle cx="205" cy="72" r="24" fill="#CFE4F6" stroke="${BLUE}" stroke-width="2"/>
+        <rect x="175" y="96" width="60" height="90" rx="18" fill="#CFE4F6" stroke="${BLUE}" stroke-width="2"/>
+        <g filter="url(#otsBlur)" fill="#8FB8DC"><circle cx="40" cy="70" r="52"/><rect x="-30" y="110" width="150" height="90" rx="40"/></g>
+      </g>
+      <text x="300" y="166" text-anchor="end" font-size="11" font-weight="700" fill="${INK}">subject in focus</text>
+      <text x="16" y="166" font-size="11" font-weight="700" fill="#FFFFFF">foreground shoulder</text>
+    </svg>`,
+  },
+  'dutch-angle': {
+    caption: 'A Dutch angle — roll the camera so the horizon runs on a diagonal.',
+    svg: `<svg viewBox="0 0 340 160" role="img" aria-label="A level frame next to the same frame tilted as a Dutch angle" font-family="Inter, sans-serif">
+      <g transform="translate(10,14)">
+        <rect x="0" y="0" width="140" height="100" rx="6" fill="#F4F7FA" stroke="${INK}" stroke-width="2"/>
+        <line x1="0" y1="64" x2="140" y2="64" stroke="${BLUE}" stroke-width="2"/>
+        <rect x="58" y="30" width="22" height="34" rx="4" fill="#CFE4F6"/><circle cx="69" cy="24" r="8" fill="#CFE4F6"/>
+        <text x="70" y="124" text-anchor="middle" font-size="11" font-weight="700" fill="${INK}">level</text>
+      </g>
+      <g transform="translate(188,14)">
+        <clipPath id="dutchClip"><rect x="0" y="0" width="140" height="100" rx="6"/></clipPath>
+        <rect x="0" y="0" width="140" height="100" rx="6" fill="#F4F7FA" stroke="${INK}" stroke-width="2"/>
+        <g clip-path="url(#dutchClip)"><g transform="rotate(-18 70 50)">
+          <line x1="-40" y1="64" x2="180" y2="64" stroke="${BLUE}" stroke-width="2"/>
+          <rect x="58" y="30" width="22" height="34" rx="4" fill="#CFE4F6"/><circle cx="69" cy="24" r="8" fill="#CFE4F6"/>
+        </g></g>
+        <text x="70" y="124" text-anchor="middle" font-size="11" font-weight="700" fill="${BLUE}">Dutch angle</text>
+      </g>
+    </svg>`,
+  },
+  'rack-focus': {
+    caption: 'A rack focus — the same frame, with focus moved from the foreground to the background.',
+    svg: `<svg viewBox="0 0 340 160" role="img" aria-label="Two frames showing focus shifting from a near subject to a far subject" font-family="Inter, sans-serif">
+      <defs><filter id="rfBlur"><feGaussianBlur stdDeviation="3"/></filter></defs>
+      ${[0, 1].map((i) => {
+        const x = 10 + i * 178;
+        const near = `<circle cx="${x + 42}" cy="58" r="18" fill="#CFE4F6" stroke="${BLUE}" stroke-width="2"/><rect x="${x + 22}" y="76" width="40" height="40" rx="10" fill="#CFE4F6" stroke="${BLUE}" stroke-width="2"/>`;
+        const far = `<circle cx="${x + 112}" cy="46" r="9" fill="#CFE4F6" stroke="${BLUE}" stroke-width="2"/><rect x="${x + 103}" y="55" width="18" height="26" rx="5" fill="#CFE4F6" stroke="${BLUE}" stroke-width="2"/>`;
+        return `<rect x="${x}" y="14" width="150" height="100" rx="6" fill="#F4F7FA" stroke="${INK}" stroke-width="2"/>
+          <g ${i === 0 ? '' : 'filter="url(#rfBlur)"'}>${near}</g>
+          <g ${i === 0 ? 'filter="url(#rfBlur)"' : ''}>${far}</g>
+          <text x="${x + 75}" y="134" text-anchor="middle" font-size="11" font-weight="700" fill="${i === 0 ? INK : BLUE}">${i === 0 ? 'focus near' : 'focus far'}</text>`;
+      }).join('')}
+      <polygon points="172,64 182,58 182,70" fill="${BLUE}"/>
+    </svg>`,
+  },
+  'color-palette': {
+    caption: 'Cinema keeps a narrow palette; a standard commercial spreads across the wheel.',
+    svg: `<svg viewBox="0 0 340 150" role="img" aria-label="A narrow cinematic color palette compared with a wide commercial palette" font-family="Inter, sans-serif">
+      <text x="10" y="22" font-size="11" font-weight="700" fill="${INK}">Film</text>
+      ${['#2E3B2C', '#4A5A3A', '#7A6A3C', '#A88B4A', '#C9A85C', '#E3C77A', '#B0322A'].map((c, i) => `<rect x="${10 + i * 46}" y="30" width="${i === 6 ? 14 : 42}" height="36" rx="4" fill="${c}"/>`).join('')}
+      <text x="10" y="92" font-size="11" font-weight="700" fill="${INK}">Commercial</text>
+      ${['#E53935', '#FB8C00', '#FDD835', '#43A047', '#1E88E5', '#8E24AA', '#F06292'].map((c, i) => `<rect x="${10 + i * 46}" y="100" width="42" height="36" rx="4" fill="${c}"/>`).join('')}
     </svg>`,
   },
 };
