@@ -1,7 +1,7 @@
 // Send an October 2026 Film Cohort email to everyone on the roster.
 //
 // Usage (key from SUPABASE_SERVICE_ROLE_KEY or .env.pulled; see send-film-welcome.sh).
-// --email picks the message: welcome | hw1 | hw2 | hw3.
+// --email picks the message: welcome | hw1 | hw2 | hw3 | bonus.
 //   node scripts/send-film-welcome.mjs --email hw1                 → dry run: list recipients, send nothing
 //   node scripts/send-film-welcome.mjs --email hw1 --test <email>  → send one copy (rendered for the first student,
 //                                                                    or for --as <slug>) to <email>
@@ -30,6 +30,7 @@ const EMAILS = {
   hw1: { file: "film-hw1-email.html", subject: "Week 1 homework: your capstone + a 1-minute film made in ChatGPT" },
   hw2: { file: "film-hw2-email.html", subject: "Week 2 homework: a minute of capstone footage + a shot-list breakdown" },
   hw3: { file: "film-hw3-email.html", subject: "Week 3 homework: your final capstone (2 perfect minutes) + your Session 3 feedback", feedbackWeek: 3 },
+  bonus: { file: "film-bonus-email.html", subject: "Week 3 Bonus Session with Steffin Flickinger: recording, summary & lesson guide" },
 };
 const emailIdx = process.argv.indexOf("--email");
 const EMAIL = EMAILS[process.argv[emailIdx + 1]];
