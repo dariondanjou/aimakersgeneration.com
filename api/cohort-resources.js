@@ -2,7 +2,9 @@ import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL, serviceClient } from "./_lib/admin-auth.js";
 
 // Session recordings and handouts for /students, members only.
-// GET ?cohort=<id> with the caller's Bearer token → { weeks: [{ week, resources }] }
+// GET ?cohort=<id> with the caller's Bearer token →
+//   { weeks: [{ week, section, section_date, resources }] }
+// (section is null for a week's main session; a bonus session gets its own entry)
 // The caller must pass public.is_cohort_member() (a student in any cohort, or
 // an admin). Items are rows in public.cohort_resources (service role only;
 // see 20261005110000_cohort_resources.sql). PDFs live in the private
@@ -36,14 +38,15 @@ export default async function handler(req, res) {
   const supabase = serviceClient();
   const { data: rows, error } = await supabase
     .from("cohort_resources")
-    .select("week, kind, title, description, meta, thumb, blob_url, storage_path")
+    .select("week, section, section_date, kind, title, description, meta, thumb, blob_url, storage_path")
     .eq("cohort", String(req.query?.cohort || ""))
     .order("week", { ascending: true })
+    .order("section", { ascending: true, nullsFirst: true })
     .order("sort_order", { ascending: true });
   if (error) return res.status(500).json({ error: error.message });
   const bucket = supabase.storage.from("cohort-materials");
 
-  const byWeek = new Map();
+  const groups = new Map();
   for (const r of rows) {
     const base = { kind: r.kind, title: r.title, description: r.description, meta: r.meta, thumb: r.thumb };
     let item;
@@ -60,9 +63,11 @@ export default async function handler(req, res) {
       }
       item = { ...base, url: view.data.signedUrl, download: dl.data.signedUrl };
     }
-    if (!byWeek.has(r.week)) byWeek.set(r.week, []);
-    byWeek.get(r.week).push(item);
+    // One group per week, plus one per bonus section within a week.
+    const key = `${r.week}:${r.section || ""}`;
+    if (!groups.has(key)) groups.set(key, { week: r.week, section: r.section || null, section_date: r.section_date || null, resources: [] });
+    groups.get(key).resources.push(item);
   }
-  const out = [...byWeek].map(([week, resources]) => ({ week, resources }));
+  const out = [...groups.values()];
   return res.status(200).json({ weeks: out });
 }

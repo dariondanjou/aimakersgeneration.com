@@ -6,6 +6,8 @@
 // Video rows point at an already-uploaded Vercel Blob URL (--blob-url); PDF
 // rows upload a local file to the private bucket (--pdf) and store its path.
 // Rows upsert on (cohort, week, title), so re-running updates in place.
+// A bonus session inside a week takes --section "<label>" and
+// --section-date YYYY-MM-DD; its rows get their own block on /students.
 //
 // Reads SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY from .env.pulled (see
 // scripts/pull-prod-env.sh) or the environment. Never commit those.
@@ -97,6 +99,8 @@ if (args.kind === 'pdf' || args.kind === 'doc') {
 const row = {
   cohort: args.cohort,
   week: Number(args.week),
+  section: args.section || null,
+  section_date: args['section-date'] || null,
   sort_order: args.sort != null ? Number(args.sort) : 0,
   kind: args.kind,
   title: args.title,

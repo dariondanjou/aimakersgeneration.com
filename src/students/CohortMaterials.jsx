@@ -332,7 +332,13 @@ export function SessionResources({ cohort, session }) {
   }, [key]);
 
   const outline = new Map((cohortById(cohort)?.curriculum || []).map((w) => [w.week, w]));
-  const weeks = loaded.key === key ? loaded.weeks.map((w) => ({ ...outline.get(w.week), ...w })) : [];
+  // A bonus session (w.section) is labeled and dated on its own, not by the
+  // week's Saturday session in the outline.
+  const weeks = loaded.key === key
+    ? loaded.weeks.map((w) => (w.section
+      ? { ...w, title: w.section, session_date: w.section_date }
+      : { ...outline.get(w.week), ...w }))
+    : [];
   if (weeks.length === 0) return null;
 
   return (
@@ -350,7 +356,7 @@ export function SessionResources({ cohort, session }) {
         const [first, ...rest] = w.resources;
         const heroFirst = first.kind === 'video';
         return (
-          <div key={w.week} className="mb-10">
+          <div key={`${w.week}:${w.section || ''}`} className="mb-10">
             <p className="text-[10px] uppercase tracking-wider text-[#1A1A1A]/40 mb-3 flex items-center gap-1.5">
               <Layers size={12} className="text-[#3E9E28]" /> Week {w.week}{w.session_date ? ` · ${fmtDate(w.session_date)}` : ''}{w.title ? ` · ${w.title}` : ''}
             </p>
