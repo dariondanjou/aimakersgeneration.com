@@ -541,7 +541,7 @@ function ThisWeekPanel({
               <Upload size={20} className="mx-auto mb-2 text-[#3E9E28]" />
               <p className="text-sm font-semibold">Drag &amp; drop, paste, or click to add your homework</p>
               <p className="text-xs text-[#5C5C5C] mt-1">
-                Any file or link works. Films up to 500MB (MP4, MOV, WebM, M4V); other files up to 25MB. It's scanned for relevance to the assignment — the circle checks once it's verified.
+                Any file or link works. Films up to 1.5GB (MP4, MOV, WebM, M4V); other files up to 25MB. It's scanned for relevance to the assignment — the circle checks once it's verified.
               </p>
             </>
           )}
@@ -1138,13 +1138,13 @@ export default function StudentProfile() {
   const submitHomeworkFiles = async (assignment, files) => {
     if (!isOwner) return;
     for (const file of files) {
-      // Films go to the profile-videos bucket (500MB, under the uploader's own
+      // Films go to the profile-videos bucket (1.5GB, under the uploader's own
       // folder); everything else to student-uploads (25MB).
       const ext = file.name.split('.').pop();
       const videoType = homeworkVideoType(file);
-      const max = videoType ? 500 : 25;
+      const max = videoType ? 1500 : 25;
       if (file.size > max * 1024 * 1024) {
-        alert(`${file.name}: max file size is ${max}MB${videoType ? ' — try a smaller export, or paste a YouTube/Vimeo/Drive link instead' : ''}`);
+        alert(`${file.name}: max file size is ${videoType ? '1.5GB' : '25MB'}${videoType ? ' — try a smaller export, or paste a YouTube/Vimeo/Drive link instead' : ''}`);
         continue;
       }
       const bucket = videoType ? 'profile-videos' : 'student-uploads';

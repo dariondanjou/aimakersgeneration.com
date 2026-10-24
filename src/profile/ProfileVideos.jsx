@@ -15,7 +15,7 @@ import { isMissingSchema, normalizeUrl, getEmbedUrl, hostOf } from '../boards/ut
 
 const BUCKET = 'profile-videos';
 const MAX_VIDEOS = 24;
-const MAX_BYTES = 500 * 1024 * 1024;
+const MAX_BYTES = 1500 * 1024 * 1024;
 const TITLE_MAX = 120;
 const COLUMNS = 'id, user_id, title, kind, url, storage_path, mime, size_bytes, sort_order, created_at';
 // Must match allowed_mime_types on the bucket.
@@ -241,7 +241,7 @@ export default function ProfileVideos({ userId, session }) {
       const type = videoTypeOf(file);
       if (!type) { problems.push(`${file.name}: only MP4, MOV, WebM or M4V videos can be uploaded.`); continue; }
       if (file.size > MAX_BYTES) {
-        problems.push(`${file.name}: ${formatSize(file.size)} is over the 500 MB limit — add it as a YouTube/Vimeo link instead.`);
+        problems.push(`${file.name}: ${formatSize(file.size)} is over the 1.5 GB limit — add it as a YouTube/Vimeo link instead.`);
         continue;
       }
       if (room <= 0) { problems.push(`${file.name}: you can have up to ${MAX_VIDEOS} videos on your profile.`); continue; }
@@ -484,7 +484,7 @@ export default function ProfileVideos({ userId, session }) {
           onClick={() => fileInputRef.current?.click()}
           className="w-full border-2 border-dashed border-[#1A1A1A]/15 hover:border-[#3E9E28]/50 rounded-lg py-10 px-4 text-sm text-[#1A1A1A]/40 transition-colors"
         >
-          No videos yet — upload or drag & drop MP4, MOV or WebM files (up to 500 MB each),
+          No videos yet — upload or drag & drop MP4, MOV or WebM files (up to 1.5 GB each),
           or add a YouTube/Vimeo link for longer films.
         </button>
       ) : (
@@ -516,7 +516,7 @@ export default function ProfileVideos({ userId, session }) {
       )}
 
       {isOwner && videos.length > 0 && !full && (
-        <p className="text-[11px] text-[#1A1A1A]/30 mt-3">Drag & drop videos here to upload (MP4, MOV, WebM, M4V — up to 500 MB each).</p>
+        <p className="text-[11px] text-[#1A1A1A]/30 mt-3">Drag & drop videos here to upload (MP4, MOV, WebM, M4V — up to 1.5 GB each).</p>
       )}
     </div>
   );
