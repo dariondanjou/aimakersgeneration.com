@@ -31,6 +31,7 @@ const EMAILS = {
   hw2: { file: "film-hw2-email.html", subject: "Week 2 homework: a minute of capstone footage + a shot-list breakdown" },
   hw3: { file: "film-hw3-email.html", subject: "Week 3 homework: your final capstone (2 perfect minutes) + your Session 3 feedback", feedbackWeek: 3 },
   bonus: { file: "film-bonus-email.html", subject: "Week 3 Bonus Session with Steffin Flickinger: recording, summary & lesson guide" },
+  grad: { file: "film-grad-email.html", subject: "You did it — congratulations from the October Film Cohort", feedbackWeek: 4 },
 };
 const emailIdx = process.argv.indexOf("--email");
 const EMAIL = EMAILS[process.argv[emailIdx + 1]];
@@ -86,7 +87,7 @@ const F = "font-family:'Inter',Arial,sans-serif;";
 function feedbackHtml(f) {
   const out = [];
   if (f.project) out.push(`<div style="${F} font-size:16px; font-weight:800; color:#FFFFFF; margin:0 0 4px 0;">${escapeHtml(f.project)}</div>`);
-  if (f.recording_at) out.push(`<div style="${F} font-size:13px; color:#888888; margin:0 0 16px 0;">Watch it back in the Session 3 recording at ${escapeHtml(f.recording_at)}</div>`);
+  if (f.recording_at) out.push(`<div style="${F} font-size:13px; color:#888888; margin:0 0 16px 0;">Watch it back in the Session ${EMAIL.feedbackWeek} recording at ${escapeHtml(f.recording_at)}</div>`);
   if (f.working) {
     out.push(`<div style="${F} font-size:11px; font-weight:800; letter-spacing:0.12em; color:#CCFF00; text-transform:uppercase; margin:0 0 6px 0;">What&rsquo;s working</div>`);
     out.push(`<p style="margin:0 0 18px 0; ${F} font-size:15px; line-height:1.6; color:#CCCCCC;">${escapeHtml(f.working)}</p>`);
