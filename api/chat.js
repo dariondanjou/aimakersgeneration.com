@@ -31,13 +31,12 @@ FLAGSHIP EVENT — FILM BAR AI:
 Film Bar AI is a recurring in-person event series. It happens every Tuesday from 6–10pm EST at Halidom Eatery (1341 Moreland Avenue SE, Atlanta, GA 30316) in East Atlanta. It runs without fail every Tuesday evening. Whenever someone asks about upcoming events, what's next, or when they can come by, proactively tell them the date of the very next Tuesday's Film Bar AI (compute it from TODAY'S DATE above), naming the venue.
 
 WORKSHOP WEDNESDAYS:
-Workshop Wednesdays are hands-on AI workshop sessions hosted by AI Makers Generation at Georgia Tech ATDC (75 5th St NW, Suite 2000, Atlanta, GA 30308 — Centergy Building in Tech Square), held on the 2nd and 4th Wednesdays of each month from 6–10pm. Topics are announced closer to each date. Bring a charged laptop. Here are the remaining 2026 dates:
-- July: 8, 22
-- August: 12, 26
-- September: 16, 30
-- October: 14, 28
-- November: 11, 25
-- December: 9, 23
+Workshop Wednesdays are hands-on AI workshop sessions hosted by AI Makers Generation at Georgia Tech ATDC (75 5th St NW, Suite 2000, Atlanta, GA 30308 — Centergy Building in Tech Square), held on the 2nd and 4th Wednesdays of each month from 6–10pm. Topics are announced closer to each date. Bring a charged laptop. Upcoming dates (only mention dates on or after TODAY'S DATE; the Luma listing is the final word on any date):
+- November 2026: 11, 25
+- December 2026: 9, 23
+- January 2027: 13, 27
+- February 2027: 10, 24
+- March 2027: 10, 24
 
 Workshop Wednesdays are TICKETED events. Every Workshop Wednesday is scheduled and listed on Luma (lu.ma), and the ticket price is whatever the event's Luma listing says — the ticket price is the ticket price. NEVER describe the workshops as free, donation-based, pay-what-you-can, or suggested-donation. When someone asks what a workshop costs or how to register, point them to the event's Workshop Wednesday listing on Luma for the current ticket price and to buy their ticket.
 
@@ -59,7 +58,12 @@ THE COHORT CALENDAR (compare against TODAY'S DATE when answering):
 - OCTOBER 2026 FILM COHORT — a four-week AI filmmaking intensive, Oct 3–24, 2026, taught by Darion and Gheri with guest lecturers Steffin Flickinger, Halania Renee Dixon, Reginald Cineus, and Julius Jones. Completed; enrollment is closed — do not offer seats in it.
 - WINTER 2027 JOBS COHORT — Jan 2 – Feb 20, 2027, described above. This is the cohort currently open for enrollment; point everyone interested in a cohort here.
 
-FILM CONTEST (PAST — CLOSED; the October 2 2026 deadline has passed, so say submissions are closed) — WIN FREE ENTRY TO THE OCTOBER FILM COHORT: make a 30-second ad advertising AI MAKERS GENERATION (AIMG). FREE to enter; entrants need a free AIMG account. AIMG provides the brand kit (logos, brand colors, fonts, slogan) on the contest page; entrants bring their own laptop and tools. Kick-off is at Film Bar AI. Submissions are due FRIDAY, OCTOBER 2, 2026 AT 11:59 AM ET — extended from the original Thursday-night deadline to give filmmakers a chance to get past technical issues they ran into; this is the hard, final deadline and there will be no further extensions. The winner is announced Friday (Oct 2) after judging and gets free entry into the October Film Cohort, which starts Saturday, Oct 3. Entrants may submit more than one film. By submitting, entrants give AIMG a perpetual, royalty-free, non-exclusive license to use their film (and name) for marketing and promotion, whether or not it wins; they keep ownership, and the film must be their own work with rights to everything in it. Everything — sign-up, the brand kit, and uploading films — is at https://aimakersgeneration.com/contest. After the deadline, say submissions are closed. If someone asks for example ads, sample commercials, inspiration, or what we're looking for, point them to our Instagram, @aimakersgeneration (https://instagram.com/aimakersgeneration), to see ads we've made before — and make clear those are only for inspiration: there are no creative restrictions, so any style, tone, or concept is welcome. Also invite them to follow AIMG if they don't already: Instagram @aimakersgeneration, TikTok @aimakersgeneration (https://tiktok.com/@aimakersgeneration), and X @aimakersgen (https://x.com/aimakersgen).
+LATEST UPDATES (as of late October 2026 — share these when someone asks what's new):
+- The October 2026 Film Cohort wrapped with its final session on Saturday, October 24, 2026; its students graduated and their capstone films and portfolios live on the Students pages.
+- Enrollment for the Winter 2027 Jobs Cohort is OPEN NOW at https://aimakersgeneration.com/apply and closes Saturday, January 2, 2027 at 1:00 PM ET. The enrollment page has a live countdown to the deadline.
+- New for Winter: every enrollee must include previous work — links, uploaded files, or both.
+- The AIMG WhatsApp community has a NEW invite link (below). Any older WhatsApp link is out of date.
+- The 30-second ad contest is OVER. Submissions closed Friday, October 2, 2026 and the winner received free entry to the October Film Cohort. Do not invite anyone to enter or promote the contest; if asked, say it has ended and point them to the Winter 2027 Jobs Cohort and the WhatsApp community to hear about future contests first.
 
 NEVER promise a job, a placement, an interview, a hire, or any salary or income. The cohort PREPARES people; it does not guarantee outcomes. NEVER share a phone number or a payment handle (Zelle, Cash App, Venmo). AIMG only ever takes payment through the Stripe checkout on the website.
 
@@ -110,6 +114,26 @@ RULES:
 - For Film Bar AI events, the standard details are: title "Film Bar AI", description "6-10pm EST at Halidom Eatery, 1341 Moreland Avenue SE, East Atlanta", every Tuesday.
 - Post types must be one of: "announcement", "news", or "video".
 - When creating events, use YYYY-MM-DD format for event_date.`;
+
+// The live community calendar, so the bot knows about one-off events the team
+// adds (not just the recurring ones written into the prompt). Best effort: a
+// failed lookup just leaves the block out.
+async function upcomingEventsBlock(supabase) {
+  try {
+    const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+    const { data, error } = await supabase
+      .from("events")
+      .select("title, description, event_date")
+      .gte("event_date", today)
+      .order("event_date", { ascending: true })
+      .limit(40);
+    if (error || !data?.length) return "";
+    const lines = data.map((e) => `- ${String(e.event_date).slice(0, 10)}: ${e.title}${e.description ? ` — ${String(e.description).slice(0, 200)}` : ""}`);
+    return `\n\nUPCOMING EVENTS ON THE AIMG COMMUNITY CALENDAR (live from the site, soonest first — use these when asked what's coming up):\n${lines.join("\n")}`;
+  } catch {
+    return "";
+  }
+}
 
 const TOOLS = [
   {
@@ -605,7 +629,7 @@ export default async function handler(req, res) {
     let dataChanged = false;
     let maxToolRounds = 5; // Safety limit
     // The rules above branch on sign-in state; tell the model which applies.
-    const systemPrompt = buildSystemPrompt() +
+    const systemPrompt = buildSystemPrompt() + (await upcomingEventsBlock(supabase)) +
       `\n\nCURRENT VISITOR: ${user_id ? "signed in (user_id is set)" : "not signed in (user_id is null)"}.`;
 
     let response = await client.messages.create({

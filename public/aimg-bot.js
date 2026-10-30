@@ -29,8 +29,8 @@
 
   var SUGGESTIONS = [
     "When's the next Film Bar AI?",
-    "Tell me about the cohort",
-    "What do I get with a free account?"
+    "Tell me about the Winter 2027 cohort",
+    "How do I join the WhatsApp group?"
   ];
 
   var MEMBER_SUGGESTIONS = [
