@@ -27,7 +27,6 @@ import { readStoredSession, sharedAuthStorage, AUTH_STORAGE_KEY } from './auth-s
 // Admins always get the link, student or not.
 const LINKS = [
   { key: 'programs', label: 'Programs', href: '/#tracks', for: ['visitor'] },
-  { key: 'contest', label: 'Contest', href: '/contest', for: ['visitor', 'member'] },
   { key: 'community', label: 'Community', href: '/community', for: ['member'] },
   { key: 'students', label: 'Students', href: '/students', for: ['member'], studentsOnly: true, lockedTip: 'Enroll in a Cohort to access Students pages' },
   // A dropdown: Terminology glossaries, open to any signed-in member. More
@@ -54,7 +53,7 @@ const SOCIAL = [
 const PROGRAMS = [
   { label: 'Film Bar AI — free Tuesdays', href: '/#film-bar' },
   { label: 'Workshop Wednesdays', href: '/#workshops' },
-  { label: 'October Film Cohort', href: '/#cohort' },
+  { label: 'Winter 2027 Cohort', href: '/#cohort' },
 ];
 const SITE = [
   { label: 'Who we are', href: '/about' },

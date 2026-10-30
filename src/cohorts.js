@@ -15,7 +15,7 @@ export const COHORTS = [
     label: 'Winter 2027 Jobs Cohort',
     short: 'Winter 2027 · Jobs',
     headline: 'AI Maker — Winter 2027 Jobs Cohort',
-    dates: 'January 2027 · Early registrants',
+    dates: 'Eight Saturdays · Jan 2 – Feb 20, 2027',
     weeks: 8,
     linkedin: true,
     materials: false,
