@@ -284,7 +284,7 @@ function ChatWindow({ session, onDataChange }) {
 // site; the public marketing pages now own "/" and this sits behind /community.
 const COMMUNITY_BASE = '/community';
 const oauthRedirect = () => `${window.location.origin}${COMMUNITY_BASE}`;
-const WHATSAPP_URL = 'https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5';
+const WHATSAPP_URL = 'https://chat.whatsapp.com/EzC8ynMmARl8h97EORtfZC';
 
 // The community sections — a secondary tab bar under the shared site nav
 // (<aimg-nav>, src/shell/aimg-nav.js), signed-in only. Home first, then the

@@ -49,7 +49,7 @@ const SOCIAL = [
   { label: 'TikTok', href: 'https://tiktok.com/@aimakersgeneration' },
   { label: 'X / Twitter', href: 'https://x.com/aimakersgen' },
   { label: 'Facebook group', href: 'https://facebook.com/share/g/1BYbDKRKR5' },
-  { label: 'WhatsApp community', href: 'https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5' },
+  { label: 'WhatsApp community', href: 'https://chat.whatsapp.com/EzC8ynMmARl8h97EORtfZC' },
 ];
 const PROGRAMS = [
   { label: 'Film Bar AI — free Tuesdays', href: '/#film-bar' },

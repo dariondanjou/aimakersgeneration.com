@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Enroll in the October 2026 Film Cohort — AI MAKERS GENERATION</title>
-<meta name="description" content="Enroll in the AIMG October 2026 Film Cohort — a four-week AI filmmaking intensive, in person in Atlanta or live online. Four Saturdays, twenty seats, starts October 3. Tuition $800, paid in full. Enrollment closes October 3 at 1 PM.">
+<title>Enroll in the Winter 2027 Jobs Cohort — AI MAKERS GENERATION</title>
+<meta name="description" content="Enroll in the AIMG Winter 2027 Jobs Cohort — in person in Atlanta or live online. Eight Saturdays, twenty seats, starts January 2, 2027. Tuition $800, paid in full. Enrollment closes January 2, 2027 at 1 PM.">
 <link rel="canonical" href="https://cohorts.aimakersgeneration.com/">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://cohorts.aimakersgeneration.com/">
 <meta property="og:site_name" content="AI MAKERS GENERATION">
-<meta property="og:title" content="Enroll in the October 2026 Film Cohort — AI MAKERS GENERATION">
-<meta property="og:description" content="A four-week AI filmmaking intensive. Four Saturdays. Twenty seats. Starts October 3, in person in Atlanta or live online.">
+<meta property="og:title" content="Enroll in the Winter 2027 Jobs Cohort — AI MAKERS GENERATION">
+<meta property="og:description" content="Eight Saturdays. Twenty seats. One room — or online. Starts January 2, 2027, in person in Atlanta or live online.">
 <meta property="og:image" content="https://aimakersgeneration.com/brand/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@aimakersgen">
@@ -109,6 +109,20 @@
   .hero-note{display:block;margin-top:12px;color:#818A7C;font-size:.9rem;font-weight:500}
   .top .seats{max-width:62ch}
 
+  /* ── enrollment countdown ── */
+  .countdown{margin-top:30px;padding:20px 24px 18px;border:1px solid #33372F;border-radius:14px;
+    background:#171A16;display:inline-block;max-width:100%}
+  .countdown .cd-label{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--green);margin:0 0 12px}
+  .cd-units{display:flex;gap:10px;flex-wrap:wrap}
+  .cd-unit{min-width:76px;text-align:center;background:#0f110e;border:1px solid #2a2e26;border-radius:10px;padding:10px 8px 8px}
+  .cd-unit b{display:block;font-family:var(--display);font-weight:800;font-size:2rem;line-height:1;
+    color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .cd-unit span{display:block;margin-top:6px;font-size:.66rem;font-weight:600;letter-spacing:.12em;
+    text-transform:uppercase;color:#818A7C}
+  .countdown .cd-when{margin:12px 0 0;color:#A8AFA3;font-size:.86rem}
+  @media(max-width:480px){.cd-unit{min-width:62px}.cd-unit b{font-size:1.55rem}}
+
   .hero-lede{margin-top:46px;padding-top:36px;border-top:1px solid #26291f;
     display:grid;gap:26px 44px;grid-template-columns:repeat(auto-fit,minmax(258px,1fr))}
   .hero-lede p.body{margin:0}
@@ -187,7 +201,7 @@
   .leg-note{color:var(--graphite);font-size:.97rem;margin:14px 0 0;font-style:italic}
   .fields{margin-top:30px;display:flex;flex-direction:column;gap:26px}
 
-  .f label.lbl{display:block;font-weight:600;margin-bottom:8px;font-size:.98rem}
+  .f .lbl{display:block;font-weight:600;margin-bottom:8px;font-size:.98rem}
   .f .hint{display:block;font-weight:400;color:var(--graphite);font-size:.88rem;margin-top:3px}
   .req{color:var(--green-deep);margin-left:2px}
 
@@ -203,6 +217,30 @@
     background-repeat:no-repeat;background-position:right 16px center;padding-right:42px}
   .counter{font-size:.82rem;color:var(--graphite);text-align:right;margin-top:5px}
   .counter.over{color:var(--err);font-weight:600}
+
+  /* previous work: links and/or uploads */
+  .work-box{border:1.5px solid var(--rule);border-radius:12px;padding:20px 20px 18px;background:#FCFCFB}
+  .work-box.missing{border-color:var(--err);background:var(--err-bg)}
+  .work-or{display:flex;align-items:center;gap:12px;color:var(--graphite);font-size:.78rem;font-weight:700;
+    letter-spacing:.12em;text-transform:uppercase;margin:20px 0}
+  .work-or::before,.work-or::after{content:"";flex:1;border-top:1px solid var(--rule)}
+  .drop{display:block;border:1.5px dashed #C9C9C4;border-radius:10px;padding:22px 18px;text-align:center;
+    cursor:pointer;background:#fff;transition:border-color .15s ease,background .15s ease}
+  .drop:hover,.drop.over{border-color:var(--green-deep);background:#F5FBF3}
+  .drop strong{display:block;font-size:.98rem}
+  .drop span{display:block;color:var(--graphite);font-size:.86rem;margin-top:4px}
+  .drop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .work-files{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+  .work-files li{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--rule);
+    border-radius:10px;background:#fff;font-size:.92rem}
+  .work-files .wf-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .work-files .wf-state{color:var(--graphite);font-size:.84rem;white-space:nowrap}
+  .work-files li.done .wf-state{color:var(--green-deep);font-weight:600}
+  .work-files li.err .wf-state{color:var(--err);font-weight:600;white-space:normal}
+  .work-files button{font:inherit;font-size:.82rem;border:0;background:none;color:var(--graphite);
+    cursor:pointer;text-decoration:underline;padding:0}
+  .work-need{display:none;margin:12px 0 0;color:var(--err);font-weight:600;font-size:.9rem}
+  .work-box.missing .work-need{display:block}
 
   .two{display:grid;grid-template-columns:1fr 1fr;gap:26px}
   @media(max-width:600px){.two{grid-template-columns:1fr}}
@@ -281,6 +319,7 @@
   footer a:hover{color:var(--green)}
 </style>
 <script type="module" src="/src/shell/aimg-nav.js"></script>
+<script type="module" src="/src/apply/work-upload.js"></script>
 </head>
 <body>
 
@@ -288,7 +327,7 @@
 
 <aimg-nav variant="slim">
   <div class="nav-title" slot="title">
-    <h1>ENROLL IN THE OCTOBER 2026 AI FILM COHORT</h1>
+    <h1>ENROLL IN THE WINTER 2027 JOBS COHORT</h1>
   </div>
 </aimg-nav>
 
@@ -320,15 +359,27 @@
 
   <div class="wrap hero-content">
     <div class="hero-copy">
-      <p class="sub">A four-week AI filmmaking intensive. Four Saturdays. Twenty seats.</p>
-      <p class="where">Starts Saturday, October 3, 2026 · 1:00–4:00 PM&nbsp;&nbsp;—&nbsp;&nbsp;Sessions Oct 3, 10, 17 &amp; 24 · Russell Innovation Center for Entrepreneurs<br>Join us in person in Atlanta, or live online from anywhere.</p>
+      <p class="sub">Eight Saturdays. Twenty seats. One room — or online.</p>
+      <p class="where">Starts Saturday, January 2, 2027 · 1:00–4:00 PM&nbsp;&nbsp;—&nbsp;&nbsp;Eight Saturdays, Jan 2 – Feb 20 · Russell Innovation Center for Entrepreneurs<br>Join us in person in Atlanta, or live online from anywhere.</p>
+
+      <div class="countdown" id="countdown" role="timer" aria-live="off">
+        <p class="cd-label">Enrollment closes in</p>
+        <div class="cd-units">
+          <div class="cd-unit"><b id="cd-d">--</b><span>Days</span></div>
+          <div class="cd-unit"><b id="cd-h">--</b><span>Hours</span></div>
+          <div class="cd-unit"><b id="cd-m">--</b><span>Minutes</span></div>
+          <div class="cd-unit"><b id="cd-s">--</b><span>Seconds</span></div>
+        </div>
+        <p class="cd-when">Saturday, January 2, 2027 at 1:00 PM ET — the moment Session 1 begins.</p>
+      </div>
+
       <div class="hero-actions">
         <a class="hero-cta" href="#form">Secure your seat — <span class="price">$800</span></a>
         <span class="hero-note">Paid in full — your payment is your seat.</span>
       </div>
       <p class="seats">
         There is no waiting list and no acceptance step — the twenty seats go to the first twenty
-        people who enroll. <strong>Enrollment closes Saturday, October 3, 2026 at 1:00 PM</strong> —
+        people who enroll. <strong>Enrollment closes Saturday, January 2, 2027 at 1:00 PM</strong> —
         the moment Session 1 begins. When the seats are gone or the clock runs out, that's it.<br>
         Not sure yet? Come meet us first — Film Bar AI is free, every Tuesday, 6–10 PM at Halidom
         Eatery. Walk in, say hi, decide later.
@@ -337,20 +388,17 @@
 
     <div class="hero-lede">
       <p class="body">
-        This cohort has one goal: to take the films you're making with AI and level them up to an
-        elite film industry professional standard. Not "good for AI" — good, period. Cinematography,
-        story, edit, sound, grade: the craft decisions working film professionals make, applied to
-        AI-generated footage.
+        Eight weeks from now you will have a polished résumé, a matching LinkedIn profile, a portfolio
+        website, the skills to negotiate your salary, a contract toolkit you can actually use, and
+        interview preparation for AI industry careers.
       </p>
       <p class="body">
-        You'll learn from working film industry professionals — including guest lecturers who make
-        commercials at Meta and are building the largest AI film project ever attempted.
-        You'll finish with a piece of film work finished to a professional standard: a short film,
-        a commercial spec, or a music video.
+        You'll finish by delivering either a professional mock interview assessment or a full startup
+        pitch deck to investors and co-founders.
       </p>
       <p class="body">
-        You make film work every week. You bring it to class, and the room critiques it — your peers
-        and working film professionals both. That part is not optional, and it's the part that works.
+        There's homework every week. You bring it to class, and the room critiques it — your peers and
+        working professionals both. That part is not optional, and it's the part that works.
       </p>
     </div>
   </div>
@@ -364,9 +412,9 @@
       <div class="card">
         <div class="check" aria-hidden="true">✓</div>
         <h2 id="paid-heading">You're in.</h2>
-        <p>Your seat in the October 2026 Film Cohort is confirmed and your payment has gone through.
+        <p>Your seat in the Winter 2027 Jobs Cohort is confirmed and your payment has gone through.
            A receipt is on its way to your email from Stripe.</p>
-        <p><strong>Session 1 is Saturday, October 3, 1:00–4:00 PM</strong> at the Russell Innovation
+        <p><strong>Session 1 is Saturday, January 2, 2027, 1:00–4:00 PM</strong> at the Russell Innovation
            Center for Entrepreneurs. Bring your laptop, charged.</p>
         <p>Before then, come meet the room — Film Bar AI is free, every Tuesday, 6–10 PM at
            Halidom Eatery.</p>
@@ -374,8 +422,8 @@
            homework, and the cohort boards live.</p>
         <div class="cta-row">
           <a class="btn btn-inline" id="paid-account" href="https://aimakersgeneration.com/community?mode=signup">Create your AIMG account</a>
-          <a class="btn btn-alt btn-inline" href="https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5" target="_blank" rel="noopener">Join the WhatsApp community</a>
-          <a class="btn btn-alt btn-inline" href="/aimg-film-cohort-session-1.ics" download>Add Oct 3 to calendar</a>
+          <a class="btn btn-alt btn-inline" href="https://chat.whatsapp.com/EzC8ynMmARl8h97EORtfZC" target="_blank" rel="noopener">Join the WhatsApp community</a>
+          <a class="btn btn-alt btn-inline" href="/aimg-winter-cohort-session-1.ics" download>Add Jan 2 to calendar</a>
         </div>
       </div>
     </div>
@@ -398,14 +446,13 @@
     <div class="screen" id="screen-full" role="status">
       <div class="card bad">
         <div class="check bad" aria-hidden="true">—</div>
-        <h2>The October Film Cohort is full</h2>
+        <h2>The Winter 2027 Jobs Cohort is full</h2>
         <p>All twenty seats are taken, and <strong>nothing has been charged.</strong> That's the
            whole room — we don't add chairs.</p>
-        <p>The next cohort is the Winter 2027 Jobs Cohort — January 2027, exact dates to be
-           scheduled. Come to Film Bar AI on a Tuesday and tell us you want a seat, or join the
-           WhatsApp group and we'll announce the dates there first.</p>
+        <p>Come to Film Bar AI on a Tuesday and tell us you want a seat in the next cohort, or join
+           the WhatsApp group and we'll announce it there first.</p>
         <div class="cta-row">
-          <a class="btn btn-inline" href="https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5" target="_blank" rel="noopener">Join the WhatsApp community</a>
+          <a class="btn btn-inline" href="https://chat.whatsapp.com/EzC8ynMmARl8h97EORtfZC" target="_blank" rel="noopener">Join the WhatsApp community</a>
           <a class="btn btn-alt btn-inline" href="https://aimakersgeneration.com/">Back to the main site</a>
         </div>
       </div>
@@ -416,13 +463,12 @@
       <div class="card bad">
         <div class="check bad" aria-hidden="true">—</div>
         <h2>Enrollment is closed</h2>
-        <p>The October Film Cohort began Saturday, October 3 at 1:00 PM, and enrollment closed with
-           it. <strong>Nothing has been charged.</strong></p>
-        <p>The next cohort is the Winter 2027 Jobs Cohort — January 2027, exact dates to be
-           scheduled. Come to Film Bar AI on a Tuesday and tell us you want a seat, or join the
-           WhatsApp group and we'll announce the dates there first.</p>
+        <p>The Winter 2027 Jobs Cohort began Saturday, January 2, 2027 at 1:00 PM, and enrollment
+           closed with it. <strong>Nothing has been charged.</strong></p>
+        <p>Come to Film Bar AI on a Tuesday and tell us you want a seat in the next cohort, or join
+           the WhatsApp group and we'll announce it there first.</p>
         <div class="cta-row">
-          <a class="btn btn-inline" href="https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5" target="_blank" rel="noopener">Join the WhatsApp community</a>
+          <a class="btn btn-inline" href="https://chat.whatsapp.com/EzC8ynMmARl8h97EORtfZC" target="_blank" rel="noopener">Join the WhatsApp community</a>
           <a class="btn btn-alt btn-inline" href="https://aimakersgeneration.com/">Back to the main site</a>
         </div>
       </div>
@@ -437,23 +483,22 @@
         <h2 id="cal-head">Where we are, and what's next</h2>
         <ol class="cal-list">
           <li class="cal-item">
-            <div class="cal-when">Jul 18 – Sep 5, 2026 <span class="cal-tag live">In session now</span></div>
+            <div class="cal-when">Jul 18 – Sep 5, 2026 <span class="cal-tag">Completed</span></div>
             <h3>Summer 2026 Jobs Cohort</h3>
-            <p>Currently running — eight Saturdays focused on AI industry careers: a polished résumé,
-               a matching LinkedIn profile, a portfolio website, salary negotiation, and interview
-               preparation. Enrollment for this cohort is closed.</p>
-          </li>
-          <li class="cal-item next">
-            <div class="cal-when">Oct 3 – 24, 2026 <span class="cal-tag enroll">Enrolling now</span></div>
-            <h3>October 2026 Film Cohort</h3>
-            <p>Next up — the four-week AI filmmaking intensive on this page. Four Saturdays to level
-               your AI film output up to an elite film industry professional standard.</p>
+            <p>Eight Saturdays focused on AI industry careers: a polished résumé, a matching LinkedIn
+               profile, a portfolio website, salary negotiation, and interview preparation.</p>
           </li>
           <li class="cal-item">
-            <div class="cal-when">January 2027 · Exact dates to be scheduled <span class="cal-tag">Up after that</span></div>
+            <div class="cal-when">Oct 3 – 24, 2026 <span class="cal-tag">Completed</span></div>
+            <h3>October 2026 Film Cohort</h3>
+            <p>The four-week AI filmmaking intensive — four Saturdays leveling AI film work up to an
+               elite film industry professional standard.</p>
+          </li>
+          <li class="cal-item next">
+            <div class="cal-when">Jan 2 – Feb 20, 2027 · Saturdays, 1:00–4:00 PM <span class="cal-tag enroll">Enrolling now</span></div>
             <h3>Winter 2027 Jobs Cohort</h3>
-            <p>The next jobs cohort — AI industry careers, résumé to interview prep. Dates will be
-               announced; join the WhatsApp community and we'll tell you there first.</p>
+            <p>The eight-week cohort on this page — AI industry careers, résumé to interview prep.
+               Enrollment closes Saturday, January 2, 2027 at 1:00 PM.</p>
           </li>
         </ol>
       </section>
@@ -486,9 +531,9 @@
             <p class="role">Co-Founder · Commercial Filmmaker</p>
             <p>Gheri Thomas makes commercials at Meta's Creative&nbsp;X — brand film work crafted
                with generative AI for one of the largest companies in the world, where the bar is
-               set by global campaigns and the turnaround is measured in days, not months. That
-               experience — world-class commercial filmmaking, delivered with AI at professional
-               speed — is exactly what this cohort teaches. A classically trained artist with a
+               set by global campaigns and the turnaround is measured in days, not months. She
+               knows firsthand what it takes to land and keep a professional creative role in the
+               AI industry — and that's the bar this cohort holds you to. A classically trained artist with a
                B.F.A. from the Savannah College of Art and Design, she brings a decade of visual
                craft to every frame: composition, color, styling, and the art direction that
                separates a professional spot from a pretty clip. Through the Gheri Thomas Collective,
@@ -496,54 +541,6 @@
           </article>
         </div>
 
-        <div class="guests">
-          <h3 class="guests-head">Guest lecturers</h3>
-          <div class="guest-grid">
-            <article class="guest">
-              <img src="/brand/steffin-flickinger.jpg" width="640" height="640"
-                   alt="Steffin Flickinger, guest lecturer">
-              <h4>Steffin Flickinger</h4>
-              <p class="role">AI Filmmaker · Series Creator</p>
-              <p>Creator of the serialized AI film series <em>American Book of the Dead</em>, whose
-                 chapters draw audiences in the tens of thousands. Working across short films,
-                 series, and features, Steffin shows what one filmmaker with total command of the
-                 AI toolchain can put on screen — atmosphere, dread, and story rhythm that hold up
-                 against traditionally produced work.</p>
-            </article>
-            <article class="guest">
-              <img src="/brand/halania-dixon.jpg" width="640" height="640"
-                   alt="Halania Renee Dixon, guest lecturer">
-              <h4>Halania Renee Dixon</h4>
-              <p class="role">AI Filmmaker · Creative Technologist</p>
-              <p>Halania has shot concert videos for celebrity music artists — including R&amp;B
-                 star Lloyd — filming where the pressure is highest and there are no second takes.
-                 Her cinematic AI commercial work — Coca-Cola, Starbucks, and OLLY spots taken from
-                 concept to final grade by one creator — has made her one of the most watched AI
-                 filmmakers in Atlanta.</p>
-            </article>
-            <article class="guest">
-              <img src="/brand/reginald-cineus.jpg" width="660" height="660"
-                   alt="Reginald Cineus, guest lecturer">
-              <h4>Reginald Cineus</h4>
-              <p class="role">Director · Cinematographer</p>
-              <p>A festival-winning director and cinematographer and the owner of Cineus Studios,
-                 Reginald currently works at Meta and at 30 Ninjas on the largest AI film project
-                 to date — directed by Doug Liman, the director of <em>The Bourne Identity</em> and
-                 <em>Edge of Tomorrow</em>. Few people alive have seen AI filmmaking at that scale
-                 from the inside; he lectures from the frontier.</p>
-            </article>
-            <article class="guest">
-              <img src="/brand/julius-jones.jpg" width="625" height="780"
-                   alt="Julius Jones, guest lecturer">
-              <h4>Julius Jones</h4>
-              <p class="role">Cinematographer · Colorist</p>
-              <p>An Atlanta cinematographer and colorist whose grades give film work its finish —
-                 the difference between footage and cinema. His short-film work moves fast and looks
-                 expensive, and he helped carry the AI short <em>tulsa.ai</em> to Best VFX at the
-                 2025 Atlanta 48 Hour Film Project.</p>
-            </article>
-          </div>
-        </div>
       </section>
 
       <!--
@@ -603,9 +600,9 @@
 
         <h3>3 · Attendance, and what happens if you miss a Saturday</h3>
         <p>
-          <strong>You are required to attend all four Saturday sessions</strong> — October 3, 10,
-          17, and 24, 1:00–4:00 PM — whether you join us in person in Atlanta or live online. In a
-          four-week intensive every session carries double weight. If you miss one,
+          <strong>You are required to attend all eight Saturday sessions</strong> — January 2, 9,
+          16, 23, and 30, and February 6, 13, and 20, 2027, 1:00–4:00 PM — whether you join us in
+          person in Atlanta or live online. If you miss one,
           a recording of that session will be made available to you, and
           <strong>you remain responsible for completing and submitting that week's assignment on
           time.</strong> Recordings are a backstop, not a substitute — the critique happens live,
@@ -626,12 +623,12 @@
         <p>
           Tuition is <strong>$800, paid in full</strong> at the time you enroll. We do not accept
           deposits, partial payments, or installments, and paying is what reserves your seat — there
-          is no acceptance step. <strong>Enrollment closes Saturday, October 3, 2026 at 1:00 PM</strong>,
+          is no acceptance step. <strong>Enrollment closes Saturday, January 2, 2027 at 1:00 PM</strong>,
           when Session 1 begins.
         </p>
         <p>
           Because seats are capped at twenty and your payment takes one out of the room,
-          <strong>tuition is non-refundable once the cohort begins on October 3, 2026.</strong>
+          <strong>tuition is non-refundable once the cohort begins on January 2, 2027.</strong>
           Before that date, contact us and we will consider a refund at our discretion.
         </p>
         <p>
@@ -644,9 +641,8 @@
         <p style="margin-bottom:0">
           AIMG is not responsible for your inability to complete the coursework as a result of
           inadequate, incompatible, or malfunctioning equipment, missing software, or loss of
-          internet access. The cohort <strong>prepares</strong> you to produce film work to a
-          professional standard; it does not guarantee a job, a placement, distribution, festival
-          acceptance, or any particular income.
+          internet access. The cohort <strong>prepares</strong> you for AI industry careers; it does
+          not guarantee a job, a placement, an interview, or any particular income.
         </p>
 
         <h3 id="confidentiality">5 · Confidentiality, ownership, and mutual protection</h3>
@@ -781,22 +777,18 @@
           </legend>
           <div class="fields">
             <div class="f">
-              <label class="lbl" for="ai_experience">How would you describe your experience with AI video and film tools? <span class="req" aria-hidden="true">*</span>
-                <span class="hint">Magnific, Veo, Runway, Midjourney, Kling — that family of tools.</span>
-              </label>
+              <label class="lbl" for="ai_experience">How would you describe your experience with AI tools? <span class="req" aria-hidden="true">*</span></label>
               <select id="ai_experience" name="ai_experience" required>
                 <option value="">Choose one…</option>
                 <option>Never used them</option>
-                <option>I've generated a few clips</option>
-                <option>I make AI videos regularly</option>
-                <option>AI video is part of my work</option>
-                <option>I finish complete AI films</option>
+                <option>Tried ChatGPT a few times</option>
+                <option>Use AI tools weekly</option>
+                <option>Use them daily in my work</option>
+                <option>I build with them</option>
               </select>
             </div>
             <div class="f">
-              <label class="lbl" for="coding_experience">Have you made films or videos before? <span class="req" aria-hidden="true">*</span>
-                <span class="hint">Any kind — shorts, music videos, weddings, YouTube, client work.</span>
-              </label>
+              <label class="lbl" for="coding_experience">Have you written code before? <span class="req" aria-hidden="true">*</span></label>
               <select id="coding_experience" name="coding_experience" required>
                 <option value="">Choose one…</option>
                 <option>Never</option>
@@ -811,11 +803,31 @@
               </label>
               <input id="current_work" name="current_work" type="text" required>
             </div>
-            <div class="f">
-              <label class="lbl" for="portfolio_url">Share a link to your current AI film work <span class="req" aria-hidden="true">*</span>
-                <span class="hint">An AI film, clip, or reel you've made — YouTube, Vimeo, Instagram, Drive, a website. Every seat goes to someone already making work.</span>
-              </label>
-              <input id="portfolio_url" name="portfolio_url" type="url" placeholder="https://" required>
+            <div class="f" role="group" aria-labelledby="work-lbl">
+              <span class="lbl" id="work-lbl">Show us your previous work <span class="req" aria-hidden="true">*</span>
+                <span class="hint">Required. Share links, upload files, or both — a portfolio, résumé, LinkedIn, GitHub,
+                  website, deck, case study, video, design, or anything else you've made. Every seat goes
+                  to someone who shows their work.</span>
+              </span>
+              <div class="work-box" id="work-box">
+                <div class="f">
+                  <label class="lbl" for="portfolio_url">Link to your work</label>
+                  <input id="portfolio_url" name="portfolio_url" type="url" placeholder="https://">
+                </div>
+                <div class="f" style="margin-top:16px">
+                  <label class="lbl" for="work_links">More links <span class="hint">Optional — one per line.</span></label>
+                  <textarea id="work_links" name="work_links" rows="3" style="min-height:0" placeholder="https://"></textarea>
+                </div>
+                <div class="work-or">and / or</div>
+                <label class="drop" id="work-drop" for="work_input">
+                  <input type="file" id="work_input" multiple
+                         accept=".pdf,.doc,.docx,.ppt,.pptx,.key,.pages,.txt,.zip,image/*,video/*,audio/*">
+                  <strong>Upload previous work</strong>
+                  <span>Click to choose files, or drag them here. PDF, documents, decks, images, video, audio, or ZIP — up to 500 MB each, 10 files.</span>
+                </label>
+                <ul class="work-files" id="work-files"></ul>
+                <p class="work-need" id="work-need">Add a link to your previous work or upload at least one file.</p>
+              </div>
             </div>
           </div>
         </fieldset>
@@ -831,32 +843,31 @@
               <label class="lbl" for="goal">Which best describes your goal? <span class="req" aria-hidden="true">*</span></label>
               <select id="goal" name="goal" required>
                 <option value="">Choose one…</option>
-                <option>Break into film work</option>
-                <option>Level up my filmmaking</option>
-                <option>Launch a studio or channel</option>
-                <option>Build a film portfolio</option>
+                <option>Get a job</option>
+                <option>Grow in my current role</option>
+                <option>Launch a business</option>
+                <option>Build a portfolio</option>
                 <option>I'm not sure yet</option>
               </select>
             </div>
             <div class="f">
-              <label class="lbl" for="eight_week_goal">What do you want your films to look like in four weeks that they don't today? <span class="req" aria-hidden="true">*</span></label>
+              <label class="lbl" for="eight_week_goal">What do you want to be able to do in eight weeks that you can't do today? <span class="req" aria-hidden="true">*</span></label>
               <textarea id="eight_week_goal" name="eight_week_goal" required maxlength="300" data-max="300"></textarea>
               <div class="counter"><span>0</span> / 300</div>
             </div>
             <div class="f">
               <label class="lbl" for="something_made">Tell us about something you made. <span class="req" aria-hidden="true">*</span>
-                <span class="hint">Ideally a film or video — but anything you're proud of counts.</span>
+                <span class="hint">Anything — a film, a spreadsheet, a business, a meal, a song.</span>
               </label>
               <textarea id="something_made" name="something_made" required maxlength="300" data-max="300"></textarea>
               <div class="counter"><span>0</span> / 300</div>
             </div>
             <div class="f">
-              <label class="lbl" for="final_project">Your final project: a short film, a commercial spec, or a music video? <span class="req" aria-hidden="true">*</span></label>
+              <label class="lbl" for="final_project">Your final project: mock interview, or startup pitch deck? <span class="req" aria-hidden="true">*</span></label>
               <select id="final_project" name="final_project" required>
                 <option value="">Choose one…</option>
-                <option>Short film</option>
-                <option>Commercial spec</option>
-                <option>Music video</option>
+                <option>Mock interview</option>
+                <option>Pitch deck</option>
                 <option>Help me decide</option>
               </select>
             </div>
@@ -871,9 +882,9 @@
           </legend>
           <div class="fields">
             <div class="f" role="group" aria-labelledby="attend-lbl">
-              <span class="lbl" id="attend-lbl">Can you attend Saturdays, 1:00–4:00 PM, October 3 – 24? <span class="req" aria-hidden="true">*</span></span>
+              <span class="lbl" id="attend-lbl">Can you attend Saturdays, 1:00–4:00 PM, January 2 – February 20, 2027? <span class="req" aria-hidden="true">*</span></span>
               <div class="opts">
-                <label class="opt"><input type="radio" name="can_attend" value="Yes, all 4" required><span>Yes, all 4</span></label>
+                <label class="opt"><input type="radio" name="can_attend" value="Yes, all 8" required><span>Yes, all 8</span></label>
                 <label class="opt"><input type="radio" name="can_attend" value="I'd miss 1"><span>I'd miss 1 — I understand the recording and the assignment are still on me</span></label>
                 <label class="opt"><input type="radio" name="can_attend" value="I'd miss 2+"><span>I'd miss 2 or more</span></label>
               </div>
@@ -900,7 +911,7 @@
             <label class="opt hard">
               <input type="checkbox" name="consent_tuition" required>
               <span><strong>Tuition.</strong> I understand tuition is <strong>$800, payable in full now</strong>, that AIMG does not accept deposits, partial payments, or installments, and that my payment — not an acceptance decision — is what reserves my seat. My seat is <strong>personal to me and non-transferable</strong>: if I cannot attend for any reason, including illness or emergency, I may not send a substitute, sell, gift, or let anyone else use my seat.
-                <em>I have read the refund terms above and understand tuition is non-refundable once the cohort begins on October 3, 2026.</em></span>
+                <em>I have read the refund terms above and understand tuition is non-refundable once the cohort begins on January 2, 2027.</em></span>
             </label>
             <label class="opt hard">
               <input type="checkbox" name="consent_equipment" required>
@@ -909,11 +920,11 @@
             </label>
             <label class="opt hard">
               <input type="checkbox" name="consent_attendance" required>
-              <span><strong>Attendance.</strong> I understand attendance at all four Saturday sessions (October 3, 10, 17, and 24) is required; that if I miss a session I will be given access to a recording but remain responsible for submitting that week's assignment on time; and that missed sessions do not entitle me to a refund, make-up session, extension, or transfer.</span>
+              <span><strong>Attendance.</strong> I understand attendance at all eight Saturday sessions (January 2 – February 20, 2027) is required; that if I miss a session I will be given access to a recording but remain responsible for submitting that week's assignment on time; and that missed sessions do not entitle me to a refund, make-up session, extension, or transfer.</span>
             </label>
             <label class="opt hard">
               <input type="checkbox" name="consent_homework" required>
-              <span><strong>Homework.</strong> I understand there is weekly film homework, submitted at the start of each session for peer critique and professional feedback from working film industry professionals.</span>
+              <span><strong>Homework.</strong> I understand there is weekly homework, submitted at the start of each session for peer critique and professional feedback.</span>
             </label>
             <label class="opt">
               <input type="checkbox" name="consent_photo_release" required>
@@ -939,8 +950,8 @@
         <div class="submit-row">
           <div class="pay-summary">
             <div>
-              <div class="k">October 2026 Film Cohort · tuition, paid in full</div>
-              <div class="k" style="font-size:.86rem;margin-top:2px">4 Saturdays · Oct 3 – 24 · RICE Center</div>
+              <div class="k">Winter 2027 Jobs Cohort · tuition, paid in full</div>
+              <div class="k" style="font-size:.86rem;margin-top:2px">8 Saturdays · Jan 2 – Feb 20, 2027 · RICE Center</div>
             </div>
             <div class="v">$800</div>
           </div>
@@ -1072,11 +1083,37 @@
   }
   setAccountLink(null);
 
+  /* ── enrollment countdown: closes Sat, Jan 2, 2027, 1:00 PM EST (UTC-5) ──
+     Mirrors ENROLLMENT_DEADLINE_MS in api/enroll-upload.js; the server enforces it. */
+  var DEADLINE = Date.UTC(2027, 0, 2, 18, 0, 0);
+  var cd = document.getElementById('countdown');
+  var cdTimer = null;
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function tickCountdown() {
+    var left = DEADLINE - Date.now();
+    if (left <= 0) {
+      clearInterval(cdTimer);
+      cd.querySelector('.cd-label').textContent = 'Enrollment is closed';
+      ['cd-d', 'cd-h', 'cd-m', 'cd-s'].forEach(function (id) { document.getElementById(id).textContent = '00'; });
+      return true;
+    }
+    var sec = Math.floor(left / 1000);
+    document.getElementById('cd-d').textContent = Math.floor(sec / 86400);
+    document.getElementById('cd-h').textContent = pad(Math.floor(sec % 86400 / 3600));
+    document.getElementById('cd-m').textContent = pad(Math.floor(sec % 3600 / 60));
+    document.getElementById('cd-s').textContent = pad(sec % 60);
+    return false;
+  }
+  var closedAlready = tickCountdown();
+  if (!closedAlready) cdTimer = setInterval(tickCountdown, 1000);
+
   /* ── returning from Stripe ── */
   var params = new URLSearchParams(window.location.search);
   var sessionId = params.get('session_id');
 
-  if (params.get('canceled')) {
+  if (closedAlready && !sessionId && !params.get('canceled')) {
+    showScreen('screen-closed');
+  } else if (params.get('canceled')) {
     showScreen('screen-canceled');
     document.getElementById('restart').addEventListener('click', function () {
       window.location.href = window.location.pathname; // works on the apex (/apply) and the cohorts subdomain (/)
@@ -1140,6 +1177,10 @@
     });
   }
 
+  ['portfolio_url', 'work_links'].forEach(function (n) {
+    form[n].addEventListener('input', function () { document.getElementById('work-box').classList.remove('missing'); });
+  });
+
   function fail(msg) {
     errBox.textContent = msg;
     errBox.classList.add('show');
@@ -1150,6 +1191,22 @@
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     errBox.classList.remove('show');
+
+    var work = window.aimgWork || { busy: function () { return false; }, files: function () { return []; } };
+    var workBox = document.getElementById('work-box');
+    var hasLink = form.portfolio_url.value.trim() !== '' || form.work_links.value.trim() !== '';
+    if (work.busy()) {
+      fail('Your previous work is still uploading — wait for it to finish, then pay.');
+      workBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    if (!hasLink && !work.files().length) {
+      workBox.classList.add('missing');
+      workBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      form.portfolio_url.focus({ preventScroll: true });
+      return;
+    }
+    workBox.classList.remove('missing');
 
     if (!form.checkValidity()) {
       form.reportValidity();
@@ -1171,6 +1228,7 @@
       if (cb.name && cb.name !== 'accept_all') payload[cb.name] = cb.checked;
     });
     payload._gotcha = fd.get('_gotcha') || '';
+    payload.work_files = work.files();
 
     fetch('/api/create-checkout-session', {
       method: 'POST',

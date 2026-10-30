@@ -1,17 +1,19 @@
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import { head } from "@vercel/blob";
+import { COHORT, PREFIX as WORK_PREFIX, DEADLINE_MS as ENROLLMENT_DEADLINE_MS, MAX_FILES } from "./enroll-upload.js";
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://xnejbxdvqmzlaljkgwaf.supabase.co";
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Authoritative, server-side. The browser never tells us the price.
-const COHORT = "october-2026-film";
 const TUITION_CENTS = 80000; // $800.00, paid in full. No deposits, no installments.
 const TOTAL_SEATS = 20;
 
-// Enrollment closes when Session 1 begins: Saturday, October 3, 2026, 1:00 PM
-// Eastern (EDT, UTC-4). After this instant the API refuses to start a checkout.
-const ENROLLMENT_DEADLINE_MS = Date.UTC(2026, 9, 3, 17, 0, 0); // 2026-10-03T13:00 EDT
+// COHORT and ENROLLMENT_DEADLINE_MS come from enroll-upload.js so uploads and
+// checkout close together. Enrollment closes when Session 1 begins: Saturday,
+// January 2, 2027, 1:00 PM Eastern (EST, UTC-5). After this instant the API
+// refuses to start a checkout.
 
 // A checkout that was started but never paid still reserves a seat for this long,
 // so two people can't both take seat 20 while Stripe is processing.
@@ -31,11 +33,11 @@ const REQUIRED_CONSENTS = [
 
 const ALLOWED = {
   heard_about: ["Film Bar AI", "Workshop Wednesday", "Instagram", "TikTok", "LinkedIn", "Facebook", "X", "WhatsApp group", "A friend", "Other"],
-  ai_experience: ["Never used them", "I've generated a few clips", "I make AI videos regularly", "AI video is part of my work", "I finish complete AI films"],
+  ai_experience: ["Never used them", "Tried ChatGPT a few times", "Use AI tools weekly", "Use them daily in my work", "I build with them"],
   coding_experience: ["Never", "A little", "Comfortable", "Professionally"],
-  goal: ["Break into film work", "Level up my filmmaking", "Launch a studio or channel", "Build a film portfolio", "I'm not sure yet"],
-  final_project: ["Short film", "Commercial spec", "Music video", "Help me decide"],
-  can_attend: ["Yes, all 4", "I'd miss 1", "I'd miss 2+"],
+  goal: ["Get a job", "Grow in my current role", "Launch a business", "Build a portfolio", "I'm not sure yet"],
+  final_project: ["Mock interview", "Pitch deck", "Help me decide"],
+  can_attend: ["Yes, all 8", "I'd miss 1", "I'd miss 2+"],
 };
 
 const isEmail = (v) => typeof v === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -49,6 +51,43 @@ const isUrl = (v) => {
   }
 };
 const clip = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : null);
+
+/** Extra work links: one per line, each a real http(s) URL. Returns null if any line isn't. */
+function parseLinks(v) {
+  if (typeof v !== "string" || !v.trim()) return [];
+  const lines = v.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).slice(0, 20);
+  return lines.every(isUrl) ? lines : null;
+}
+
+/**
+ * Uploaded previous-work files. Each URL must be a Blob file under this
+ * cohort's enroll/ prefix, confirmed with Blob itself — the browser's word
+ * isn't enough. Returns the saved shape, or throws a message for the enrollee.
+ */
+async function verifyWorkFiles(files) {
+  if (files == null) return [];
+  if (!Array.isArray(files) || files.length > MAX_FILES) throw new Error(`Upload up to ${MAX_FILES} files.`);
+  const out = [];
+  for (const f of files) {
+    const url = f && typeof f.url === "string" ? f.url : "";
+    if (!/^https:\/\/[a-z0-9.-]+\.blob\.vercel-storage\.com\//i.test(url)) throw new Error("One of your uploads didn't finish. Remove it and upload it again.");
+    let blob;
+    try {
+      blob = await head(url);
+    } catch {
+      throw new Error("One of your uploads didn't finish. Remove it and upload it again.");
+    }
+    if (!blob.pathname.startsWith(WORK_PREFIX)) throw new Error("One of your uploads didn't finish. Remove it and upload it again.");
+    out.push({
+      url: blob.url,
+      pathname: blob.pathname,
+      name: clip(f.name, 200) || blob.pathname.slice(WORK_PREFIX.length),
+      size: blob.size,
+      type: blob.contentType || null,
+    });
+  }
+  return out;
+}
 
 /** Seats already taken: paid, plus checkouts started within the hold window. */
 async function seatsTaken(supabase) {
@@ -96,8 +135,23 @@ export default async function handler(req, res) {
   if (!isEmail(body.email)) {
     return res.status(400).json({ error: "That email address doesn't look right." });
   }
-  if (!isUrl(body.portfolio_url)) {
-    return res.status(400).json({ error: "Please share a working link (starting with http:// or https://) to your current AI film work." });
+  // Previous work is mandatory: at least one link or one uploaded file.
+  const hasPortfolio = typeof body.portfolio_url === "string" && body.portfolio_url.trim() !== "";
+  if (hasPortfolio && !isUrl(body.portfolio_url)) {
+    return res.status(400).json({ error: "Your work link needs to be a full web address, starting with http:// or https://." });
+  }
+  const workLinks = parseLinks(body.work_links);
+  if (!workLinks) {
+    return res.status(400).json({ error: "Each extra link must be a full web address (starting with http:// or https://), one per line." });
+  }
+  let workFiles;
+  try {
+    workFiles = await verifyWorkFiles(body.work_files);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+  if (!hasPortfolio && !workLinks.length && !workFiles.length) {
+    return res.status(400).json({ error: "Share a link to your previous work or upload it — every enrollee must include previous work." });
   }
   for (const [field, options] of Object.entries(ALLOWED)) {
     if (!options.includes(String(body[field]).trim())) {
@@ -116,10 +170,10 @@ export default async function handler(req, res) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
   try {
-    // --- enrollment deadline: the cohort starts Oct 3 at 1 PM ET ---
+    // --- enrollment deadline: the cohort starts Jan 2, 2027 at 1 PM ET ---
     if (Date.now() >= ENROLLMENT_DEADLINE_MS) {
       return res.status(409).json({
-        error: "Enrollment for the October Film Cohort closed on October 3 at 1:00 PM. Nothing has been charged.",
+        error: "Enrollment for the Winter 2027 Jobs Cohort closed on January 2, 2027 at 1:00 PM. Nothing has been charged.",
         closed: true,
       });
     }
@@ -127,7 +181,7 @@ export default async function handler(req, res) {
     // --- seat cap: check BEFORE taking any money ---
     if ((await seatsTaken(supabase)) >= TOTAL_SEATS) {
       return res.status(409).json({
-        error: "The October Film Cohort is full — all twenty seats are taken. Nothing has been charged.",
+        error: "The Winter 2027 Jobs Cohort is full — all twenty seats are taken. Nothing has been charged.",
         full: true,
       });
     }
@@ -144,8 +198,10 @@ export default async function handler(req, res) {
       ai_experience: clip(body.ai_experience, 60),
       coding_experience: clip(body.coding_experience, 40),
       current_work: clip(body.current_work, 300),
-      portfolio_url: clip(body.portfolio_url, 500),
-      no_portfolio: body.no_portfolio === true,
+      portfolio_url: hasPortfolio ? clip(body.portfolio_url, 500) : (workLinks[0] || null),
+      no_portfolio: false,
+      work_links: workLinks.length ? workLinks.join("\n").slice(0, 4000) : null,
+      work_files: workFiles,
       goal: clip(body.goal, 60),
       eight_week_goal: clip(body.eight_week_goal, 300),
       something_made: clip(body.something_made, 300),
@@ -192,8 +248,8 @@ export default async function handler(req, res) {
           currency: "usd",
           unit_amount: amountCents,
           product_data: {
-            name: "AIMG October 2026 Film Cohort — Tuition",
-            description: "Four-week AI filmmaking intensive. Four Saturdays, 1–4 PM, October 3–24, 2026. RICE Center, Atlanta. Paid in full; no deposits or installments.",
+            name: "AIMG Winter 2027 Jobs Cohort — Tuition",
+            description: "Eight-week AI careers cohort. Eight Saturdays, 1–4 PM, January 2 – February 20, 2027. RICE Center, Atlanta, or live online. Paid in full; no deposits or installments.",
           },
         },
       }],

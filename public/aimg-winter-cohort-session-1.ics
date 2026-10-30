@@ -1,0 +1,36 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//AI Makers Generation//Winter 2027 Jobs Cohort//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VTIMEZONE
+TZID:America/New_York
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0500
+TZOFFSETTO:-0400
+TZNAME:EDT
+DTSTART:20260308T020000
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0400
+TZOFFSETTO:-0500
+TZNAME:EST
+DTSTART:20261101T020000
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:winter-2027-jobs-session-1@aimakersgeneration.com
+DTSTAMP:20261030T120000Z
+DTSTART;TZID=America/New_York:20270102T130000
+DTEND;TZID=America/New_York:20270102T160000
+SUMMARY:AIMG Winter 2027 Jobs Cohort — Session 1
+LOCATION:Russell Innovation Center for Entrepreneurs, Atlanta, GA
+DESCRIPTION:Session 1 of the AI Makers Generation Winter 2027 Jobs Cohort. Your tuition is already paid — bring your charged laptop.\n\nEight Saturdays, 1–4 PM: Jan 2, 9, 16, 23, 30, Feb 6, 13, 20. Attendance at all eight is required.\n\nhttps://aimakersgeneration.com/
+URL:https://aimakersgeneration.com/
+BEGIN:VALARM
+TRIGGER:-P1D
+ACTION:DISPLAY
+DESCRIPTION:AIMG Winter 2027 Jobs Cohort Session 1 is tomorrow, 1–4 PM. Bring a charged laptop.
+END:VALARM
+END:VEVENT
+END:VCALENDAR

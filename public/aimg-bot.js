@@ -25,7 +25,7 @@
   var ACCENT_HOVER = isCohorts ? "#0c6633" : "#2f7d1f";
 
   var GREETING =
-    "Hey — I'm the AI MAKERS BOT 👋\n\nAsk me anything about Film Bar AI (every Tuesday), the October Film Cohort, Workshop Wednesdays, or how to get involved with AI MAKERS GENERATION.";
+    "Hey — I'm the AI MAKERS BOT 👋\n\nAsk me anything about Film Bar AI (every Tuesday), the Winter 2027 Jobs Cohort (enrolling now), Workshop Wednesdays, or how to get involved with AI MAKERS GENERATION.";
 
   var SUGGESTIONS = [
     "When's the next Film Bar AI?",
@@ -225,7 +225,7 @@
       if (!res.ok) throw new Error("bad status " + res.status);
       var data = await res.json();
       var reply = (data && data.response) ||
-        "Sorry — I hit a snag. Try again in a moment, or join the WhatsApp community: https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5";
+        "Sorry — I hit a snag. Try again in a moment, or join the WhatsApp community: https://chat.whatsapp.com/EzC8ynMmARl8h97EORtfZC";
       addMsg(reply, "bot");
       history.push({ role: "assistant", content: reply });
       // After a couple of answers, invite visitors to stay: a free account
@@ -236,7 +236,7 @@
       }
     } catch (e) {
       if (typing.parentNode) typing.remove();
-      addMsg("I couldn't reach the server just now. Please try again shortly, or reach us on WhatsApp: https://chat.whatsapp.com/IdfiaQhqeOuEpduKv2SvP5", "bot");
+      addMsg("I couldn't reach the server just now. Please try again shortly, or reach us on WhatsApp: https://chat.whatsapp.com/EzC8ynMmARl8h97EORtfZC", "bot");
       history.pop(); // drop the unanswered user turn so retry works cleanly
     } finally {
       busy = false;
